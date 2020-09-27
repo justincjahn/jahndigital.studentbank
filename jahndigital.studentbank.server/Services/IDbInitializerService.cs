@@ -2,7 +2,7 @@
 
 namespace jahndigital.studentbank.server.Services
 {
-    public interface IDbInitializer
+    public interface IDbInitializerService
     {
         void Initialize();
 

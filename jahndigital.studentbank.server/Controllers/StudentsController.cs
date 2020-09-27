@@ -13,15 +13,12 @@ namespace jahndigital.studentbank.server.Controllers
     /// <summary>
     /// Handle user authentication and displaying user information.
     /// </summary>
-    [Authorize(Roles = Constants.Role.ROLE_SUPERUSER), ApiController, Route("[controller]")]
-    public class UsersController : ControllerBase
+    [Authorize(Roles = Constants.Role.ROLE_SUPERUSER + "," +Constants.Role.ROLE_STUDENT), ApiController, Route("[controller]")]
+    public class StudentsController : ControllerBase
     {
-        private IUserService _userService;
+        private IStudentService _studentService;
 
-        public UsersController(IUserService userService)
-        {
-            _userService = userService;
-        }
+        public StudentsController(IStudentService userService) => _studentService = userService;
 
         /// <summary>
         /// Authenticate a user via email and password and return a JWT token.
@@ -30,7 +27,7 @@ namespace jahndigital.studentbank.server.Controllers
         [HttpPost("authenticate"), AllowAnonymous]
         public IActionResult Authenticate([FromBody] AuthenticateRequest model)
         {
-            var response = _userService.Authenticate(model, getIp());
+            var response = _studentService.Authenticate(model, getIp());
 
             if (response == null) {
                 return BadRequest(new { message = "Username or password incorrect." });
@@ -49,7 +46,7 @@ namespace jahndigital.studentbank.server.Controllers
         public IActionResult RefreshToken()
         {
             var refreshToken = Request.Cookies["refreshToken"];
-            var response = _userService.RefreshToken(refreshToken, getIp());
+            var response = _studentService.RefreshToken(refreshToken, getIp());
 
             if (response == null) {
                 return Unauthorized(new { message = "Invalid Token"});
@@ -74,7 +71,7 @@ namespace jahndigital.studentbank.server.Controllers
                 return BadRequest(new { message = "Token is required."});
             }
 
-            var response = _userService.RevokeToken(token, getIp());
+            var response = _studentService.RevokeToken(token, getIp());
 
             if (!response) {
                 return NotFound(new { message = "Token not found." });
@@ -84,35 +81,33 @@ namespace jahndigital.studentbank.server.Controllers
         }
 
         /// <summary>
-        /// Get a user by ID.
+        /// Get a student by ID.
         /// </summary>
-        /// <param name="userId">The ID number of the user.</param>
+        /// <param name="studentId">The ID number of the user.</param>
         /// <param name="context">Database context.</param>
-        [HttpGet("{userId}")]
-        public ActionResult<User> GetById(int userId, [FromServices] AppDbContext context)
+        [HttpGet("{studentId}"), Authorize(Policy = Constants.AuthPolicy.UserDataOwner)]
+        public ActionResult<Student> GetById(int studentId, [FromServices] AppDbContext context)
         {
-            var user = context.Users
-                .Include(x => x.Role)
-                .SingleOrDefault(x => x.Id == userId);
+            var student = context.Students.SingleOrDefault(x => x.Id == studentId);
 
-            if (user == null) {
+            if (student == null) {
                 return NotFound(new { message = "User not found." });
             }
 
-            return user;
+            return student;
         }
 
         /// <summary>
-        /// Get the refresh tokens of a specific user.
+        /// Get the refresh tokens of a specific student.
         /// </summary>
-        /// <param name="userId">The ID number of the user.</param>
+        /// <param name="studentId">The ID number of the user.</param>
         /// <param name="context"></param>
-        [HttpGet("{userId}/refresh-tokens"), Authorize(Policy = Constants.AuthPolicy.UserDataOwner)]
-        public ActionResult<RefreshToken> GetRefreshTokens(int userId, [FromServices] AppDbContext context)
+        [HttpGet("{studentId}/refresh-tokens"), Authorize(Policy = Constants.AuthPolicy.UserDataOwner)]
+        public ActionResult<RefreshToken> GetRefreshTokens(int studentId, [FromServices] AppDbContext context)
         {
-            var user = context.Users.SingleOrDefault(x => x.Id == userId);
-            if (user == null) return NotFound(new { message = "User not found."});
-            return Ok(user.RefreshTokens);
+            var student = context.Users.SingleOrDefault(x => x.Id == studentId);
+            if (student == null) return NotFound(new { message = "User not found."});
+            return Ok(student.RefreshTokens);
         }
 
         /// <summary>

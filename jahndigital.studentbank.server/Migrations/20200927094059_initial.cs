@@ -41,7 +41,9 @@ namespace jahndigital.studentbank.server.Migrations
                 {
                     Id = table.Column<long>(nullable: false)
                         .Annotation("Sqlite:Autoincrement", true),
-                    Name = table.Column<string>(maxLength: 32, nullable: false)
+                    Name = table.Column<string>(maxLength: 32, nullable: false),
+                    Description = table.Column<string>(maxLength: 128, nullable: true),
+                    IsBuiltIn = table.Column<bool>(nullable: false)
                 },
                 constraints: table =>
                 {
@@ -159,6 +161,9 @@ namespace jahndigital.studentbank.server.Migrations
                     Id = table.Column<long>(nullable: false)
                         .Annotation("Sqlite:Autoincrement", true),
                     AccountNumber = table.Column<string>(maxLength: 10, nullable: false),
+                    Email = table.Column<string>(maxLength: 64, nullable: false),
+                    FirstName = table.Column<string>(maxLength: 64, nullable: false),
+                    LastName = table.Column<string>(maxLength: 64, nullable: false),
                     Password = table.Column<string>(maxLength: 84, nullable: false),
                     GroupId = table.Column<long>(nullable: false)
                 },
@@ -195,7 +200,7 @@ namespace jahndigital.studentbank.server.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "RefreshToken",
+                name: "Users_RefreshTokens",
                 columns: table => new
                 {
                     Id = table.Column<long>(nullable: false)
@@ -211,9 +216,9 @@ namespace jahndigital.studentbank.server.Migrations
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_RefreshToken", x => x.Id);
+                    table.PrimaryKey("PK_Users_RefreshTokens", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_RefreshToken_Users_UserId",
+                        name: "FK_Users_RefreshTokens_Users_UserId",
                         column: x => x.UserId,
                         principalTable: "Users",
                         principalColumn: "Id",
@@ -242,6 +247,32 @@ namespace jahndigital.studentbank.server.Migrations
                         onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
                         name: "FK_Shares_Students_StudentId",
+                        column: x => x.StudentId,
+                        principalTable: "Students",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "Students_RefreshTokens",
+                columns: table => new
+                {
+                    Id = table.Column<long>(nullable: false)
+                        .Annotation("Sqlite:Autoincrement", true),
+                    Token = table.Column<string>(nullable: true),
+                    Created = table.Column<DateTime>(nullable: false),
+                    Expires = table.Column<DateTime>(nullable: false),
+                    Revoked = table.Column<DateTime>(nullable: true),
+                    CreatedByIpAddress = table.Column<string>(maxLength: 39, nullable: true),
+                    RevokedByIpAddress = table.Column<string>(maxLength: 39, nullable: true),
+                    ReplacedByToken = table.Column<string>(nullable: true),
+                    StudentId = table.Column<long>(nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Students_RefreshTokens", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_Students_RefreshTokens_Students_StudentId",
                         column: x => x.StudentId,
                         principalTable: "Students",
                         principalColumn: "Id",
@@ -332,9 +363,16 @@ namespace jahndigital.studentbank.server.Migrations
                 column: "InstanceId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_RefreshToken_UserId",
-                table: "RefreshToken",
-                column: "UserId");
+                name: "IX_Groups_Name_InstanceId",
+                table: "Groups",
+                columns: new[] { "Name", "InstanceId" },
+                unique: true);
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Instances_Description",
+                table: "Instances",
+                column: "Description",
+                unique: true);
 
             migrationBuilder.CreateIndex(
                 name: "IX_RolePrivileges_PrivilegeId",
@@ -367,6 +405,17 @@ namespace jahndigital.studentbank.server.Migrations
                 column: "GroupId");
 
             migrationBuilder.CreateIndex(
+                name: "IX_Students_AccountNumber_GroupId",
+                table: "Students",
+                columns: new[] { "AccountNumber", "GroupId" },
+                unique: true);
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Students_RefreshTokens_StudentId",
+                table: "Students_RefreshTokens",
+                column: "StudentId");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_StudentStockHistory_StudentStockId",
                 table: "StudentStockHistory",
                 column: "StudentStockId");
@@ -395,13 +444,15 @@ namespace jahndigital.studentbank.server.Migrations
                 name: "IX_Users_RoleId",
                 table: "Users",
                 column: "RoleId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Users_RefreshTokens_UserId",
+                table: "Users_RefreshTokens",
+                column: "UserId");
         }
 
         protected override void Down(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.DropTable(
-                name: "RefreshToken");
-
             migrationBuilder.DropTable(
                 name: "RolePrivileges");
 
@@ -409,10 +460,13 @@ namespace jahndigital.studentbank.server.Migrations
                 name: "StockHistory");
 
             migrationBuilder.DropTable(
+                name: "Students_RefreshTokens");
+
+            migrationBuilder.DropTable(
                 name: "StudentStockHistory");
 
             migrationBuilder.DropTable(
-                name: "Users");
+                name: "Users_RefreshTokens");
 
             migrationBuilder.DropTable(
                 name: "Privileges");
@@ -424,13 +478,16 @@ namespace jahndigital.studentbank.server.Migrations
                 name: "Transactions");
 
             migrationBuilder.DropTable(
-                name: "Roles");
+                name: "Users");
 
             migrationBuilder.DropTable(
                 name: "Stocks");
 
             migrationBuilder.DropTable(
                 name: "Shares");
+
+            migrationBuilder.DropTable(
+                name: "Roles");
 
             migrationBuilder.DropTable(
                 name: "ShareTypes");

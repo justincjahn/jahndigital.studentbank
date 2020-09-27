@@ -73,6 +73,6 @@ namespace jahndigital.studentbank.server.Entities
         /// <summary>
         /// The history of the stock.
         /// </summary>
-        public ICollection<StockHistory> History {get; set;}
+        public ICollection<StockHistory> History {get; set;} = new HashSet<StockHistory>();
     }
 }

@@ -30,11 +30,11 @@ namespace jahndigital.studentbank.server.Entities
         /// <summary>
         /// Gets or sets the collection of groups associated with this instance.
         /// </summary>
-        public ICollection<Group> Groups { get; set; }
+        public List<Group> Groups { get; set; }
 
         /// <summary>
         /// Gets or sets the collection of stocks associated with this instance.
         /// </summary>
-        public ICollection<Stock> Stocks { get; set; }
+        public ICollection<Stock> Stocks { get; set; } = new HashSet<Stock>();
     }
 }

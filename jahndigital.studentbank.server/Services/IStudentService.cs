@@ -2,7 +2,7 @@ using jahndigital.studentbank.server.Models;
 
 namespace jahndigital.studentbank.server.Services
 {
-    public interface IUserService
+    public interface IStudentService
     {
         /// <summary>
         /// Authenticate a user or student's request.

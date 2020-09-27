@@ -1,6 +1,8 @@
 using System;
+using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using System.Text.Json.Serialization;
 using Microsoft.AspNetCore.Identity;
 
 namespace jahndigital.studentbank.server.Entities
@@ -22,6 +24,25 @@ namespace jahndigital.studentbank.server.Entities
         public string AccountNumber {get; set;}
 
         /// <summary>
+        /// The email address of the student.
+        /// </summary>
+        /// <value></value>
+        [MaxLength(64), Required]
+        public string Email {get; set;}
+
+        /// <summary>
+        /// The student's given name.
+        /// </summary>
+        [MaxLength(64), Required]
+        public string FirstName {get; set;}
+
+        /// <summary>
+        /// The student's surname.
+        /// </summary>
+        [MaxLength(64), Required]
+        public string LastName {get; set;}
+
+        /// <summary>
         /// Backing field for encrypted password.
         /// </summary>
         private string _password;
@@ -29,7 +50,7 @@ namespace jahndigital.studentbank.server.Entities
         /// <summary>
         /// The encrypted credentials of the user.
         /// </summary>
-        [Column("Password"), MaxLength(84), Required]
+        [MaxLength(84), Required]
         public string Password
         {
             get => _password;
@@ -57,5 +78,11 @@ namespace jahndigital.studentbank.server.Entities
         /// </summary>
         [Required]
         public Group Group { get; set; }
+
+        /// <summary>
+        /// A list of JWT refresh tokens for the user.
+        /// </summary>
+        [JsonIgnore]
+        public ICollection<RefreshToken> RefreshTokens {get;set;} = new HashSet<RefreshToken>();
     }
 }

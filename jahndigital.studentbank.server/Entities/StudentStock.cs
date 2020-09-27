@@ -29,6 +29,6 @@ namespace jahndigital.studentbank.server.Entities
         /// <summary>
         /// The history of buy/sells for this stock.
         /// </summary>
-        public ICollection<StudentStockHistory> History {get; set;}
+        public ICollection<StudentStockHistory> History {get; set;} = new HashSet<StudentStockHistory>();
     }
 }

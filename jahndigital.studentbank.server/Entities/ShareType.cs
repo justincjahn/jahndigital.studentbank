@@ -53,6 +53,6 @@ namespace jahndigital.studentbank.server.Entities
         /// <summary>
         /// Gets the list of shares associated with this share type.
         /// </summary>
-        public ICollection<Share> Shares { get; set; }
+        public ICollection<Share> Shares { get; set; } = new HashSet<Share>();
     }
 }

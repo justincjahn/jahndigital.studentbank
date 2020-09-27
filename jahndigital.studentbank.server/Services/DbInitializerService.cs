@@ -10,7 +10,7 @@ namespace jahndigital.studentbank.server.Services
     /// <summary>
     /// Handles automatic database migrations and seeding.
     /// </summary>
-    public class DbInitializer : IDbInitializer
+    public class DbInitializerService : IDbInitializerService
     {
         /// <summary>
         /// Set during seeding if needed.
@@ -26,10 +26,7 @@ namespace jahndigital.studentbank.server.Services
         /// Pull in the services from dependency injection api.
         /// </summary>
         /// <param name="scopeFactory"></param>
-        public DbInitializer(IServiceScopeFactory scopeFactory)
-        {
-            this._scopeFactory = scopeFactory;
-        }
+        public DbInitializerService(IServiceScopeFactory scopeFactory) => _scopeFactory = scopeFactory;
 
         /// <summary>
         /// Perform migrations.
@@ -50,6 +47,7 @@ namespace jahndigital.studentbank.server.Services
             using var context = serviceScope.ServiceProvider.GetService<AppDbContext>();
 
             SeedPrivileges(context);
+            SeedRoles(context);
             SeedUsers(context);
             SeedShareTypes(context);
 
@@ -64,20 +62,13 @@ namespace jahndigital.studentbank.server.Services
         /// </summary>
         public void SeedPrivileges(AppDbContext context)
         {
-            var privileges = new Dictionary<string, string>()
-            {
-                { "ALL", "Grant all privileges." }
-            };
-
             List<Privilege> dbPrivileges = context.Privileges.ToList();
-            foreach (var privilege in privileges)
-            {
-                if (dbPrivileges.Where(x => x.Name == privilege.Key).FirstOrDefault() == null)
-                {
-                    context.Add(new Privilege
-                    {
-                        Name = privilege.Key,
-                        Description = privilege.Value
+
+            foreach (var privilege in Constants.Privilege.Privileges) {
+                if (dbPrivileges.Where(x => x.Name == privilege.Name).FirstOrDefault() == null) {
+                    context.Add(new Privilege {
+                        Name = privilege.Name,
+                        Description = privilege.Description
                     });
                 }
             }
@@ -86,37 +77,48 @@ namespace jahndigital.studentbank.server.Services
         }
 
         /// <summary>
-        /// 
+        /// Add roles to the system if they don't already exist.
+        /// </summary>
+        /// <param name="context"></param>
+        public void SeedRoles(AppDbContext context)
+        {
+            List<Privilege> dbPrivileges = context.Privileges.ToList();
+            List<Role> dbRoles = context.Roles.Where(x => x.IsBuiltIn == true).ToList();
+
+            foreach (var role in Constants.Role.Roles) {
+                if (dbRoles.Where(x => x.Name == role.Name).FirstOrDefault() == null) {
+                    var dbRole = new Role {
+                        Name = role.Name,
+                        Description = role.Description,
+                        IsBuiltIn = true,
+                    };
+
+                    foreach (var privilege in role.Privileges) {
+                        var priv = dbPrivileges.Where(x => x.Name == privilege.Name).First();
+                        dbRole.RolePrivileges.Add(new RolePrivilege {
+                            Role = dbRole,
+                            Privilege = priv
+                        });
+                    }
+
+                    context.Add(dbRole);
+                }
+            }
+
+            context.SaveChanges();
+        }
+
+        /// <summary>
+        /// Insert an admin user in the database if no users exist.
         /// </summary>
         /// <param name="context"></param>
         public void SeedUsers(AppDbContext context)
         {
-            Privilege all = context.Privileges.Where(x => x.Name == "ALL").FirstOrDefault();
-            Role superuser = context.Roles.Where(x => x.Name == "Superuser").FirstOrDefault();
-            if (superuser == null)
-            {
-                superuser = new Role
-                {
-                    Name = "Superuser"
-                };
+            Privilege all = context.Privileges.Where(x => x.Name == Constants.Privilege.All.Name).FirstOrDefault();
+            Role superuser = context.Roles.Where(x => x.Name == Constants.Role.Superuser.Name).FirstOrDefault();
 
-                superuser.RolePrivileges = new List<RolePrivilege>() {
-                    new RolePrivilege
-                    {
-                        Privilege = all,
-                        Role = superuser
-                    }
-                };
-
-                context.Add(superuser);
-                context.SaveChanges();
-            }
-
-            // If there is no users, make a default one.
-            if (!context.Users.Any())
-            {
-                var admin = new User
-                {
+            if (!context.Users.Any()) {
+                var admin = new User {
                     Email = "admin@domain.tld",
                     Password = "admin",
                     Role = superuser
@@ -221,11 +223,15 @@ namespace jahndigital.studentbank.server.Services
                 var max = new Random().Next(5, 100);
                 for (var i = 0; i <= max; i++)
                 {
+                    var accountNumber = $"{group.Id}{i}".PadLeft(10, '0');
                     var student = new Student
                     {
-                        AccountNumber = i.ToString().PadLeft(10, '0'),
+                        AccountNumber = accountNumber,
                         Group = group,
-                        Password = new Guid().ToString()
+                        Password = "student",
+                        Email = $"student{i}@group{group.Id}.domain.tld",
+                        FirstName = "Student",
+                        LastName = $"{i}"
                     };
 
                     context.Students.Add(student);

@@ -29,6 +29,6 @@ namespace jahndigital.studentbank.server.Entities
         /// <summary>
         /// Gets the list of students associated with this group.
         /// </summary>
-        public ICollection<Student> Students { get; set; }
+        public ICollection<Student> Students { get; set; } = new HashSet<Student>();
     }
 }

@@ -33,7 +33,7 @@ namespace jahndigital.studentbank.server.Entities
         /// <summary>
         /// The encrypted credentials of the user.
         /// </summary>
-        [Column("Password"), MaxLength(84), Required, JsonIgnore]
+        [MaxLength(84), Required, JsonIgnore]
         public string Password {
             get => _password;
 
@@ -65,6 +65,6 @@ namespace jahndigital.studentbank.server.Entities
         /// A list of JWT refresh tokens for the user.
         /// </summary>
         [JsonIgnore]
-        public List<RefreshToken> RefreshTokens {get;set;}
+        public ICollection<RefreshToken> RefreshTokens {get;set;} = new HashSet<RefreshToken>();
     }
 }

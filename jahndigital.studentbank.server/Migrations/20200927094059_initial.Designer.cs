@@ -9,7 +9,7 @@ using jahndigital.studentbank.server;
 namespace jahndigital.studentbank.server.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20200926071655_initial")]
+    [Migration("20200927094059_initial")]
     partial class initial
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -36,6 +36,9 @@ namespace jahndigital.studentbank.server.Migrations
 
                     b.HasIndex("InstanceId");
 
+                    b.HasIndex("Name", "InstanceId")
+                        .IsUnique();
+
                     b.ToTable("Groups");
                 });
 
@@ -54,6 +57,9 @@ namespace jahndigital.studentbank.server.Migrations
                         .HasColumnType("INTEGER");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("Description")
+                        .IsUnique();
 
                     b.ToTable("Instances");
                 });
@@ -83,6 +89,13 @@ namespace jahndigital.studentbank.server.Migrations
                 {
                     b.Property<long>("Id")
                         .ValueGeneratedOnAdd()
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("Description")
+                        .HasColumnType("TEXT")
+                        .HasMaxLength(128);
+
+                    b.Property<bool>("IsBuiltIn")
                         .HasColumnType("INTEGER");
 
                     b.Property<string>("Name")
@@ -231,18 +244,35 @@ namespace jahndigital.studentbank.server.Migrations
                         .HasColumnType("TEXT")
                         .HasMaxLength(10);
 
+                    b.Property<string>("Email")
+                        .IsRequired()
+                        .HasColumnType("TEXT")
+                        .HasMaxLength(64);
+
+                    b.Property<string>("FirstName")
+                        .IsRequired()
+                        .HasColumnType("TEXT")
+                        .HasMaxLength(64);
+
                     b.Property<long>("GroupId")
                         .HasColumnType("INTEGER");
 
+                    b.Property<string>("LastName")
+                        .IsRequired()
+                        .HasColumnType("TEXT")
+                        .HasMaxLength(64);
+
                     b.Property<string>("Password")
                         .IsRequired()
-                        .HasColumnName("Password")
                         .HasColumnType("TEXT")
                         .HasMaxLength(84);
 
                     b.HasKey("Id");
 
                     b.HasIndex("GroupId");
+
+                    b.HasIndex("AccountNumber", "GroupId")
+                        .IsUnique();
 
                     b.ToTable("Students");
                 });
@@ -342,7 +372,6 @@ namespace jahndigital.studentbank.server.Migrations
 
                     b.Property<string>("Password")
                         .IsRequired()
-                        .HasColumnName("Password")
                         .HasColumnType("TEXT")
                         .HasMaxLength(84);
 
@@ -418,6 +447,48 @@ namespace jahndigital.studentbank.server.Migrations
                         .HasForeignKey("GroupId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+
+                    b.OwnsMany("jahndigital.studentbank.server.Entities.RefreshToken", "RefreshTokens", b1 =>
+                        {
+                            b1.Property<long>("Id")
+                                .ValueGeneratedOnAdd()
+                                .HasColumnType("INTEGER");
+
+                            b1.Property<DateTime>("Created")
+                                .HasColumnType("TEXT");
+
+                            b1.Property<string>("CreatedByIpAddress")
+                                .HasColumnType("TEXT")
+                                .HasMaxLength(39);
+
+                            b1.Property<DateTime>("Expires")
+                                .HasColumnType("TEXT");
+
+                            b1.Property<string>("ReplacedByToken")
+                                .HasColumnType("TEXT");
+
+                            b1.Property<DateTime?>("Revoked")
+                                .HasColumnType("TEXT");
+
+                            b1.Property<string>("RevokedByIpAddress")
+                                .HasColumnType("TEXT")
+                                .HasMaxLength(39);
+
+                            b1.Property<long>("StudentId")
+                                .HasColumnType("INTEGER");
+
+                            b1.Property<string>("Token")
+                                .HasColumnType("TEXT");
+
+                            b1.HasKey("Id");
+
+                            b1.HasIndex("StudentId");
+
+                            b1.ToTable("Students_RefreshTokens");
+
+                            b1.WithOwner()
+                                .HasForeignKey("StudentId");
+                        });
                 });
 
             modelBuilder.Entity("jahndigital.studentbank.server.Entities.StudentStock", b =>
@@ -503,7 +574,7 @@ namespace jahndigital.studentbank.server.Migrations
 
                             b1.HasIndex("UserId");
 
-                            b1.ToTable("RefreshToken");
+                            b1.ToTable("Users_RefreshTokens");
 
                             b1.WithOwner()
                                 .HasForeignKey("UserId");

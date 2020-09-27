@@ -18,6 +18,8 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
 using Microsoft.OpenApi.Models;
+using Microsoft.AspNetCore.Authorization;
+using jahndigital.studentbank.server.Permissions;
 
 namespace jahndigital.studentbank.server
 {
@@ -46,7 +48,9 @@ namespace jahndigital.studentbank.server
                 options.UseSqlite(Configuration.GetConnectionString("Default"));
             });
 
-            services.AddScoped<IDbInitializer, DbInitializer>();
+            services.AddHttpContextAccessor();
+
+            services.AddScoped<IDbInitializerService, DbInitializerService>();
 
             services.AddControllers();
 
@@ -62,11 +66,32 @@ namespace jahndigital.studentbank.server
                     IssuerSigningKey = new SymmetricSecurityKey(tokenKey),
                     ValidateIssuer = false,
                     ValidateAudience = false,
-                    ClockSkew = TimeSpan.FromMinutes(2)
+                    ClockSkew = TimeSpan.FromMinutes(1)
                 };
             });
 
+            // Add an authz handler that validates the authenticated user has a permission.
+            services.AddScoped<IAuthorizationHandler, PermissionAuthorizationHandler>();
+
+            // Add an authz handler that ensures users can only access their own data.
+            services.AddScoped<IAuthorizationHandler, DataOwnerAuthorizationHandler>();
+
+            services.AddAuthorization(options => {
+                options.FallbackPolicy = new AuthorizationPolicyBuilder()
+                    .RequireAuthenticatedUser()
+                    .Build();
+                
+                options.AddPolicy(Constants.AuthPolicy.UserDataOwner, config => {
+                    config.AddRequirements(new DataOwnerRequirement());
+                });
+            });
+
+            // Dynamically register policies for built-in permissions.
+            services.AddSingleton<IAuthorizationPolicyProvider, PermissionPolicyProvider>();
+
             services.AddScoped<IUserService, UserService>();
+            services.AddScoped<IStudentService, StudentService>();
+            services.AddScoped<IRoleService, RoleService>();
 
             #if DEBUG
                 services.AddSwaggerGen(options => {
@@ -112,10 +137,9 @@ namespace jahndigital.studentbank.server
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
-        public void Configure(IApplicationBuilder app, IWebHostEnvironment env, IDbInitializer dbInitializer)
+        public void Configure(IApplicationBuilder app, IWebHostEnvironment env, IDbInitializerService dbInitializer)
         {
-            if (env.IsDevelopment())
-            {
+            if (env.IsDevelopment()) {
                 app.UseDeveloperExceptionPage();
             }
 
@@ -125,10 +149,6 @@ namespace jahndigital.studentbank.server
 
             app.UseAuthentication();
 
-            app.UseAuthorization();
-
-            app.UseEndpoints(endpoints => endpoints.MapControllers());
-
             #if DEBUG
                 app.UseSwagger();
 
@@ -136,6 +156,10 @@ namespace jahndigital.studentbank.server
                     options.SwaggerEndpoint("/swagger/v1/swagger.json", "Student Bank API");
                 });
             #endif
+
+            app.UseAuthorization();
+
+            app.UseEndpoints(endpoints => endpoints.MapControllers());
 
             dbInitializer.Initialize();
             dbInitializer.SeedData();

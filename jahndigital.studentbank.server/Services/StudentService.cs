@@ -17,13 +17,13 @@ namespace jahndigital.studentbank.server.Services
     /// <summary>
     /// Facilitates authentication and authorization.
     /// </summary>
-    public class UserService : IUserService
+    public class StudentService : IStudentService
     {
         private readonly AppDbContext _context;
 
         private readonly AppConfig _config;
 
-        public UserService(AppDbContext context, IOptions<AppConfig> config)
+        public StudentService(AppDbContext context, IOptions<AppConfig> config)
         {
             _context = context;
             _config = config.Value;
@@ -32,41 +32,43 @@ namespace jahndigital.studentbank.server.Services
         /// <inheritdoc />
         public AuthenticateResponse Authenticate(AuthenticateRequest model, string ipAddress)
         {
-            var user = _context.Users.Include(x => x.Role).SingleOrDefault(x => x.Email == model.Username);
-            if (user == null) return null;
+            var student = _context.Students.SingleOrDefault(x => x.AccountNumber == model.Username || x.Email == model.Username);
+            if (student == null) return null;
 
-            var valid = user.ValidatePassword(model.Password);
+            var valid = student.ValidatePassword(model.Password);
             if (valid == PasswordVerificationResult.Failed) return null;
 
             if (valid == PasswordVerificationResult.SuccessRehashNeeded) {
-                user.Password = model.Password;
+                student.Password = model.Password;
             }
 
             var token = JwtTokenService.GenerateToken(
                 _config.Secret,
-                Constants.UserType.User,
-                user.Id,
-                user.Email,
-                user.Email,
-                user.Role.Name
+                Constants.UserType.Student,
+                student.Id,
+                student.AccountNumber,
+                student.Email,
+                Constants.Role.Student.Name,
+                firstName: student.FirstName,
+                lastName: student.LastName
             );
 
             var refresh = JwtTokenService.GenerateRefreshToken(ipAddress);
 
-            user.RefreshTokens.Add(refresh);
-            _context.Update(user);
+            student.RefreshTokens.Add(refresh);
+            _context.Update(student);
             _context.SaveChanges();
 
-            return new AuthenticateResponse(user, token, refresh.Token);
+            return new AuthenticateResponse(student, token, refresh.Token);
         }
 
         /// <inheritdoc />
         public AuthenticateResponse RefreshToken(string token, string ipAddress)
         {
-            var user = _context.Users.Include(x => x.Role).SingleOrDefault(u => u.RefreshTokens.Any(t => t.Token == token));
-            if (user == null) return null;
+            var student = _context.Students.SingleOrDefault(u => u.RefreshTokens.Any(t => t.Token == token));
+            if (student == null) return null;
 
-            var refreshToken = user.RefreshTokens.Single(x => x.Token == token);
+            var refreshToken = student.RefreshTokens.Single(x => x.Token == token);
             if (refreshToken == null) return null;
 
             var newToken = JwtTokenService.GenerateRefreshToken(ipAddress);
@@ -74,35 +76,37 @@ namespace jahndigital.studentbank.server.Services
             refreshToken.RevokedByIpAddress = ipAddress;
             refreshToken.ReplacedByToken = newToken.Token;
 
-            user.RefreshTokens.Add(newToken);
-            _context.Update(user);
+            student.RefreshTokens.Add(newToken);
+            _context.Update(student);
             _context.SaveChanges();
 
             var jwtToken = JwtTokenService.GenerateToken(
                 _config.Secret,
                 Constants.UserType.User,
-                user.Id,
-                user.Email,
-                user.Email,
-                user.Role.Name
+                student.Id,
+                student.AccountNumber,
+                student.Email,
+                Constants.Role.Student.Name,
+                firstName: student.FirstName,
+                lastName: student.LastName
             );
 
-            return new AuthenticateResponse(user, jwtToken, newToken.Token);
+            return new AuthenticateResponse(student, jwtToken, newToken.Token);
         }
 
         /// <inheritdoc />
         public bool RevokeToken(string token, string ipAddress)
         {
-            var user = _context.Users.SingleOrDefault(u => u.RefreshTokens.Any(t => t.Token == token));
-            if (user == null) return false;
+            var student = _context.Students.SingleOrDefault(u => u.RefreshTokens.Any(t => t.Token == token));
+            if (student == null) return false;
 
-            var refreshToken = user.RefreshTokens.SingleOrDefault(x => x.Token == token);
+            var refreshToken = student.RefreshTokens.SingleOrDefault(x => x.Token == token);
             if (refreshToken == null) return false;
             if (!refreshToken.IsActive) return false;
 
             refreshToken.Revoked = DateTime.UtcNow;
             refreshToken.RevokedByIpAddress = ipAddress;
-            _context.Update(user);
+            _context.Update(student);
             _context.SaveChanges();
 
             return true;

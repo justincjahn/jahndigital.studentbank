@@ -1,0 +1,192 @@
+using System.Collections.Generic;
+
+namespace jahndigital.studentbank.server
+{
+    /// <summary>
+    /// Container class for application constants and built-in roles, privileges, etc.
+    /// </summary>
+    public static class Constants
+    {
+        /// <summary>
+        /// Default values for authorization processes.
+        /// </summary>
+        public static class Auth
+        {
+            /// <summary>
+            /// JWT Token Issuer
+            /// </summary>
+            public const string Issuer = "jahndigital.studentbank.server";
+
+            /// <summary>
+            /// The default expiration time, in minutes for a token.
+            /// </summary>
+            public const int DefaultExpirationMinutes = 15;
+
+            /// <summary>
+            /// 
+            /// </summary>
+            public const string CLAIM_USER_TYPE = "utyp";
+        }
+
+        /// <summary>
+        /// Built-in privileges.
+        /// </summary>
+        public class Privilege
+        {
+            /// <summary>
+            /// Gets the name of the privilege.
+            /// </summary>
+            public string Name { get; private set; }
+
+            /// <summary>
+            /// Gets a short description for the privilege.
+            /// </summary>
+            public string Description { get; set; }
+
+            /// <summary>
+            /// Backing field for <see cname="Privileges" />.
+            /// </summary>
+            private static List<Privilege> _privileges = new List<Privilege>();
+
+            /// <summary>
+            /// Gets a list of privileges.
+            /// </summary>
+            public static IReadOnlyCollection<Privilege> Privileges { get => _privileges.AsReadOnly(); }
+
+            /// <summary>
+            /// Initialize the privilege and store it in the list.
+            /// </summary>
+            /// <param name="name"></param>
+            /// <param name="description"></param>
+            private Privilege(string name, string description)
+            {
+                Name = name;
+                Description = description;
+                _privileges.Add(this);
+            }
+
+            /// <summary>
+            /// Allow all actions.
+            /// </summary>
+            public const string PRIVILEGE_ALL = "P_ALL";
+
+            /// <summary>
+            /// Allow all actions.
+            /// </summary>
+            public static readonly Privilege All = new Privilege("P_ALL", "Allow all actions.");
+        }
+
+        /// <summary>
+        /// Built-in roles.
+        /// </summary>
+        public class Role
+        {
+            /// <summary>
+            /// Get the name of the role.
+            /// </summary>
+            public string Name { get; private set; }
+
+            /// <summary>
+            /// Gets a short description of the role.
+            /// </summary>
+            public string Description { get; private set; }
+
+            /// <summary>
+            /// List of privileges associated with this role.
+            /// </summary>
+            public IEnumerable<Privilege> Privileges { get; private set;}
+
+            /// <summary>
+            /// Backing field for <see cname="Roles" />
+            /// </summary>
+            private static List<Role> _roles = new List<Role>();
+
+            /// <summary>
+            /// Get every built-in role.
+            /// </summary>
+            public static IReadOnlyCollection<Role> Roles { get => _roles.AsReadOnly(); }
+
+            /// <summary>
+            /// Initialize a new Role and add it to the list of built-in roles.
+            /// </summary>
+            /// <param name="name">Friendly name for the role.</param>
+            /// <param name="description">A short description of the role.</param>
+            /// <param name="privileges">A list of privileges associated with this role.</param>
+            private Role(string name, string description, IEnumerable<Privilege> privileges) {
+                Name = name;
+                Description = description;
+                Privileges = privileges;
+                _roles.Add(this);
+            }
+
+            /// <summary>
+            /// Built-in role that represents the role with every permission.
+            /// </summary>
+            public const string ROLE_SUPERUSER = "Superuser";
+
+            /// <summary>
+            /// Built-in role that represents the role with every permission.
+            /// </summary>
+            public static readonly Role Superuser = new Role(
+                ROLE_SUPERUSER,
+                "Built-in role with all permissions.",
+                new Privilege[] {
+                    Privilege.All
+                }
+            );
+
+            /// <summary>
+            /// Built-in role with no administrative permissions.
+            /// </summary>
+            public const string ROLE_STUDENT = "Student";
+
+            /// <summary>
+            /// Built-in role with no administrative permissions.
+            /// </summary>
+            public static readonly Role Student = new Role(
+                ROLE_STUDENT,
+                "Built-in role with no administrative permissions.",
+                new Privilege[] {}
+            );
+        }
+
+        /// <summary>
+        /// Policies for the ASP.NET Core Authorize functionality.
+        /// </summary>
+        public static class AuthPolicy
+        {
+            /// <summary>
+            /// Requires that the user's token claim matches the userId URL parameter.
+            /// </summary>
+            public const string UserDataOwner = "UserDataOwner";
+        }
+
+        /// <summary>
+        /// There can be multiple types of users in the application-- backend users and
+        /// frontend users or students.  Backend users are consistent across all instances
+        /// where frontend users may only interact within their own instance.
+        /// </summary>
+        public class UserType
+        {
+            /// <summary>
+            /// Get the name of the user type.
+            /// </summary>
+            public string Name {get; private set;}
+
+            private UserType(string name) { Name = name; }
+
+            public override string ToString() => Name;
+
+            /// <summary>
+            /// A backend user
+            /// </summary>
+            public static readonly UserType User = new UserType("user");
+
+            /// <summary>
+            /// A frontend user
+            /// </summary>
+            /// <returns></returns>
+            public static readonly UserType Student = new UserType("student");
+        }
+    }
+}

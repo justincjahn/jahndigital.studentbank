@@ -22,8 +22,19 @@ namespace jahndigital.studentbank.server.Entities
         public string Name {get; set;}
 
         /// <summary>
+        /// Short description of the role.
+        /// </summary>
+        [MaxLength(128)]
+        public string Description {get; set;} = String.Empty;
+
+        /// <summary>
+        /// If the role is a built-in role that cannot be deleted.
+        /// </summary>
+        public bool IsBuiltIn {get; set;} = false;
+
+        /// <summary>
         /// A list of Privileges assigned to this role.
         /// </summary>
-        public ICollection<RolePrivilege> RolePrivileges {get; set;}
+        public ICollection<RolePrivilege> RolePrivileges {get; set;} = new HashSet<RolePrivilege>();
     }
 }

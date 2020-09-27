@@ -11,6 +11,7 @@ namespace jahndigital.studentbank.server.Entities
         /// <summary>
         /// The unique ID of this row.
         /// </summary>
+        [Key]
         public long Id {get; set;}
 
         /// <summary>
