@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Linq;
 
 namespace jahndigital.studentbank.server
 {
@@ -73,7 +74,67 @@ namespace jahndigital.studentbank.server
             /// <summary>
             /// Allow all actions.
             /// </summary>
-            public static readonly Privilege All = new Privilege("P_ALL", "Allow all actions.");
+            public static readonly Privilege All = new Privilege(PRIVILEGE_ALL, "Allow all actions.");
+
+            /// <summary>
+            /// Create, update, and delete users.
+            /// </summary>
+            public const string PRIVILEGE_MANAGE_USERS = "P_MANAGE_USERS";
+
+            /// <summary>
+            /// Create, update, and delete users.
+            /// </summary>
+            public static readonly Privilege ManageUsers = new Privilege(PRIVILEGE_MANAGE_USERS, "Create, update, and delete users.");
+
+            /// <summary>
+            /// Create, update, and delete students.
+            /// </summary>
+            public const string PRIVILEGE_MANAGE_STUDENTS = "P_MANAGE_STUDENTS";
+
+            /// <summary>
+            /// Create, update, and delete students.
+            /// </summary>
+            public static readonly Privilege ManageStudents = new Privilege(PRIVILEGE_MANAGE_STUDENTS, "Create, update, and delete students.");
+
+            /// <summary>
+            /// Create, update, and delete student shares.
+            /// </summary>
+            public const string PRIVILEGE_MANAGE_SHARES = "P_MANAGE_SHARES";
+
+            /// <summary>
+            /// Create, update, and delete student shares.
+            /// </summary>
+            public static readonly Privilege ManageShares = new Privilege(PRIVILEGE_MANAGE_SHARES, "Create, update, and delete student shares.");
+
+            /// <summary>
+            /// Create, update, and delete share types.
+            /// </summary>
+            public const string PRIVILEGE_MANAGE_SHARE_TYPES = "P_MANAGE_SHARE_TYPES";
+
+            /// <summary>
+            /// Create, update, and delete share types.
+            /// </summary>
+            public static readonly Privilege ManageShareTypes = new Privilege(PRIVILEGE_MANAGE_SHARE_TYPES, "Create, update, and delete share types.");
+
+            /// <summary>
+            /// Post transactions to accounts.
+            /// </summary>
+            public const string PRIVILEGE_MANAGE_TRANSACTIONS = "P_MANAGE_TRANSACTIONS";
+
+            /// <summary>
+            /// Post transactions to accounts.
+            /// </summary>
+            public static readonly Privilege ManageTransactions = new Privilege(PRIVILEGE_MANAGE_TRANSACTIONS, "Post transactions to accounts.");
+
+            /// <summary>
+            /// Create, update, and delete stocks.
+            /// </summary>
+            public const string PRIVILEGE_MANAGE_STOCKS = "P_MANAGE_STOCKS";
+
+            /// <summary>
+            /// Create, update, and delete stocks.
+            /// </summary>
+            public static readonly Privilege ManageStocks = new Privilege(PRIVILEGE_MANAGE_STOCKS, "Create, update, and delete stocks.");
         }
 
         /// <summary>
@@ -158,7 +219,7 @@ namespace jahndigital.studentbank.server
             /// <summary>
             /// Requires that the user's token claim matches the userId URL parameter.
             /// </summary>
-            public const string UserDataOwner = "UserDataOwner";
+            public const string DataOwner = "DataOwner";
         }
 
         /// <summary>
@@ -173,9 +234,25 @@ namespace jahndigital.studentbank.server
             /// </summary>
             public string Name {get; private set;}
 
-            private UserType(string name) { Name = name; }
+            /// <summary>
+            /// Backing field for <see cref="UserTypes" />.
+            /// </summary>
+            private static List<UserType> _userTypes = new List<UserType>();
+
+            /// <summary>
+            /// Gets a list of user types.
+            /// </summary>
+            public static IReadOnlyCollection<UserType> UserTypes { get => _userTypes.AsReadOnly(); }
+
+            private UserType(string name) {
+                Name = name;
+                _userTypes.Add(this);
+            }
 
             public override string ToString() => Name;
+
+            public static explicit operator UserType(string value) =>
+                UserTypes.FirstOrDefault(x => x.Name == value);
 
             /// <summary>
             /// A backend user
@@ -185,7 +262,6 @@ namespace jahndigital.studentbank.server
             /// <summary>
             /// A frontend user
             /// </summary>
-            /// <returns></returns>
             public static readonly UserType Student = new UserType("student");
         }
     }

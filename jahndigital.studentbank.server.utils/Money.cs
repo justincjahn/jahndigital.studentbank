@@ -1,21 +1,22 @@
 ﻿using System;
+using System.Globalization;
 
-namespace jahndigital.studentbank.server.Services
+namespace jahndigital.studentbank.server.utils
 {
     /// <summary>
-    /// Represents an immutable rate (APR, Dividend Rate, etc.)
+    /// Represents an immutable monetary value.
     /// </summary>
-    public class Rate
+    public class Money
     {
         /// <summary>
-        /// The precision when rouding and storing in the database.
+        /// The precision when rounding and storing in the database (should probably be 2 for us currency)
         /// </summary>
-        protected const int precision = 4;
+        protected const int precision = 2;
 
         /// <summary>
         /// Represents the current value as a decimal.
         /// </summary>
-        public decimal Value
+        public decimal Amount
         {
             get;
             private set;
@@ -24,12 +25,12 @@ namespace jahndigital.studentbank.server.Services
         /// <summary>
         /// Gets the current value as a database long.
         /// </summary>
-        public long DatabaseValue
+        public long DatabaseAmount
         {
             get
             {
                 var dPrecision = new decimal(Math.Pow(10, precision));
-                var dAmount = decimal.Round(Value, precision, MidpointRounding.AwayFromZero);
+                var dAmount = decimal.Round(Amount, precision, MidpointRounding.AwayFromZero);
                 return decimal.ToInt64(decimal.Multiply(dAmount, dPrecision));
             }
         }
@@ -39,30 +40,30 @@ namespace jahndigital.studentbank.server.Services
         /// </summary>
         /// <param name="amount">The value from the database.</param>
         /// <returns>An immutable object that represents the currency from the database.</returns>
-        public static Rate FromDatabase(long amount)
+        public static Money FromDatabase(long amount)
         {
             var dAmount = new decimal(amount / Math.Pow(10, precision));
-            return new Rate(dAmount);
+            return new Money(dAmount);
         }
 
         /// <summary>
-        /// Creates a new Rate object from the provided whole number.
+        /// Creates a new Money object from the provided whole number.
         /// </summary>
         /// <param name="amount">The whole-number value.</param>
         /// <returns>An immutable object that represents the currency from the database.</returns>
-        public static Rate FromRate(long amount)
+        public static Money FromCurrency(long amount)
         {
-            return new Rate(new decimal(amount));
+            return new Money(new decimal(amount));
         }
 
         /// <summary>
-        /// Creates a new Rate object from the provided decmial number.
+        /// Creates a new Money object from the provided decmial number.
         /// </summary>
         /// <param name="amount">The decimal value.</param>
         /// <returns>An immutable object that represents the currency from the database.</returns>
-        public static Rate FromRate(decimal amount)
+        public static Money FromCurrency(decimal amount)
         {
-            return new Rate(amount);
+            return new Money(amount);
         }
 
         /// <summary>
@@ -70,7 +71,7 @@ namespace jahndigital.studentbank.server.Services
         /// </summary>
         /// <param name="a"></param>
         /// <returns></returns>
-        public static Rate operator +(Rate a) => a;
+        public static Money operator +(Money a) => a;
 
         /// <summary>
         /// 
@@ -78,9 +79,9 @@ namespace jahndigital.studentbank.server.Services
         /// <param name="a"></param>
         /// <param name="b"></param>
         /// <returns></returns>
-        public static Rate operator +(Rate a, Rate b)
+        public static Money operator +(Money a, Money b)
         {
-            return new Rate(decimal.Add(a.Value, b.Value));
+            return new Money(decimal.Add(a.Amount, b.Amount));
         }
 
         /// <summary>
@@ -88,20 +89,9 @@ namespace jahndigital.studentbank.server.Services
         /// </summary>
         /// <param name="a"></param>
         /// <returns></returns>
-        public static Rate operator -(Rate a)
+        public static Money operator -(Money a)
         {
-            return new Rate(decimal.Negate(a.Value));
-        }
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="a"></param>
-        /// <param name="b"></param>
-        /// <returns></returns>
-        public static Rate operator -(Rate a, Rate b)
-        {
-            return new Rate(decimal.Subtract(a.Value, b.Value));
+            return new Money(decimal.Negate(a.Amount));
         }
 
         /// <summary>
@@ -110,18 +100,40 @@ namespace jahndigital.studentbank.server.Services
         /// <param name="a"></param>
         /// <param name="b"></param>
         /// <returns></returns>
-        public static Rate operator *(Rate a, Rate b)
+        public static Money operator -(Money a, Money b)
         {
-            return new Rate(decimal.Multiply(a.Value, b.Value));
+            return new Money(decimal.Subtract(a.Amount, b.Amount));
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="a"></param>
+        /// <param name="b"></param>
+        /// <returns></returns>
+        public static Money operator *(Money a, Money b)
+        {
+            return new Money(decimal.Multiply(a.Amount, b.Amount));
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="a"></param>
+        /// <param name="b"></param>
+        /// <returns></returns>
+        public static Money operator *(Money a, Rate b)
+        {
+            return new Money(decimal.Multiply(a.Amount, b.Value));
         }
 
         /// <summary>
         /// 
         /// </summary>
         /// <param name="amount"></param>
-        protected Rate(decimal amount)
+        protected Money(decimal amount)
         {
-            this.Value = amount;
+            this.Amount = amount;
         }
 
         /// <summary>
@@ -130,7 +142,7 @@ namespace jahndigital.studentbank.server.Services
         /// <returns></returns>
         public override string ToString()
         {
-            return Value.ToString("P");
+            return Amount.ToString("C", CultureInfo.CurrentCulture);
         }
     }
 }

@@ -56,6 +56,12 @@ namespace jahndigital.studentbank.server.Entities
         }
 
         /// <summary>
+        /// Foreign key for user's role.
+        /// </summary>
+        [ForeignKey("Category")]
+        public long RoleId {get; set;}
+
+        /// <summary>
         /// The user's role.
         /// </summary>
         [Required]

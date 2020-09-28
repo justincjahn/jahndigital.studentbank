@@ -6,14 +6,14 @@ using jahndigital.studentbank.server.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 
 namespace jahndigital.studentbank.server.Controllers
 {
     /// <summary>
     /// Handle user authentication and displaying user information.
     /// </summary>
-    [Authorize(Roles = Constants.Role.ROLE_SUPERUSER + "," +Constants.Role.ROLE_STUDENT), ApiController, Route("[controller]")]
+    [ApiController, Route("[controller]"), Authorize(Roles =
+        Constants.Role.ROLE_SUPERUSER + "," + Constants.Role.ROLE_STUDENT)]
     public class StudentsController : ControllerBase
     {
         private IStudentService _studentService;
@@ -54,12 +54,11 @@ namespace jahndigital.studentbank.server.Controllers
 
             setTokenCookie(response.RefreshToken);
 
-
             return Ok(response);
         }
 
         /// <summary>
-        /// Revoke a JWT
+        /// Revoke a JWT token.
         /// </summary>
         /// <param name="model"></param>
         [HttpPost("revoke-token")]
@@ -85,7 +84,8 @@ namespace jahndigital.studentbank.server.Controllers
         /// </summary>
         /// <param name="studentId">The ID number of the user.</param>
         /// <param name="context">Database context.</param>
-        [HttpGet("{studentId}"), Authorize(Policy = Constants.AuthPolicy.UserDataOwner)]
+        [HttpGet("{studentId}"), Authorize(Policy =
+            Constants.AuthPolicy.DataOwner + "<" + Constants.Privilege.PRIVILEGE_MANAGE_STUDENTS + ">")]
         public ActionResult<Student> GetById(int studentId, [FromServices] AppDbContext context)
         {
             var student = context.Students.SingleOrDefault(x => x.Id == studentId);
@@ -102,7 +102,7 @@ namespace jahndigital.studentbank.server.Controllers
         /// </summary>
         /// <param name="studentId">The ID number of the user.</param>
         /// <param name="context"></param>
-        [HttpGet("{studentId}/refresh-tokens"), Authorize(Policy = Constants.AuthPolicy.UserDataOwner)]
+        [HttpGet("{studentId}/refresh-tokens"), Authorize(Policy = Constants.AuthPolicy.DataOwner)]
         public ActionResult<RefreshToken> GetRefreshTokens(int studentId, [FromServices] AppDbContext context)
         {
             var student = context.Users.SingleOrDefault(x => x.Id == studentId);

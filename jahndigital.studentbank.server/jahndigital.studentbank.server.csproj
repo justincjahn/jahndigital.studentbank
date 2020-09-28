@@ -27,6 +27,9 @@
     <None Remove="db.sqlite3-wal" />
     <None Remove="db.sqlite3-wal" />
   </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\jahndigital.studentbank.server.utils\jahndigital.studentbank.server.utils.csproj" />
+  </ItemGroup>
   <PropertyGroup>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <NoWarn>$(NoWarn);1591</NoWarn>

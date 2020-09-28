@@ -12,7 +12,7 @@ namespace jahndigital.studentbank.server.Controllers
     [ApiController]
     public class HomeController : ControllerBase
     {
-        [HttpGet("{userId}"), Authorize(Policy = Constants.AuthPolicy.UserDataOwner)]
+        [HttpGet("{userId}"), Authorize(Policy = Constants.AuthPolicy.DataOwner)]
         public string Get()
         {
             return "Hello, World";

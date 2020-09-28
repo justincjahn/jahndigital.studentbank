@@ -5,6 +5,8 @@ VisualStudioVersion = 15.0.26124.0
 MinimumVisualStudioVersion = 15.0.26124.0
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "jahndigital.studentbank.server", "jahndigital.studentbank.server\jahndigital.studentbank.server.csproj", "{50D3FA89-CB22-4179-8AD2-041A96582A48}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "jahndigital.studentbank.server.utils", "jahndigital.studentbank.server.utils\jahndigital.studentbank.server.utils.csproj", "{457DE895-433B-48B8-B7D6-5A0603B00A9E}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -30,5 +32,17 @@ Global
 		{50D3FA89-CB22-4179-8AD2-041A96582A48}.Release|x64.Build.0 = Release|Any CPU
 		{50D3FA89-CB22-4179-8AD2-041A96582A48}.Release|x86.ActiveCfg = Release|Any CPU
 		{50D3FA89-CB22-4179-8AD2-041A96582A48}.Release|x86.Build.0 = Release|Any CPU
+		{457DE895-433B-48B8-B7D6-5A0603B00A9E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{457DE895-433B-48B8-B7D6-5A0603B00A9E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{457DE895-433B-48B8-B7D6-5A0603B00A9E}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{457DE895-433B-48B8-B7D6-5A0603B00A9E}.Debug|x64.Build.0 = Debug|Any CPU
+		{457DE895-433B-48B8-B7D6-5A0603B00A9E}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{457DE895-433B-48B8-B7D6-5A0603B00A9E}.Debug|x86.Build.0 = Debug|Any CPU
+		{457DE895-433B-48B8-B7D6-5A0603B00A9E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{457DE895-433B-48B8-B7D6-5A0603B00A9E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{457DE895-433B-48B8-B7D6-5A0603B00A9E}.Release|x64.ActiveCfg = Release|Any CPU
+		{457DE895-433B-48B8-B7D6-5A0603B00A9E}.Release|x64.Build.0 = Release|Any CPU
+		{457DE895-433B-48B8-B7D6-5A0603B00A9E}.Release|x86.ActiveCfg = Release|Any CPU
+		{457DE895-433B-48B8-B7D6-5A0603B00A9E}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal

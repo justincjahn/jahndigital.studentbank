@@ -70,6 +70,9 @@ namespace jahndigital.studentbank.server
                 };
             });
 
+            // Dynamically register policies for built-in permissions.
+            services.AddSingleton<IAuthorizationPolicyProvider, AggregatePolicyProvider>();
+
             // Add an authz handler that validates the authenticated user has a permission.
             services.AddScoped<IAuthorizationHandler, PermissionAuthorizationHandler>();
 
@@ -80,14 +83,7 @@ namespace jahndigital.studentbank.server
                 options.FallbackPolicy = new AuthorizationPolicyBuilder()
                     .RequireAuthenticatedUser()
                     .Build();
-                
-                options.AddPolicy(Constants.AuthPolicy.UserDataOwner, config => {
-                    config.AddRequirements(new DataOwnerRequirement());
-                });
             });
-
-            // Dynamically register policies for built-in permissions.
-            services.AddSingleton<IAuthorizationPolicyProvider, PermissionPolicyProvider>();
 
             services.AddScoped<IUserService, UserService>();
             services.AddScoped<IStudentService, StudentService>();

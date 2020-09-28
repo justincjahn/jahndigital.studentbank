@@ -1,5 +1,6 @@
 using System;
 using System.Linq;
+using System.Threading.Tasks;
 using jahndigital.studentbank.server.Entities;
 using jahndigital.studentbank.server.Models;
 using jahndigital.studentbank.server.Services;
@@ -18,10 +19,7 @@ namespace jahndigital.studentbank.server.Controllers
     {
         private IUserService _userService;
 
-        public UsersController(IUserService userService)
-        {
-            _userService = userService;
-        }
+        public UsersController(IUserService userService) => _userService = userService;
 
         /// <summary>
         /// Authenticate a user via email and password and return a JWT token.
@@ -88,8 +86,8 @@ namespace jahndigital.studentbank.server.Controllers
         /// </summary>
         /// <param name="userId">The ID number of the user.</param>
         /// <param name="context">Database context.</param>
-        [HttpGet("{userId}")]
-        public ActionResult<User> GetById(int userId, [FromServices] AppDbContext context)
+        [HttpGet("{userId}"), Authorize(Policy = Constants.AuthPolicy.DataOwner + "<" + Constants.Privilege.PRIVILEGE_MANAGE_USERS + ">")]
+        public ActionResult<UserDTO> Get(int userId, [FromServices] AppDbContext context)
         {
             var user = context.Users
                 .Include(x => x.Role)
@@ -99,7 +97,7 @@ namespace jahndigital.studentbank.server.Controllers
                 return NotFound(new { message = "User not found." });
             }
 
-            return user;
+            return UserDTO.FromEntity(user);
         }
 
         /// <summary>
@@ -107,12 +105,80 @@ namespace jahndigital.studentbank.server.Controllers
         /// </summary>
         /// <param name="userId">The ID number of the user.</param>
         /// <param name="context"></param>
-        [HttpGet("{userId}/refresh-tokens"), Authorize(Policy = Constants.AuthPolicy.UserDataOwner)]
+        [HttpGet("{userId}/refresh-tokens"), Authorize(Policy = Constants.AuthPolicy.DataOwner)]
         public ActionResult<RefreshToken> GetRefreshTokens(int userId, [FromServices] AppDbContext context)
         {
             var user = context.Users.SingleOrDefault(x => x.Id == userId);
             if (user == null) return NotFound(new { message = "User not found."});
             return Ok(user.RefreshTokens);
+        }
+
+        /// <summary>
+        /// Create a new user.
+        /// </summary>
+        /// <param name="model"></param>
+        /// <param name="context"></param>
+        /// <returns></returns>
+        [HttpPost("")]
+        public async Task<ActionResult<UserDTO>> NewUser([FromBody] UserDTO model, [FromServices] AppDbContext context)
+        {
+            var user = UserDTO.ToEntity(model);
+
+            // Make sure there's no user with the same email.
+            var dbUser = await context.Users.SingleOrDefaultAsync(x => x.Email == user.Email);
+            if (dbUser != null) {
+                return this.BadRequest(new { message = "User already exists with the same email."});
+            }
+
+            var role = await context.Roles.SingleOrDefaultAsync(x => x.Id == model.RoleId);
+            if (role == null) {
+                return this.BadRequest(new { message = "Role does not exist."});
+            }
+
+            context.Add(user);
+            await context.SaveChangesAsync();
+
+            return Ok(UserDTO.FromEntity(user));
+        }
+
+        /// <summary>
+        /// Update a user.
+        /// </summary>
+        /// <param name="userId"></param>
+        /// <param name="dtoUser"></param>
+        /// <param name="context"></param>
+        /// <returns></returns>
+        [HttpPut("{userId}"), Authorize(Roles = Constants.Role.ROLE_SUPERUSER, Policy = Constants.AuthPolicy.DataOwner)]
+        public async Task<ActionResult<UserDTO>> UpdateUser(long userId, [FromBody] UserDTO dtoUser, [FromServices] AppDbContext context)
+        {
+            var dbUser = await context.Users.SingleOrDefaultAsync(x => x.Id == userId);
+            if (dbUser == null) {
+                return NotFound(new { message = "User does not exist."});
+            }
+
+            Role role = null;
+            if (dtoUser.RoleId != null) {
+                role = await context.Roles.SingleOrDefaultAsync(x => x.Id == dtoUser.RoleId.Value);
+                if (role == null) {
+                    return BadRequest(new { message = "Role does not exist."});
+                }
+            }
+
+            if (role != null && dbUser.RoleId != role.Id) {
+                dbUser.Role = role;
+            }
+
+            if (!string.IsNullOrEmpty(dtoUser.GetPassword())) {
+                dbUser.Password = dtoUser.GetPassword();
+            }
+
+            if (!string.IsNullOrEmpty(dtoUser.Email)) {
+                dbUser.Email = dtoUser.Email;
+            }
+            
+            context.Update(dbUser);
+            await context.SaveChangesAsync();
+            return Ok(UserDTO.FromEntity(dbUser));
         }
 
         /// <summary>

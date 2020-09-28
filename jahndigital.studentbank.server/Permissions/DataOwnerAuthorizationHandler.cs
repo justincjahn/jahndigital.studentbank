@@ -2,9 +2,11 @@ using System;
 using System.Linq;
 using System.Security.Claims;
 using System.Threading.Tasks;
+using jahndigital.studentbank.server.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.Filters;
+using static jahndigital.studentbank.server.Constants;
 
 namespace jahndigital.studentbank.server.Permissions
 {
@@ -14,45 +16,82 @@ namespace jahndigital.studentbank.server.Permissions
     internal class DataOwnerAuthorizationHandler : AuthorizationHandler<DataOwnerRequirement>
     {
         private readonly IHttpContextAccessor _httpContext;
+        private readonly IRoleService _roleService;
 
-        public DataOwnerAuthorizationHandler(IHttpContextAccessor context) => _httpContext = context;
+        public DataOwnerAuthorizationHandler(IHttpContextAccessor context, IRoleService roleService) {
+            _httpContext = context;
+            _roleService = roleService;
+        }
 
-        protected override Task HandleRequirementAsync(AuthorizationHandlerContext context, DataOwnerRequirement requirement)
+        protected override async Task HandleRequirementAsync(AuthorizationHandlerContext context, DataOwnerRequirement requirement)
         {
-            bool isStudent = false;
-            string userId = String.Empty;
-
-            if (_httpContext.HttpContext.Request.RouteValues.ContainsKey("userId")) {
-                userId = _httpContext.HttpContext.Request.RouteValues["userId"].ToString();
+            if (IsDataOwner(context)) {
+                context.Succeed(requirement);
+                return;
             }
 
-            if (_httpContext.HttpContext.Request.RouteValues.ContainsKey("studentId")) {
-                userId = _httpContext.HttpContext.Request.RouteValues["studentId"].ToString();
-                isStudent = true;
+            var hasPermission = await HasPermission(context, requirement);
+            if (hasPermission) context.Succeed(requirement);
+        }
+
+        /// <summary>
+        /// Determine if the current user is the owner of the resource.
+        /// </summary>
+        /// <remarks>
+        /// By convention the a request param called 'userId' should be used for user resources
+        /// and 'studentId' should be used for student resources.
+        /// </remarks>
+        /// <param name="context"></param>
+        /// <returns>true if the current user/student is a data owner.</returns>
+        private bool IsDataOwner(AuthorizationHandlerContext context)
+        {
+            var route = _httpContext.HttpContext.Request.RouteValues;
+            
+            string userId = string.Empty;
+            UserType userType = null;
+
+            if (route.ContainsKey("userId")) {
+                userType = UserType.User;
+                userId = route["userId"].ToString();
             }
 
-            if (string.IsNullOrWhiteSpace(userId)) {
-                return Task.CompletedTask;
+            if (route.ContainsKey("studentId")) {
+                userType = UserType.Student;
+                userId = route["studentId"].ToString();
             }
 
-            var claim = context.User.Claims.FirstOrDefault(x => x.Type == ClaimTypes.NameIdentifier);
-            if (claim == null) return Task.CompletedTask;
+            if (userType == null) return false;
+            if (string.IsNullOrWhiteSpace(userId)) return false;
 
-            var userType = context.User.Claims.FirstOrDefault(x => x.Type == Constants.Auth.CLAIM_USER_TYPE);
-            if  (userType == null) return Task.CompletedTask;
+            var userIdClaim = context.User.Claims.FirstOrDefault(x => x.Type == ClaimTypes.NameIdentifier);
+            if (userIdClaim == null) return false;
 
-            // If the user is accessing the wrong type of resource.
-            if (isStudent && userType.Value != Constants.UserType.Student.Name) return Task.CompletedTask;
+            var userTypeClaim = context.User.Claims.FirstOrDefault(x => x.Type == Constants.Auth.CLAIM_USER_TYPE);
+            if (userTypeClaim == null) return false;
 
             int routeId, claimId;
-            if (!int.TryParse(userId, out routeId)) return Task.CompletedTask;
-            if (!int.TryParse(claim.Value, out claimId)) return Task.CompletedTask;
+            if (!int.TryParse(userId, out routeId)) return false;
+            if (!int.TryParse(userIdClaim.Value, out claimId)) return false;
 
-            if (routeId == claimId) {
-                context.Succeed(requirement);
-            }
+            // Assert the claim type matches the user type from the URL convention
+            if (userType.Name != userTypeClaim.Value) return false;
 
-            return Task.CompletedTask;
+            if (routeId == claimId) return true;
+            return false;
+        }
+    
+        /// <summary>
+        /// Determine if the current user has permissions to access the resource.
+        /// </summary>
+        /// <param name="context"></param>
+        /// <param name="requirement"></param>
+        /// <returns></returns>
+        private async Task<bool> HasPermission(AuthorizationHandlerContext context, DataOwnerRequirement requirement)
+        {
+            if (requirement.Permissions.Count() < 1) return false;
+            var role = context.User.Claims.SingleOrDefault(x => x.Type == ClaimTypes.Role);
+            if (role == null) return false;
+            return await _roleService.HasPermissionAsync(role.Value, requirement.Permissions);
         }
     }
 }

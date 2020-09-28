@@ -1,8 +1,8 @@
 using System;
 using System.ComponentModel.DataAnnotations;
 using System.Collections.Generic;
-using jahndigital.studentbank.server.Services;
 using System.ComponentModel.DataAnnotations.Schema;
+using jahndigital.studentbank.server.utils;
 
 namespace jahndigital.studentbank.server.Entities
 {
