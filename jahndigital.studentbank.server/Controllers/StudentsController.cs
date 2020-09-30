@@ -1,6 +1,7 @@
 using System;
 using System.Linq;
-using jahndigital.studentbank.server.Entities;
+using jahndigital.studentbank.dal.Contexts;
+using jahndigital.studentbank.dal.Entities;
 using jahndigital.studentbank.server.Models;
 using jahndigital.studentbank.server.Services;
 using Microsoft.AspNetCore.Authorization;

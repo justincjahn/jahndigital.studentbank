@@ -1,10 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using jahndigital.studentbank.server.Entities;
-using jahndigital.studentbank.server.utils;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
+
+using jahndigital.studentbank.utils;
+using jahndigital.studentbank.dal.Entities;
+using jahndigital.studentbank.dal.Contexts;
 
 namespace jahndigital.studentbank.server.Services
 {

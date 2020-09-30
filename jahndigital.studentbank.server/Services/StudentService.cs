@@ -5,7 +5,7 @@ using System.Linq;
 using System.Security.Claims;
 using System.Security.Cryptography;
 using System.Text;
-using jahndigital.studentbank.server.Entities;
+using jahndigital.studentbank.dal.Contexts;
 using jahndigital.studentbank.server.Models;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;

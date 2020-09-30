@@ -1,6 +1,5 @@
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using jahndigital.studentbank.server.Entities;
 
 namespace jahndigital.studentbank.server.Services
 {

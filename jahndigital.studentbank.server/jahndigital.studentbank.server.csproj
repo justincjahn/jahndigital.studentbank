@@ -28,7 +28,8 @@
     <None Remove="db.sqlite3-wal" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\jahndigital.studentbank.server.utils\jahndigital.studentbank.server.utils.csproj" />
+    <ProjectReference Include="..\jahndigital.studentbank.utils\jahndigital.studentbank.utils.csproj" />
+    <ProjectReference Include="..\jahndigital.studentbank.dal\jahndigital.studentbank.dal.csproj" />
   </ItemGroup>
   <PropertyGroup>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>

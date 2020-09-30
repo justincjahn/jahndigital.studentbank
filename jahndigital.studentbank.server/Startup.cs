@@ -20,6 +20,8 @@ using System.Text;
 using Microsoft.OpenApi.Models;
 using Microsoft.AspNetCore.Authorization;
 using jahndigital.studentbank.server.Permissions;
+using jahndigital.studentbank.dal.Contexts;
+using System.Collections;
 
 namespace jahndigital.studentbank.server
 {
@@ -44,7 +46,7 @@ namespace jahndigital.studentbank.server
 
             var tokenKey = Encoding.ASCII.GetBytes(appConfig.Get<AppConfig>().Secret);
 
-            services.AddDbContext<AppDbContext>(options => {
+            services.AddDbContext<AppDbContext, SqliteDbContext>(options => {
                 options.UseSqlite(Configuration.GetConnectionString("Default"));
             });
 

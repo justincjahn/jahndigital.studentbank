@@ -1,4 +1,4 @@
-using jahndigital.studentbank.server.Entities;
+using jahndigital.studentbank.dal.Entities;
 
 namespace jahndigital.studentbank.server.Models
 {

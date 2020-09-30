@@ -4,7 +4,7 @@ using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Security.Cryptography;
 using System.Text;
-using jahndigital.studentbank.server.Entities;
+using jahndigital.studentbank.dal.Entities;
 using Microsoft.IdentityModel.Tokens;
 
 namespace jahndigital.studentbank.server.Services
