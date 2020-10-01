@@ -10,7 +10,7 @@ namespace jahndigital.studentbank.server.Services
         /// <param name="model"></param>
         /// <param name="ipAddress"></param>
         /// <returns></returns>
-         AuthenticateResponse Authenticate(AuthenticateRequest model, string ipAddress);
+         AuthenticateResponse? Authenticate(AuthenticateRequest model, string ipAddress);
 
         /// <summary>
         /// Refresh a JWT token.
@@ -18,7 +18,7 @@ namespace jahndigital.studentbank.server.Services
         /// <param name="token"></param>
         /// <param name="ipAddress"></param>
         /// <returns></returns>
-         AuthenticateResponse RefreshToken(string token, string ipAddress);
+         AuthenticateResponse? RefreshToken(string token, string ipAddress);
 
         /// <summary>
         /// 

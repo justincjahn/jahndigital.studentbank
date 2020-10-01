@@ -10,7 +10,7 @@ namespace jahndigital.studentbank.server.Permissions
         /// <summary>
         /// 
         /// </summary>
-        public IEnumerable<string> Permissions { get; private set;}
+        public IEnumerable<string> Permissions { get; private set;} = new string[] {};
 
         public DataOwnerRequirement() {}
 

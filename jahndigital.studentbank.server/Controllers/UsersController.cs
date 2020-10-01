@@ -157,7 +157,7 @@ namespace jahndigital.studentbank.server.Controllers
                 return NotFound(new { message = "User does not exist."});
             }
 
-            Role role = null;
+            Role? role = null;
             if (dtoUser.RoleId != null) {
                 role = await context.Roles.SingleOrDefaultAsync(x => x.Id == dtoUser.RoleId.Value);
                 if (role == null) {

@@ -24,7 +24,7 @@ namespace jahndigital.studentbank.server.Services
         }
 
         /// <inheritdoc />
-        public AuthenticateResponse Authenticate(AuthenticateRequest model, string ipAddress)
+        public AuthenticateResponse? Authenticate(AuthenticateRequest model, string ipAddress)
         {
             var user = _context.Users.Include(x => x.Role).SingleOrDefault(x => x.Email == model.Username);
             if (user == null) return null;
@@ -55,7 +55,7 @@ namespace jahndigital.studentbank.server.Services
         }
 
         /// <inheritdoc />
-        public AuthenticateResponse RefreshToken(string token, string ipAddress)
+        public AuthenticateResponse? RefreshToken(string token, string ipAddress)
         {
             var user = _context.Users.Include(x => x.Role).SingleOrDefault(u => u.RefreshTokens.Any(t => t.Token == token));
             if (user == null) return null;

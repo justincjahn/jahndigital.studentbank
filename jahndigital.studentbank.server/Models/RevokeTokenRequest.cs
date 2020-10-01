@@ -8,6 +8,6 @@ namespace jahndigital.studentbank.server.Models
         /// <summary>
         /// 
         /// </summary>
-        public string Token {get;set;}
+        public string Token {get;set;} = string.Empty;
     }
 }

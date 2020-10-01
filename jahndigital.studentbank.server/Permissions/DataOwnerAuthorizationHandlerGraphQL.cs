@@ -14,24 +14,24 @@ namespace jahndigital.studentbank.server.Permissions
     /// <summary>
     /// Validates that the user id contained in the request URL matches the authenticated user.
     /// </summary>
-    internal class DataOwnerAuthorizationHandler : AuthorizationHandler<DataOwnerRequirement>
+    internal class DataOwnerAuthorizationHandlerGraphQL : AuthorizationHandler<DataOwnerRequirement, IResolverContext>
     {
         private readonly IHttpContextAccessor _httpContext;
         private readonly IRoleService _roleService;
 
-        public DataOwnerAuthorizationHandler(IHttpContextAccessor context, IRoleService roleService) {
+        public DataOwnerAuthorizationHandlerGraphQL(IHttpContextAccessor context, IRoleService roleService) {
             _httpContext = context;
             _roleService = roleService;
         }
 
-        protected override async Task HandleRequirementAsync(AuthorizationHandlerContext context, DataOwnerRequirement requirement)
+        protected override async Task HandleRequirementAsync(AuthorizationHandlerContext context, DataOwnerRequirement requirement, IResolverContext resource)
         {
-            if (IsDataOwner(context)) {
+            if (IsDataOwner(context, resource)) {
                 context.Succeed(requirement);
                 return;
             }
 
-            var hasPermission = await HasPermission(context, requirement);
+            var hasPermission = await HasPermission(context, requirement, resource);
             if (hasPermission) context.Succeed(requirement);
         }
 
@@ -43,22 +43,25 @@ namespace jahndigital.studentbank.server.Permissions
         /// and 'studentId' should be used for student resources.
         /// </remarks>
         /// <param name="context"></param>
+        /// <param name="resolverContext"></param>
         /// <returns>true if the current user/student is a data owner.</returns>
-        private bool IsDataOwner(AuthorizationHandlerContext context)
+        private bool IsDataOwner(AuthorizationHandlerContext context, IResolverContext resolverContext)
         {
-            var route = _httpContext.HttpContext.Request.RouteValues;
+            var route = resolverContext.FieldSelection.Arguments;
             
             string userId = string.Empty;
             UserType? userType = null;
 
-            if (route.ContainsKey("userId")) {
+            HotChocolate.Language.ArgumentNode? arg = route.FirstOrDefault(x => x.Name.Value == "userId");
+            if (arg != null) {
                 userType = UserType.User;
-                userId = route["userId"].ToString()!;
+                userId = arg.Value.Value.ToString()!;
             }
 
-            if (route.ContainsKey("studentId")) {
+            arg = route.FirstOrDefault(x => x.Name.Value == "studentId");
+            if (arg != null) {
                 userType = UserType.Student;
-                userId = route["studentId"].ToString()!;
+                userId = arg.Value.Value.ToString()!;
             }
 
             if (userType == null) return false;
@@ -86,8 +89,9 @@ namespace jahndigital.studentbank.server.Permissions
         /// </summary>
         /// <param name="context"></param>
         /// <param name="requirement"></param>
+        /// <param name="resolverContext"></param>
         /// <returns></returns>
-        private async Task<bool> HasPermission(AuthorizationHandlerContext context, DataOwnerRequirement requirement)
+        private async Task<bool> HasPermission(AuthorizationHandlerContext context, DataOwnerRequirement requirement, IResolverContext resolverContext)
         {
             if (requirement.Permissions.Count() < 1) return false;
             var role = context.User.Claims.SingleOrDefault(x => x.Type == ClaimTypes.Role);

@@ -11,12 +11,12 @@ namespace jahndigital.studentbank.server.Models
         /// 
         /// </summary>
         [Required]
-        public string Username {get;set;}
+        public string Username {get; set;} = string.Empty;
 
         /// <summary>
         /// 
         /// </summary>
         [Required]
-        public string Password {get;set;}
+        public string Password {get; set;} = string.Empty;
     }
 }

@@ -12,12 +12,12 @@ namespace jahndigital.studentbank.server.Models
         /// <summary>
         /// The user's email address.
         /// </summary>
-        public string Email {get; set;}
+        public string Email {get; set;} = string.Empty;
 
         /// <summary>
         /// The user's password.
         /// </summary>
-        public string Password {private get; set;}
+        public string Password {private get; set;} = string.Empty;
 
         /// <summary>
         /// Get the user's password.
@@ -54,7 +54,7 @@ namespace jahndigital.studentbank.server.Models
         {
             var entity = new User {
                 Email = user.Email,
-                RoleId = user.RoleId.Value
+                RoleId = user.RoleId!.Value
             };
             
             if (user.Id != null) {

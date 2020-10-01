@@ -22,6 +22,9 @@ using Microsoft.AspNetCore.Authorization;
 using jahndigital.studentbank.server.Permissions;
 using jahndigital.studentbank.dal.Contexts;
 using System.Collections;
+using HotChocolate;
+using HotChocolate.Execution.Configuration;
+using HotChocolate.AspNetCore;
 
 namespace jahndigital.studentbank.server
 {
@@ -54,6 +57,19 @@ namespace jahndigital.studentbank.server
 
             services.AddScoped<IDbInitializerService, DbInitializerService>();
 
+            services.AddGraphQL(
+                SchemaBuilder.New()
+                    .AddQueryType(x => x.Name("Query"))
+                        .AddType<GraphQL.Queries.UserQueries>()
+                        .AddType<GraphQL.Queries.StudentQueries>()
+                    .AddMutationType(x => x.Name("Mutation"))
+                        .AddType<GraphQL.Mutations.UserMutations>()
+                        .AddType<GraphQL.Mutations.StudentMutations>()
+                    .AddAuthorizeDirectiveType()
+                    .Create(),
+                new QueryExecutionOptions { ForceSerialExecution = true }
+            );
+
             services.AddControllers();
 
             services.AddAuthentication(options => {
@@ -79,17 +95,16 @@ namespace jahndigital.studentbank.server
             services.AddScoped<IAuthorizationHandler, PermissionAuthorizationHandler>();
 
             // Add an authz handler that ensures users can only access their own data.
-            services.AddScoped<IAuthorizationHandler, DataOwnerAuthorizationHandler>();
+            services
+                .AddScoped<IAuthorizationHandler, DataOwnerAuthorizationHandler>()
+                .AddScoped<IAuthorizationHandler, DataOwnerAuthorizationHandlerGraphQL>();
 
-            services.AddAuthorization(options => {
-                options.FallbackPolicy = new AuthorizationPolicyBuilder()
-                    .RequireAuthenticatedUser()
-                    .Build();
-            });
+            services.AddAuthorization();
 
-            services.AddScoped<IUserService, UserService>();
-            services.AddScoped<IStudentService, StudentService>();
-            services.AddScoped<IRoleService, RoleService>();
+            services
+                .AddScoped<IUserService, UserService>()
+                .AddScoped<IStudentService, StudentService>()
+                .AddScoped<IRoleService, RoleService>();
 
             #if DEBUG
                 services.AddSwaggerGen(options => {
@@ -128,7 +143,7 @@ namespace jahndigital.studentbank.server
                     options.AddSecurityRequirement(securityRequirements);
 
                     var fileName = $"{Assembly.GetExecutingAssembly().GetName().Name}.xml";
-                    var filePath = Path.Combine(AppContext.BaseDirectory, fileName);
+                    var filePath = System.IO.Path.Combine(AppContext.BaseDirectory, fileName);
                     options.IncludeXmlComments(filePath);
                 });
             #endif
@@ -140,6 +155,11 @@ namespace jahndigital.studentbank.server
             if (env.IsDevelopment()) {
                 app.UseDeveloperExceptionPage();
             }
+
+            app.UseCors(o => o
+                .AllowAnyHeader()
+                .AllowAnyMethod()
+                .AllowAnyOrigin());
 
             app.UseHttpsRedirection();
 
@@ -156,6 +176,8 @@ namespace jahndigital.studentbank.server
             #endif
 
             app.UseAuthorization();
+
+            app.UseGraphQL("/graphql");
 
             app.UseEndpoints(endpoints => endpoints.MapControllers());
 

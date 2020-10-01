@@ -18,7 +18,7 @@ namespace jahndigital.studentbank.server.Services
         /// <summary>
         /// Set during seeding if needed.
         /// </summary>
-        private ShareType _shareType;
+        private ShareType? _shareType;
 
         /// <summary>
         /// 
