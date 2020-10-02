@@ -27,7 +27,9 @@ namespace jahndigital.studentbank.server.Permissions
         /// <returns></returns>
         protected override async Task HandleRequirementAsync(AuthorizationHandlerContext context, PermissionRequirement requirement)
         {
-            var role = context.User.Claims.SingleOrDefault(x => x.Type == ClaimTypes.Role);
+            var role = context.User.Claims.FirstOrDefault(x => x.Type == ClaimTypes.Role);
+            if (role == null) return;
+
             var auth = await _roleService.HasPermissionAsync(role.Value, requirement.Permission);
             if (auth) context.Succeed(requirement);
         }

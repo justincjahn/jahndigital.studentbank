@@ -1,6 +1,7 @@
 using System;
 using System.ComponentModel.DataAnnotations;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace jahndigital.studentbank.dal.Entities
 {
@@ -19,6 +20,12 @@ namespace jahndigital.studentbank.dal.Entities
         /// </summary>
         [MaxLength(32), Required]
         public string Name {get; set;}
+
+        /// <summary>
+        /// Get the Instance ID.
+        /// </summary>
+        [ForeignKey("Instance")]
+        public long InstanceId {get; set;}
 
         /// <summary>
         /// The instance of the group.

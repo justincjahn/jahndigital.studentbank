@@ -16,10 +16,22 @@ namespace jahndigital.studentbank.dal.Entities
         public long Id { get; set; }
 
         /// <summary>
+        /// Get the ShareType ID
+        /// </summary>
+        [ForeignKey("ShareType")]
+        public long ShareTypeId {get; set;}
+
+        /// <summary>
         /// The Share Type information for this product.
         /// </summary>
         [Required]
         public ShareType ShareType { get; set; }
+
+        /// <summary>
+        /// Get the Student ID
+        /// </summary>
+        [ForeignKey("Student")]
+        public long StudentId {get;set;}
 
         /// <summary>
         /// The owner of the share.

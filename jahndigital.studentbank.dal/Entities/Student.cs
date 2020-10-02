@@ -1,9 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
-using System.ComponentModel.DataAnnotations.Schema;
 using System.Text.Json.Serialization;
-using HotChocolate;
 using Microsoft.AspNetCore.Identity;
 
 namespace jahndigital.studentbank.dal.Entities
@@ -51,7 +49,7 @@ namespace jahndigital.studentbank.dal.Entities
         /// <summary>
         /// The encrypted credentials of the user.
         /// </summary>
-        [MaxLength(84), Required, GraphQLIgnore]
+        [MaxLength(84), Required]
         public string Password
         {
             get => _password;
@@ -68,7 +66,6 @@ namespace jahndigital.studentbank.dal.Entities
         /// </summary>
         /// <param name="password"></param>
         /// <returns></returns>
-        [GraphQLIgnore]
         public PasswordVerificationResult ValidatePassword(string password)
         {
             var passwordHasher = new PasswordHasher<Student>();
@@ -80,6 +77,13 @@ namespace jahndigital.studentbank.dal.Entities
         /// </summary>
         [Required]
         public Group Group { get; set; }
+
+        /// <summary>
+        /// Student's shares.
+        /// </summary>
+        /// <typeparam name="Share"></typeparam>
+        /// <returns></returns>
+        public ICollection<Share> Shares {get; set;} = new HashSet<Share>();
 
         /// <summary>
         /// A list of JWT refresh tokens for the user.

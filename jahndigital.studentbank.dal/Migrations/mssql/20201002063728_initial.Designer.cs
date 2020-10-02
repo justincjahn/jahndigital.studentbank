@@ -7,10 +7,10 @@ using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using jahndigital.studentbank.dal.Contexts;
 
-namespace jahndigital.studentbank.dal.Migrations.sqlite
+namespace jahndigital.studentbank.dal.Migrations.mssql
 {
-    [DbContext(typeof(SqliteDbContext))]
-    [Migration("20200930072128_initial")]
+    [DbContext(typeof(AppDbContext))]
+    [Migration("20201002063728_initial")]
     partial class initial
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -193,7 +193,7 @@ namespace jahndigital.studentbank.dal.Migrations.sqlite
                     b.Property<long>("AvailableShares")
                         .HasColumnType("bigint");
 
-                    b.Property<long?>("InstanceId")
+                    b.Property<long>("InstanceId")
                         .HasColumnType("bigint");
 
                     b.Property<string>("Name")
@@ -366,7 +366,8 @@ namespace jahndigital.studentbank.dal.Migrations.sqlite
 
                     b.Property<string>("TransactionType")
                         .IsRequired()
-                        .HasColumnType("nvarchar(1)");
+                        .HasColumnType("nvarchar(1)")
+                        .HasMaxLength(1);
 
                     b.HasKey("Id");
 
@@ -445,7 +446,9 @@ namespace jahndigital.studentbank.dal.Migrations.sqlite
                 {
                     b.HasOne("jahndigital.studentbank.dal.Entities.Instance", "Instance")
                         .WithMany("Stocks")
-                        .HasForeignKey("InstanceId");
+                        .HasForeignKey("InstanceId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
                 });
 
             modelBuilder.Entity("jahndigital.studentbank.dal.Entities.StockHistory", b =>

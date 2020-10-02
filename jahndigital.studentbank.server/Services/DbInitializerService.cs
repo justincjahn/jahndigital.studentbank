@@ -294,7 +294,8 @@ namespace jahndigital.studentbank.server.Services
                         EffectiveDate = DateTime.UtcNow,
                         Amount = oAmount,
                         TargetShare = share,
-                        NewBalance = newBalance
+                        NewBalance = newBalance,
+                        TransactionType = oAmount.Amount > 0.00m ? "D" : "W"
                     };
 
                     Console.WriteLine($"Share {share.Id}: ${amount} ({oAmount.Amount})");

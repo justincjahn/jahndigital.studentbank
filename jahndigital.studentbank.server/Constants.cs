@@ -135,6 +135,26 @@ namespace jahndigital.studentbank.server
             /// Create, update, and delete stocks.
             /// </summary>
             public static readonly Privilege ManageStocks = new Privilege(PRIVILEGE_MANAGE_STOCKS, "Create, update, and delete stocks.");
+
+            /// <summary>
+            /// Create, update, and delete groups.
+            /// </summary>
+            public const string PRIVILEGE_MANAGE_GROUPS = "P_MANAGE_GROUPS";
+
+            /// <summary>
+            /// Create, update, and delete groups.
+            /// </summary>
+            public static readonly Privilege ManageGroups = new Privilege(PRIVILEGE_MANAGE_GROUPS, "Create, update, and delete groups.");
+
+            /// <summary>
+            /// Create, update, and delete groups.
+            /// </summary>
+            public const string PRIVILEGE_MANAGE_INSTANCES = "P_MANAGE_INSTANCES";
+
+            /// <summary>
+            /// Create, update, and delete groups.
+            /// </summary>
+            public static readonly Privilege ManageInstances = new Privilege(PRIVILEGE_MANAGE_INSTANCES, "Create, update, and delete groups.");
         }
 
         /// <summary>

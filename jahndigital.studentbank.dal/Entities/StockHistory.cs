@@ -16,6 +16,12 @@ namespace jahndigital.studentbank.dal.Entities
         public long Id {get; set;}
 
         /// <summary>
+        /// Get the stock ID
+        /// </summary>
+        [ForeignKey("Stock")]
+        public long StockId {get; set;}
+
+        /// <summary>
         /// The stock.
         /// </summary>
         [Required]

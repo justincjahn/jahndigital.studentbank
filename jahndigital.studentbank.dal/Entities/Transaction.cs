@@ -18,8 +18,14 @@ namespace jahndigital.studentbank.dal.Entities
         /// <summary>
         /// Type of transaction.
         /// </summary>
-        [Required]
-        public char TransactionType {get; set;}
+        [MaxLength(1), Required]
+        public string TransactionType {get; set;}
+
+        /// <summary>
+        /// Get the ID number of the target share.
+        /// </summary>
+        [ForeignKey("TargetShare")]
+        public long TargetShareId {get; set;}
 
         /// <summary>
         /// The target share of the transaction.

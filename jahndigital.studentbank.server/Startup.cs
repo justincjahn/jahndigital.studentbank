@@ -1,17 +1,10 @@
-using System.IO;
 using System.Reflection;
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.HttpsPolicy;
-using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Logging;
 using Microsoft.EntityFrameworkCore;
 using jahndigital.studentbank.server.Services;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -21,10 +14,11 @@ using Microsoft.OpenApi.Models;
 using Microsoft.AspNetCore.Authorization;
 using jahndigital.studentbank.server.Permissions;
 using jahndigital.studentbank.dal.Contexts;
-using System.Collections;
 using HotChocolate;
 using HotChocolate.Execution.Configuration;
 using HotChocolate.AspNetCore;
+using jahndigital.studentbank.utils;
+using jahndigital.studentbank.server.GraphQL.Types;
 
 namespace jahndigital.studentbank.server
 {
@@ -62,10 +56,20 @@ namespace jahndigital.studentbank.server
                     .AddQueryType(x => x.Name("Query"))
                         .AddType<GraphQL.Queries.UserQueries>()
                         .AddType<GraphQL.Queries.StudentQueries>()
+                        .AddType<GraphQL.Queries.InstanceQueries>()
+                        .AddType<GraphQL.Queries.GroupQueries>()
+                        .AddType<GraphQL.Queries.ShareTypeQueries>()
+                        .AddType<GraphQL.Queries.TransactionQueries>()
                     .AddMutationType(x => x.Name("Mutation"))
                         .AddType<GraphQL.Mutations.UserMutations>()
                         .AddType<GraphQL.Mutations.StudentMutations>()
                     .AddAuthorizeDirectiveType()
+                    .AddType<GraphQL.ObjectTypes.StudentType>()
+                    .AddType<GraphQL.ObjectTypes.GroupType>()
+                    .AddType<GraphQL.ObjectTypes.InstanceType>()
+                    .AddType<GraphQL.ObjectTypes.UserTypes>()
+                    .AddType<GraphQL.ObjectTypes.TransactionTypes>()
+                    .BindClrType<Money, MoneyType>()
                     .Create(),
                 new QueryExecutionOptions { ForceSerialExecution = true }
             );

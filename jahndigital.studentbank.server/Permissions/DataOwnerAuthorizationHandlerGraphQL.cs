@@ -16,6 +16,8 @@ namespace jahndigital.studentbank.server.Permissions
     /// </summary>
     internal class DataOwnerAuthorizationHandlerGraphQL : AuthorizationHandler<DataOwnerRequirement, IResolverContext>
     {
+        const string CTXNAME = "IsDataOwner";
+
         private readonly IHttpContextAccessor _httpContext;
         private readonly IRoleService _roleService;
 
@@ -47,10 +49,16 @@ namespace jahndigital.studentbank.server.Permissions
         /// <returns>true if the current user/student is a data owner.</returns>
         private bool IsDataOwner(AuthorizationHandlerContext context, IResolverContext resolverContext)
         {
+            if (resolverContext.ScopedContextData.ContainsKey(CTXNAME)) {
+                return (bool)resolverContext.ScopedContextData[CTXNAME];
+            }
+
             var route = resolverContext.FieldSelection.Arguments;
             
             string userId = string.Empty;
             UserType? userType = null;
+
+            resolverContext.ScopedContextData = resolverContext.ScopedContextData.SetItem(CTXNAME, false);
 
             HotChocolate.Language.ArgumentNode? arg = route.FirstOrDefault(x => x.Name.Value == "userId");
             if (arg != null) {
@@ -80,7 +88,11 @@ namespace jahndigital.studentbank.server.Permissions
             // Assert the claim type matches the user type from the URL convention
             if (userType.Name != userTypeClaim.Value) return false;
 
-            if (routeId == claimId) return true;
+            if (routeId == claimId) {
+                resolverContext.ScopedContextData = resolverContext.ScopedContextData.SetItem(CTXNAME, true);
+                return true;
+            }
+
             return false;
         }
     

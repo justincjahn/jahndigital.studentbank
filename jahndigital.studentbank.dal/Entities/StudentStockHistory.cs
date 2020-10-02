@@ -16,6 +16,12 @@ namespace jahndigital.studentbank.dal.Entities
         public long Id {get; set;}
 
         /// <summary>
+        /// Get the ID number of the StudentStock.
+        /// </summary>
+        [ForeignKey("StudentStock")]
+        public long StudentStockId {get; set;}
+
+        /// <summary>
         /// The stock the student currently owns.
         /// </summary>
         [Required]
@@ -49,6 +55,12 @@ namespace jahndigital.studentbank.dal.Entities
                 RawAmount = value.DatabaseAmount;
             }
         }
+
+        /// <summary>
+        /// Get the transaction ID
+        /// </summary>
+        [ForeignKey("Transaction")]
+        public long TransactionId {get;set;}
 
         /// <summary>
         /// The monetary transaction that occurred as a result of the buy/sell.

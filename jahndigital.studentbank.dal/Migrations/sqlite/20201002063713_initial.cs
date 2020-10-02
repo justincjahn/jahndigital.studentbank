@@ -1,7 +1,7 @@
 ﻿using System;
 using Microsoft.EntityFrameworkCore.Migrations;
 
-namespace jahndigital.studentbank.dal.Migrations.mssql
+namespace jahndigital.studentbank.dal.Migrations.sqlite
 {
     public partial class initial : Migration
     {
@@ -90,7 +90,7 @@ namespace jahndigital.studentbank.dal.Migrations.mssql
                 {
                     Id = table.Column<long>(nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
-                    InstanceId = table.Column<long>(nullable: true),
+                    InstanceId = table.Column<long>(nullable: false),
                     Symbol = table.Column<string>(maxLength: 10, nullable: false),
                     Name = table.Column<string>(maxLength: 32, nullable: false),
                     TotalShares = table.Column<long>(nullable: false),
@@ -105,7 +105,7 @@ namespace jahndigital.studentbank.dal.Migrations.mssql
                         column: x => x.InstanceId,
                         principalTable: "Instances",
                         principalColumn: "Id",
-                        onDelete: ReferentialAction.Restrict);
+                        onDelete: ReferentialAction.Cascade);
                 });
 
             migrationBuilder.CreateTable(
@@ -311,7 +311,7 @@ namespace jahndigital.studentbank.dal.Migrations.mssql
                 {
                     Id = table.Column<long>(nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
-                    TransactionType = table.Column<string>(nullable: false),
+                    TransactionType = table.Column<string>(maxLength: 1, nullable: false),
                     TargetShareId = table.Column<long>(nullable: false),
                     Amount = table.Column<long>(nullable: false),
                     NewBalance = table.Column<long>(nullable: false),

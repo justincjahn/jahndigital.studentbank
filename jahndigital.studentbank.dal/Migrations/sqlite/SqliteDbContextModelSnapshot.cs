@@ -191,7 +191,7 @@ namespace jahndigital.studentbank.dal.Migrations.sqlite
                     b.Property<long>("AvailableShares")
                         .HasColumnType("bigint");
 
-                    b.Property<long?>("InstanceId")
+                    b.Property<long>("InstanceId")
                         .HasColumnType("bigint");
 
                     b.Property<string>("Name")
@@ -364,7 +364,8 @@ namespace jahndigital.studentbank.dal.Migrations.sqlite
 
                     b.Property<string>("TransactionType")
                         .IsRequired()
-                        .HasColumnType("nvarchar(1)");
+                        .HasColumnType("nvarchar(1)")
+                        .HasMaxLength(1);
 
                     b.HasKey("Id");
 
@@ -443,7 +444,9 @@ namespace jahndigital.studentbank.dal.Migrations.sqlite
                 {
                     b.HasOne("jahndigital.studentbank.dal.Entities.Instance", "Instance")
                         .WithMany("Stocks")
-                        .HasForeignKey("InstanceId");
+                        .HasForeignKey("InstanceId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
                 });
 
             modelBuilder.Entity("jahndigital.studentbank.dal.Entities.StockHistory", b =>
