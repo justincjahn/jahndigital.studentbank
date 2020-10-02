@@ -69,7 +69,10 @@ namespace jahndigital.studentbank.server
                     .AddType<GraphQL.ObjectTypes.InstanceType>()
                     .AddType<GraphQL.ObjectTypes.UserTypes>()
                     .AddType<GraphQL.ObjectTypes.TransactionTypes>()
+                    .AddType<GraphQL.ObjectTypes.ShareType>()
+                    .AddType<GraphQL.ObjectTypes.ShareTypeType>()
                     .BindClrType<Money, MoneyType>()
+                    .BindClrType<Rate, RateType>()
                     .Create(),
                 new QueryExecutionOptions { ForceSerialExecution = true }
             );

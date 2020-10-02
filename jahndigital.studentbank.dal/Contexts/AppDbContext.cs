@@ -1,6 +1,5 @@
 using jahndigital.studentbank.dal.Entities;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Configuration;
 
 namespace jahndigital.studentbank.dal.Contexts
 {
@@ -25,5 +24,10 @@ namespace jahndigital.studentbank.dal.Contexts
         public DbSet<StudentStockHistory> StudentStockHistory { get; set; }
         public DbSet<Transaction> Transactions { get; set; }
         public DbSet<User> Users { get; set; }
+        public DbSet<StudentPurchase> StudentPurchases { get; set; }
+        public DbSet<StudentPurchaseItem> StudentPurchaseItems { get; set; }
+        public DbSet<Product> Products { get; set; }
+        public DbSet<ProductGroup> ProductGroups { get; set; }
+        public DbSet<ProductImages> ProductImages {get; set;}
     }
 }

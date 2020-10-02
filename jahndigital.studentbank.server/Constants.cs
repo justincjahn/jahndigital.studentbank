@@ -45,6 +45,12 @@ namespace jahndigital.studentbank.server
             public string Description { get; set; }
 
             /// <summary>
+            /// Returns the name of the privilege.
+            /// </summary>
+            /// <returns></returns>
+            public override string ToString() => Name;
+
+            /// <summary>
             /// Backing field for <see cname="Privileges" />.
             /// </summary>
             private static List<Privilege> _privileges = new List<Privilege>();

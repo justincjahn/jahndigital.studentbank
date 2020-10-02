@@ -37,5 +37,10 @@ namespace jahndigital.studentbank.dal.Entities
         /// Gets the list of students associated with this group.
         /// </summary>
         public ICollection<Student> Students { get; set; } = new HashSet<Student>();
+
+        /// <summary>
+        /// Gets the list of products deployed to this group.
+        /// </summary>
+        public ICollection<ProductGroup> ProductGroups {get; set;} = new HashSet<ProductGroup>();
     }
 }

@@ -90,5 +90,11 @@ namespace jahndigital.studentbank.dal.Entities
         /// </summary>
         [JsonIgnore]
         public ICollection<RefreshToken> RefreshTokens {get;set;} = new HashSet<RefreshToken>();
+
+        /// <summary>
+        /// Get a list of purchases this student has made.
+        /// </summary>
+        /// <returns></returns>
+        public ICollection<StudentPurchase> Purchases {get; set;} = new HashSet<StudentPurchase>();
     }
 }

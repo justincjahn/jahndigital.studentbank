@@ -7,10 +7,10 @@ using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using jahndigital.studentbank.dal.Contexts;
 
-namespace jahndigital.studentbank.dal.Migrations.sqlite
+namespace jahndigital.studentbank.dal.Migrations.mssql
 {
-    [DbContext(typeof(SqliteDbContext))]
-    [Migration("20201002063713_initial")]
+    [DbContext(typeof(AppDbContext))]
+    [Migration("20201002233833_initial")]
     partial class initial
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -91,6 +91,52 @@ namespace jahndigital.studentbank.dal.Migrations.sqlite
                     b.ToTable("Privileges");
                 });
 
+            modelBuilder.Entity("jahndigital.studentbank.dal.Entities.Product", b =>
+                {
+                    b.Property<long>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint")
+                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
+
+                    b.Property<string>("Description")
+                        .HasColumnType("nvarchar(256)")
+                        .HasMaxLength(256);
+
+                    b.Property<bool>("IsLimitedQuantity")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(128)")
+                        .HasMaxLength(128);
+
+                    b.Property<int>("Quantity")
+                        .HasColumnType("int");
+
+                    b.Property<long>("RawCost")
+                        .HasColumnName("Cost")
+                        .HasColumnType("bigint");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("Products");
+                });
+
+            modelBuilder.Entity("jahndigital.studentbank.dal.Entities.ProductGroup", b =>
+                {
+                    b.Property<long>("GroupId")
+                        .HasColumnType("bigint");
+
+                    b.Property<long>("ProductId")
+                        .HasColumnType("bigint");
+
+                    b.HasKey("GroupId", "ProductId");
+
+                    b.HasIndex("ProductId");
+
+                    b.ToTable("ProductGroups");
+                });
+
             modelBuilder.Entity("jahndigital.studentbank.dal.Entities.Role", b =>
                 {
                     b.Property<long>("Id")
@@ -121,9 +167,6 @@ namespace jahndigital.studentbank.dal.Migrations.sqlite
                         .HasColumnType("bigint");
 
                     b.Property<long>("PrivilegeId")
-                        .HasColumnType("bigint");
-
-                    b.Property<long>("Id")
                         .HasColumnType("bigint");
 
                     b.HasKey("RoleId", "PrivilegeId");
@@ -289,6 +332,56 @@ namespace jahndigital.studentbank.dal.Migrations.sqlite
                     b.ToTable("Students");
                 });
 
+            modelBuilder.Entity("jahndigital.studentbank.dal.Entities.StudentPurchase", b =>
+                {
+                    b.Property<long>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint")
+                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
+
+                    b.Property<long>("RawTotalCost")
+                        .HasColumnName("TotalCost")
+                        .HasColumnType("bigint");
+
+                    b.Property<long>("StudentId")
+                        .HasColumnType("bigint");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("StudentId");
+
+                    b.ToTable("StudentPurchases");
+                });
+
+            modelBuilder.Entity("jahndigital.studentbank.dal.Entities.StudentPurchaseItem", b =>
+                {
+                    b.Property<long>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint")
+                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
+
+                    b.Property<long>("ProductId")
+                        .HasColumnType("bigint");
+
+                    b.Property<int>("Quantity")
+                        .HasColumnType("int");
+
+                    b.Property<long>("RawPurchasePrice")
+                        .HasColumnName("PurchasePrice")
+                        .HasColumnType("bigint");
+
+                    b.Property<long>("StudentPurchaseId")
+                        .HasColumnType("bigint");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ProductId");
+
+                    b.HasIndex("StudentPurchaseId");
+
+                    b.ToTable("StudentPurchaseItems");
+                });
+
             modelBuilder.Entity("jahndigital.studentbank.dal.Entities.StudentStock", b =>
                 {
                     b.Property<long>("Id")
@@ -412,6 +505,49 @@ namespace jahndigital.studentbank.dal.Migrations.sqlite
                         .IsRequired();
                 });
 
+            modelBuilder.Entity("jahndigital.studentbank.dal.Entities.Product", b =>
+                {
+                    b.OwnsMany("jahndigital.studentbank.dal.Entities.ProductImages", "Images", b1 =>
+                        {
+                            b1.Property<long>("Id")
+                                .ValueGeneratedOnAdd()
+                                .HasColumnType("bigint")
+                                .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
+
+                            b1.Property<long>("ProductId")
+                                .HasColumnType("bigint");
+
+                            b1.Property<string>("Url")
+                                .IsRequired()
+                                .HasColumnType("nvarchar(256)")
+                                .HasMaxLength(256);
+
+                            b1.HasKey("Id");
+
+                            b1.HasIndex("ProductId");
+
+                            b1.ToTable("ProductImages");
+
+                            b1.WithOwner()
+                                .HasForeignKey("ProductId");
+                        });
+                });
+
+            modelBuilder.Entity("jahndigital.studentbank.dal.Entities.ProductGroup", b =>
+                {
+                    b.HasOne("jahndigital.studentbank.dal.Entities.Group", "Group")
+                        .WithMany("ProductGroups")
+                        .HasForeignKey("GroupId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("jahndigital.studentbank.dal.Entities.Product", "Product")
+                        .WithMany("ProductGroups")
+                        .HasForeignKey("ProductId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
             modelBuilder.Entity("jahndigital.studentbank.dal.Entities.RolePrivilege", b =>
                 {
                     b.HasOne("jahndigital.studentbank.dal.Entities.Privilege", "Privilege")
@@ -436,7 +572,7 @@ namespace jahndigital.studentbank.dal.Migrations.sqlite
                         .IsRequired();
 
                     b.HasOne("jahndigital.studentbank.dal.Entities.Student", "Student")
-                        .WithMany()
+                        .WithMany("Shares")
                         .HasForeignKey("StudentId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
@@ -512,6 +648,30 @@ namespace jahndigital.studentbank.dal.Migrations.sqlite
                         });
                 });
 
+            modelBuilder.Entity("jahndigital.studentbank.dal.Entities.StudentPurchase", b =>
+                {
+                    b.HasOne("jahndigital.studentbank.dal.Entities.Student", "Student")
+                        .WithMany("Purchases")
+                        .HasForeignKey("StudentId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("jahndigital.studentbank.dal.Entities.StudentPurchaseItem", b =>
+                {
+                    b.HasOne("jahndigital.studentbank.dal.Entities.Product", "Product")
+                        .WithMany()
+                        .HasForeignKey("ProductId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("jahndigital.studentbank.dal.Entities.StudentPurchase", "StudentPurchase")
+                        .WithMany("Items")
+                        .HasForeignKey("StudentPurchaseId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
             modelBuilder.Entity("jahndigital.studentbank.dal.Entities.StudentStock", b =>
                 {
                     b.HasOne("jahndigital.studentbank.dal.Entities.Stock", "Stock")
@@ -545,7 +705,7 @@ namespace jahndigital.studentbank.dal.Migrations.sqlite
             modelBuilder.Entity("jahndigital.studentbank.dal.Entities.Transaction", b =>
                 {
                     b.HasOne("jahndigital.studentbank.dal.Entities.Share", "TargetShare")
-                        .WithMany()
+                        .WithMany("Transactions")
                         .HasForeignKey("TargetShareId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();

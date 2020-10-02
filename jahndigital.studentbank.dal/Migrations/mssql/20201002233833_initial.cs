@@ -36,6 +36,23 @@ namespace jahndigital.studentbank.dal.Migrations.mssql
                 });
 
             migrationBuilder.CreateTable(
+                name: "Products",
+                columns: table => new
+                {
+                    Id = table.Column<long>(nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    Name = table.Column<string>(maxLength: 128, nullable: false),
+                    Description = table.Column<string>(maxLength: 256, nullable: true),
+                    Cost = table.Column<long>(nullable: false),
+                    IsLimitedQuantity = table.Column<bool>(nullable: false),
+                    Quantity = table.Column<int>(nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Products", x => x.Id);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "Roles",
                 columns: table => new
                 {
@@ -109,12 +126,31 @@ namespace jahndigital.studentbank.dal.Migrations.mssql
                 });
 
             migrationBuilder.CreateTable(
+                name: "ProductImages",
+                columns: table => new
+                {
+                    Id = table.Column<long>(nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    Url = table.Column<string>(maxLength: 256, nullable: false),
+                    ProductId = table.Column<long>(nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_ProductImages", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_ProductImages_Products_ProductId",
+                        column: x => x.ProductId,
+                        principalTable: "Products",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "RolePrivileges",
                 columns: table => new
                 {
                     RoleId = table.Column<long>(nullable: false),
-                    PrivilegeId = table.Column<long>(nullable: false),
-                    Id = table.Column<long>(nullable: false)
+                    PrivilegeId = table.Column<long>(nullable: false)
                 },
                 constraints: table =>
                 {
@@ -150,6 +186,30 @@ namespace jahndigital.studentbank.dal.Migrations.mssql
                         name: "FK_Users_Roles_RoleId",
                         column: x => x.RoleId,
                         principalTable: "Roles",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "ProductGroups",
+                columns: table => new
+                {
+                    GroupId = table.Column<long>(nullable: false),
+                    ProductId = table.Column<long>(nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_ProductGroups", x => new { x.GroupId, x.ProductId });
+                    table.ForeignKey(
+                        name: "FK_ProductGroups_Groups_GroupId",
+                        column: x => x.GroupId,
+                        principalTable: "Groups",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_ProductGroups_Products_ProductId",
+                        column: x => x.ProductId,
+                        principalTable: "Products",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                 });
@@ -254,6 +314,26 @@ namespace jahndigital.studentbank.dal.Migrations.mssql
                 });
 
             migrationBuilder.CreateTable(
+                name: "StudentPurchases",
+                columns: table => new
+                {
+                    Id = table.Column<long>(nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    StudentId = table.Column<long>(nullable: false),
+                    TotalCost = table.Column<long>(nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_StudentPurchases", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_StudentPurchases_Students_StudentId",
+                        column: x => x.StudentId,
+                        principalTable: "Students",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "Students_RefreshTokens",
                 columns: table => new
                 {
@@ -329,6 +409,34 @@ namespace jahndigital.studentbank.dal.Migrations.mssql
                 });
 
             migrationBuilder.CreateTable(
+                name: "StudentPurchaseItems",
+                columns: table => new
+                {
+                    Id = table.Column<long>(nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    StudentPurchaseId = table.Column<long>(nullable: false),
+                    Quantity = table.Column<int>(nullable: false),
+                    ProductId = table.Column<long>(nullable: false),
+                    PurchasePrice = table.Column<long>(nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_StudentPurchaseItems", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_StudentPurchaseItems_Products_ProductId",
+                        column: x => x.ProductId,
+                        principalTable: "Products",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_StudentPurchaseItems_StudentPurchases_StudentPurchaseId",
+                        column: x => x.StudentPurchaseId,
+                        principalTable: "StudentPurchases",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "StudentStockHistory",
                 columns: table => new
                 {
@@ -375,6 +483,16 @@ namespace jahndigital.studentbank.dal.Migrations.mssql
                 unique: true);
 
             migrationBuilder.CreateIndex(
+                name: "IX_ProductGroups_ProductId",
+                table: "ProductGroups",
+                column: "ProductId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_ProductImages_ProductId",
+                table: "ProductImages",
+                column: "ProductId");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_RolePrivileges_PrivilegeId",
                 table: "RolePrivileges",
                 column: "PrivilegeId");
@@ -398,6 +516,21 @@ namespace jahndigital.studentbank.dal.Migrations.mssql
                 name: "IX_Stocks_InstanceId",
                 table: "Stocks",
                 column: "InstanceId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_StudentPurchaseItems_ProductId",
+                table: "StudentPurchaseItems",
+                column: "ProductId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_StudentPurchaseItems_StudentPurchaseId",
+                table: "StudentPurchaseItems",
+                column: "StudentPurchaseId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_StudentPurchases_StudentId",
+                table: "StudentPurchases",
+                column: "StudentId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Students_GroupId",
@@ -454,10 +587,19 @@ namespace jahndigital.studentbank.dal.Migrations.mssql
         protected override void Down(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.DropTable(
+                name: "ProductGroups");
+
+            migrationBuilder.DropTable(
+                name: "ProductImages");
+
+            migrationBuilder.DropTable(
                 name: "RolePrivileges");
 
             migrationBuilder.DropTable(
                 name: "StockHistory");
+
+            migrationBuilder.DropTable(
+                name: "StudentPurchaseItems");
 
             migrationBuilder.DropTable(
                 name: "Students_RefreshTokens");
@@ -470,6 +612,12 @@ namespace jahndigital.studentbank.dal.Migrations.mssql
 
             migrationBuilder.DropTable(
                 name: "Privileges");
+
+            migrationBuilder.DropTable(
+                name: "Products");
+
+            migrationBuilder.DropTable(
+                name: "StudentPurchases");
 
             migrationBuilder.DropTable(
                 name: "StudentStocks");

@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using jahndigital.studentbank.utils;
@@ -60,6 +61,13 @@ namespace jahndigital.studentbank.dal.Entities
                 RawBalance = value.DatabaseAmount;
             }
         }
+
+        /// <summary>
+        /// A list of transactions for the share.
+        /// </summary>
+        /// <typeparam name="Transaction"></typeparam>
+        /// <returns></returns>
+        public ICollection<Transaction> Transactions {get; set;} = new HashSet<Transaction>();
 
         /// <summary>
         /// The last activity date of the share.

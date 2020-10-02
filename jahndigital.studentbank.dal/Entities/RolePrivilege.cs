@@ -1,5 +1,6 @@
 using System;
 using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace jahndigital.studentbank.dal.Entities
 {
@@ -9,14 +10,9 @@ namespace jahndigital.studentbank.dal.Entities
     public class RolePrivilege
     {
         /// <summary>
-        /// The unique ID of this row.
+        /// Get or set the ID number of the role.
         /// </summary>
-        [Key]
-        public long Id {get; set;}
-
-        /// <summary>
-        /// 
-        /// </summary>
+        [ForeignKey("Role"), Required]
         public long RoleId { get; set; }
 
         /// <summary>
@@ -27,8 +23,9 @@ namespace jahndigital.studentbank.dal.Entities
 
 
         /// <summary>
-        /// 
+        /// Get or set the ID number of the privilege.
         /// </summary>
+        [ForeignKey("Privilege"), Required]
         public long PrivilegeId { get; set; }
 
         /// <summary>

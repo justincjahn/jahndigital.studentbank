@@ -21,6 +21,11 @@ namespace jahndigital.studentbank.server.Services
         private ShareType? _shareType;
 
         /// <summary>
+        /// Cache the products in the system so we don't have to keep fetching it.
+        /// </summary>
+        private IReadOnlyCollection<Product> _productsCache = new Product[] {};
+
+        /// <summary>
         /// 
         /// </summary>
         private readonly IServiceScopeFactory _scopeFactory;
@@ -53,6 +58,7 @@ namespace jahndigital.studentbank.server.Services
             SeedRoles(context);
             SeedUsers(context);
             SeedShareTypes(context);
+            SeedProducts(context);
 
             #if DEBUG
                 // Generates semi-random data for development and testing.
@@ -133,7 +139,7 @@ namespace jahndigital.studentbank.server.Services
         }
 
         /// <summary>
-        /// 
+        /// Add a savings and checking account type to the database.
         /// </summary>
         /// <param name="context"></param>
         public void SeedShareTypes(AppDbContext context)
@@ -142,7 +148,7 @@ namespace jahndigital.studentbank.server.Services
             {
                 _shareType = new ShareType
                 {
-                    DividendRate = Rate.FromRate(500), // 0.05%
+                    DividendRate = Rate.FromRate(0.05m), // 0.05%
                     Name = "Savings"
                 };
 
@@ -161,6 +167,30 @@ namespace jahndigital.studentbank.server.Services
                     _shareType = context.ShareTypes.FirstOrDefault();
                 }
             }
+        }
+
+        /// <summary>
+        /// Add some fake products to the database as examples.
+        /// </summary>
+        /// <param name="context"></param>
+        public void SeedProducts(AppDbContext context)
+        {
+            if (context.Products.Any()) return;
+
+            context.Add(new Product {
+                Name = "Extra Credit",
+                Description = "Redeem your balance for 5 points of extra credit.",
+                Cost = Money.FromCurrency(10.00m),
+                IsLimitedQuantity = false
+            });
+
+            context.Add(new Product {
+                Name = "Chocolate Bar",
+                Description = "Redeem your balance for a Harsley's chocolate bar.",
+                Cost = Money.FromCurrency(3.50m),
+                IsLimitedQuantity = true,
+                Quantity = 128
+            });
         }
 
         /// <summary>
@@ -187,12 +217,13 @@ namespace jahndigital.studentbank.server.Services
         }
 
         /// <summary>
-        /// Seed groups into the provided instances.
+        /// Seed groups into the provided instances and link them to all products found in the database.
         /// </summary>
         /// <param name="context"></param>
         /// <param name="instances"></param>
         private void SeedGroups(AppDbContext context, IEnumerable<Instance> instances)
         {
+            var products = context.Products.ToList();
             foreach (var instance in instances)
             {
                 var groups = new List<Group>();
@@ -209,8 +240,24 @@ namespace jahndigital.studentbank.server.Services
                 }
 
                 context.SaveChanges();
+
+                // Link all products to all groups
+                foreach(var group in groups) {
+                    foreach (var product in products) {
+                        context.Add(new ProductGroup {
+                            Group = group,
+                            Product = product
+                        });
+                    }
+                }
+
+                context.SaveChanges();
+
                 SeedStudents(context, groups);
             }
+
+            // After everything is created and transactions are posted, purchase stuff
+            SeedPurchases(context);
         }
 
         /// <summary>
@@ -298,7 +345,7 @@ namespace jahndigital.studentbank.server.Services
                         TransactionType = oAmount.Amount > 0.00m ? "D" : "W"
                     };
 
-                    Console.WriteLine($"Share {share.Id}: ${amount} ({oAmount.Amount})");
+                    Console.WriteLine($"Share {share.Id}: ${oAmount.Amount}");
 
                     share.Balance = newBalance;
                     context.Add(transaction);
@@ -306,6 +353,118 @@ namespace jahndigital.studentbank.server.Services
             }
 
             context.SaveChanges();
+        }
+
+        /// <summary>
+        /// Select some students with a positive balance and purchase some stuff.
+        /// </summary>
+        /// <remarks>
+        /// In the application API, we should be checking to ensure the item being purchased
+        /// was linked to the group of the student's share, but everything is linked to
+        /// everything when we seed initially.
+        /// </remarks>
+        /// <param name="context"></param>
+        private void SeedPurchases(AppDbContext context)
+        {
+            _productsCache = context.Products.ToList();
+            if (_productsCache.Count == 0) return;
+
+            // Loop through all student shares with a positive balance and build a purchase
+            foreach (var share in context.Shares.Where(x => x.RawBalance >= 0)) {
+                var purchase = new StudentPurchase {
+                    StudentId = share.StudentId
+                };
+
+                SeedPurchasesExtraCredit(context, share, purchase);
+                SeedPurchasesLimited(context, share, purchase);
+
+                // Generate totals and transaction
+                var totalCost = Money.FromCurrency(0);
+                purchase.Items.ToList().ForEach(x => totalCost = totalCost + x.PurchasePrice);
+                purchase.TotalCost = totalCost;
+
+                context.Add(new Transaction {
+                    Amount = totalCost,
+                    EffectiveDate = DateTime.UtcNow,
+                    NewBalance = share.Balance,
+                    TargetShare = share,
+                    TransactionType = "W"
+                });
+
+                context.Update(share);
+                context.Add(purchase);
+            }
+
+            context.SaveChanges();
+        }
+
+        /// <summary>
+        /// Add some extra credit to the purchase if there's enough money.
+        /// </summary>
+        /// <param name="context"></param>
+        /// <param name="share"></param>
+        /// <param name="purchase"></param>
+        private void SeedPurchasesExtraCredit(AppDbContext context, Share share, StudentPurchase purchase)
+        {
+            var extraCredit = _productsCache.Where(x => x.IsLimitedQuantity = true).FirstOrDefault();
+            if (extraCredit == null) return;
+
+            // Get the max number of extra credits we can purchase with the balance we have
+            var max = decimal.ToInt32(Math.Floor(decimal.Divide(share.Balance.Amount, extraCredit.Cost.Amount)));
+
+            // Get a random number as the quantity for the purchase.
+            var quantity = new Random().Next(0, max);
+            if (quantity < 1) return;
+
+            // Add the purchase, subtract from share balance
+            var item = new StudentPurchaseItem {
+                Product = extraCredit,
+                PurchasePrice = extraCredit.Cost * quantity,
+                StudentPurchase = purchase,
+                Quantity = quantity
+            };
+
+            purchase.Items.Add(item);
+            share.Balance = share.Balance - item.PurchasePrice;
+            context.Add(item);
+
+            Console.WriteLine($"Share {share.Id}: Extra Credit ({quantity}) - {share.Balance}");
+        }
+
+        /// <summary>
+        /// Add some limited quantity items to shares until there are none left.
+        /// </summary>
+        /// <param name="context"></param>
+        /// <param name="share"></param>
+        /// <param name="purchase"></param>
+        private void SeedPurchasesLimited(AppDbContext context, Share share, StudentPurchase purchase)
+        {
+            var chocolateBar = _productsCache.Where(x => x.IsLimitedQuantity == true).FirstOrDefault();
+            if (chocolateBar == null) return;
+            if (chocolateBar.Quantity < 0) return;
+
+            // Make sure the share can afford a chocolate bar
+            if (chocolateBar.Cost > share.Balance) return;
+
+            // Randomly decide if this student is buying a chocolate bar
+            if (new Random().Next(0, 6) != 1) return; // 1 in 6
+
+            // Add the purchase, subtract from share balance
+            var item = new StudentPurchaseItem {
+                Product = chocolateBar,
+                PurchasePrice = chocolateBar.Cost,
+                StudentPurchase = purchase,
+                Quantity = 1
+            };
+
+            chocolateBar.Quantity--;
+            context.Update(chocolateBar);
+
+            purchase.Items.Add(item);
+            share.Balance = share.Balance - item.PurchasePrice;
+            context.Add(item);
+
+            Console.WriteLine($"Share {share.Id}: Chocolate (1) - {share.Balance}");
         }
     }
 }
