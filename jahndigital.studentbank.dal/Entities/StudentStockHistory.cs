@@ -45,15 +45,8 @@ namespace jahndigital.studentbank.dal.Entities
         [NotMapped]
         public Money Amount
         {
-            get
-            {
-                return Money.FromDatabase(RawAmount);
-            }
-
-            set
-            {
-                RawAmount = value.DatabaseAmount;
-            }
+            get => Money.FromDatabase(RawAmount);
+            set => RawAmount = value.DatabaseAmount;
         }
 
         /// <summary>

@@ -65,16 +65,16 @@ namespace jahndigital.studentbank.dal.Entities
         [NotMapped]
         public Money CurrentValue
         {
-            get
-            {
-                return Money.FromDatabase(RawCurrentValue);
-            }
-
-            set
-            {
-                RawCurrentValue = value.DatabaseAmount;
-            }
+            get => Money.FromDatabase(RawCurrentValue);
+            set => RawCurrentValue = value.DatabaseAmount;
         }
+
+        /// <summary>
+        /// Get the student stock.
+        /// </summary>
+        /// <typeparam name="StudentStock"></typeparam>
+        /// <returns></returns>
+        public ICollection<StudentStock> StudentStock {get; set;} = new HashSet<StudentStock>();
 
         /// <summary>
         /// The history of the stock.

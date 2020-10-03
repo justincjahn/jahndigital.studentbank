@@ -8,10 +8,6 @@ namespace jahndigital.studentbank.server.GraphQL.ObjectTypes
         protected override void Configure(IObjectTypeDescriptor<Transaction> descriptor)
         {
             descriptor.Authorize($"{Constants.AuthPolicy.DataOwner}<{Constants.Privilege.ManageTransactions.Name}>");
-
-            // Hide raw amounts
-            descriptor.Field(f => f.RawAmount).Ignore();
-            descriptor.Field(f => f.RawNewBalance).Ignore();
         }
     }
 }

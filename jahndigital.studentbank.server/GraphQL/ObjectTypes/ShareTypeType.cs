@@ -6,10 +6,12 @@ namespace jahndigital.studentbank.server.GraphQL.ObjectTypes
     {
         protected override void Configure(IObjectTypeDescriptor<dal.Entities.ShareType> descriptor)
         {
+            // Require users to be authenticated to access this resource
             descriptor.Authorize();
 
-            // Hide the raw rate
-            descriptor.Field(f => f.RawDividendRate).Ignore();
+            // Require admin rights to cascade to shares this way
+            descriptor.Field(f => f.Shares)
+                .Authorize(Constants.Privilege.ManageShares.Name);
         }
     }
 }

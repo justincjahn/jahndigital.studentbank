@@ -16,7 +16,7 @@ namespace jahndigital.studentbank.server.Permissions
     /// </summary>
     internal class DataOwnerAuthorizationHandlerGraphQL : AuthorizationHandler<DataOwnerRequirement, IResolverContext>
     {
-        const string CTXNAME = "IsDataOwner";
+        public const string CTXNAME = "IsDataOwner";
 
         private readonly IHttpContextAccessor _httpContext;
         private readonly IRoleService _roleService;

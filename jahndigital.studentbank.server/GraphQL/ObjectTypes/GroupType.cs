@@ -7,7 +7,12 @@ namespace jahndigital.studentbank.server.GraphQL.ObjectTypes
     {
         protected override void Configure(IObjectTypeDescriptor<Group> descriptor)
         {
+            // Require the user to be a data owner or admin
             descriptor.Authorize($"{Constants.AuthPolicy.DataOwner}<{Constants.Privilege.ManageGroups}>");
+
+            // Only administrators can pull in students this way
+            descriptor.Field(f => f.Students)
+                .Authorize(Constants.Privilege.ManageGroups.Name);
         }
     }
 }

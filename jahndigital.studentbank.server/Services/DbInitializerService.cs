@@ -257,7 +257,9 @@ namespace jahndigital.studentbank.server.Services
             }
 
             // After everything is created and transactions are posted, purchase stuff
-            SeedPurchases(context);
+            if (instances.Count() > 0) {
+                SeedPurchases(context);
+            }
         }
 
         /// <summary>

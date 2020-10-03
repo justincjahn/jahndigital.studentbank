@@ -6,8 +6,10 @@ namespace jahndigital.studentbank.server.GraphQL.ObjectTypes
     {
         protected override void Configure(IObjectTypeDescriptor<dal.Entities.Student> descriptor)
         {
+            descriptor.Authorize($"{Constants.AuthPolicy.DataOwner}<{Constants.Privilege.ManageStudents}>");
+
             descriptor.Field(f => f.Group)
-                .Authorize($"{Constants.AuthPolicy.DataOwner}<{Constants.Privilege.ManageStudents.Name}>");
+                .Authorize($"{Constants.AuthPolicy.DataOwner}<{Constants.Privilege.ManageGroups}>");
             
             // Hide sensitive fields
             descriptor.Field(f => f.Password).Ignore(true);
