@@ -1,16 +1,23 @@
 using System;
-using System.Threading;
+using System.Linq;
+using System.Threading.Tasks;
 using HotChocolate;
 using HotChocolate.Execution;
+using HotChocolate.Resolvers;
 using HotChocolate.Types;
 using jahndigital.studentbank.dal.Contexts;
 using jahndigital.studentbank.server.Models;
 using jahndigital.studentbank.server.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
+using Microsoft.EntityFrameworkCore;
+using static jahndigital.studentbank.server.Constants;
 
 namespace jahndigital.studentbank.server.GraphQL.Mutations
 {
+    /// <summary>
+    /// CRUD operations for users.
+    /// </summary>
     [ExtendObjectType(Name = "Mutation")]
     public class UserMutations : TokenManagerAbstract
     {
@@ -128,6 +135,100 @@ namespace jahndigital.studentbank.server.GraphQL.Mutations
             }
 
             return response;
+        }
+    
+        /// <summary>
+        /// Update a user.
+        /// </summary>
+        /// <param name="input"></param>
+        /// <param name="context"></param>
+        /// <param name="resolverContext"></param>
+        /// <returns></returns>
+        [UseSelection, Authorize]
+        public async Task<IQueryable<dal.Entities.User>> UpdateUserAsync(
+            UpdateUserRequest input,
+            [Service] AppDbContext context,
+            [Service] IResolverContext resolverContext
+        ) {
+            resolverContext.SetUser(input.Id, UserType.User);
+            var auth = await resolverContext.AuthorizeAsync(
+                $"{Constants.AuthPolicy.DataOwner}<{Constants.Privilege.ManageUsers}>"
+            );
+
+            if (!auth.Succeeded) throw ErrorFactory.Unauthorized();
+
+            var user = await context.Users.Where(x => x.Id == input.Id).SingleOrDefaultAsync();
+            if (user == null) throw ErrorFactory.NotFound();
+
+            user.Email = input.Email ?? user.Email;
+            user.RoleId = input.RoleId ?? user.RoleId;
+            if (input.Password != null) user.Password = input.Password;
+
+            try {
+                context.Update(user);
+                await context.SaveChangesAsync();
+            } catch (Exception e) {
+                throw ErrorFactory.QueryFailed(e.Message);
+            }
+
+            return context.Users.Where(x => x.Id == user.Id);
+        }
+
+        /// <summary>
+        /// Create a new user.
+        /// </summary>
+        /// <param name="input"></param>
+        /// <param name="context"></param>
+        /// <returns></returns>
+        [Authorize(Policy = Constants.Privilege.PRIVILEGE_MANAGE_USERS)]
+        public async Task<IQueryable<dal.Entities.User>> NewUserAsync(
+            NewUserRequest input,
+            [Service] AppDbContext context
+        ) {
+            var roleExists = await context.Roles.Where(x => x.Id == input.RoleId).AnyAsync();
+            if (!roleExists) throw ErrorFactory.QueryFailed($"The Role ID ({input.RoleId}) does not exist.");
+
+            var userExists = await context.Users.Where(x => x.Email == input.Email).AnyAsync();
+            if (userExists) throw ErrorFactory.QueryFailed($"A user with the email {input.Email} already exists.");
+            
+            var user = new dal.Entities.User {
+                Email = input.Email,
+                RoleId = input.RoleId,
+                Password = input.Password
+            };
+
+            try {
+                context.Add(user);
+                await context.SaveChangesAsync();
+            } catch (Exception e) {
+                throw ErrorFactory.QueryFailed(e.Message);
+            }
+
+            return context.Users.Where(x => x.Id == user.Id);
+        }
+    
+        /// <summary>
+        /// Delete a user.
+        /// </summary>
+        /// <param name="id"></param>
+        /// <param name="context"></param>
+        /// <returns></returns>
+        [Authorize(Policy = Constants.Privilege.PRIVILEGE_MANAGE_USERS)]
+        public async Task<bool> DeleteUserAsync(long id, [Service]AppDbContext context)
+        {
+            var user = await context.Users.FindAsync(id);
+            if (user == null) throw ErrorFactory.NotFound();
+
+            user.DateDeleted = DateTime.UtcNow;
+
+            try {
+                context.Update(user);
+                await context.SaveChangesAsync();
+            } catch {
+                return false;
+            }
+
+            return true;
         }
     }
 }

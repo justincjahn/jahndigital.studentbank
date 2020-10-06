@@ -1,7 +1,9 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 using System.Text.Json.Serialization;
+using System.Text.RegularExpressions;
 using Microsoft.AspNetCore.Identity;
 
 namespace jahndigital.studentbank.dal.Entities
@@ -16,11 +18,25 @@ namespace jahndigital.studentbank.dal.Entities
         /// </summary>
         public long Id {get; set;}
 
+        private string _accountNumber;
+
         /// <summary>
         /// Student's account number. Left-zero-fill to 10 characters.
         /// </summary>
         [MaxLength(10), MinLength(10), Required]
-        public string AccountNumber {get; set;}
+        public string AccountNumber {
+            get => _accountNumber;
+            set {
+                if (!Regex.IsMatch(value, "^[0-9]{1,10}$")) {
+                    throw new ArgumentOutOfRangeException(
+                        "AccountNumber",
+                        "Can be a maximum of 10 digits."
+                    );
+                }
+
+                _accountNumber = value.PadLeft(10, '0');
+            }
+        }
 
         /// <summary>
         /// The email address of the student.
@@ -73,6 +89,12 @@ namespace jahndigital.studentbank.dal.Entities
         }
 
         /// <summary>
+        /// 
+        /// </summary>
+        [ForeignKey("Group"), Required]
+        public long GroupId { get; set;}
+
+        /// <summary>
         /// Student's group (class/period/etc.).
         /// </summary>
         [Required]
@@ -96,5 +118,15 @@ namespace jahndigital.studentbank.dal.Entities
         /// </summary>
         /// <returns></returns>
         public ICollection<StudentPurchase> Purchases {get; set;} = new HashSet<StudentPurchase>();
+
+        /// <summary>
+        /// Get or set the date the student was deleted.
+        /// </summary>
+        public DateTime? DateDeleted {get; set;} = null;
+
+        /// <summary>
+        /// Get or set the date the student was created.
+        /// </summary>
+        public DateTime DateCreated {get; set;} = DateTime.UtcNow;
     }
 }

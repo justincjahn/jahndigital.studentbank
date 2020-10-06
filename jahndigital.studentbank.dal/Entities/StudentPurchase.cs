@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
@@ -49,5 +50,10 @@ namespace jahndigital.studentbank.dal.Entities
         /// <typeparam name="StudentPurchaseItem"></typeparam>
         /// <returns></returns>
         public ICollection<StudentPurchaseItem> Items {get; set;} = new HashSet<StudentPurchaseItem>();
+
+        /// <summary>
+        /// Get the date that the purchase was created.
+        /// </summary>
+        public DateTime DateCreated {get; private set;} = DateTime.UtcNow;
     }
 }

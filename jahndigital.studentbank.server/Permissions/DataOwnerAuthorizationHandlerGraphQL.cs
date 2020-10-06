@@ -16,7 +16,11 @@ namespace jahndigital.studentbank.server.Permissions
     /// </summary>
     internal class DataOwnerAuthorizationHandlerGraphQL : AuthorizationHandler<DataOwnerRequirement, IResolverContext>
     {
-        public const string CTXNAME = "IsDataOwner";
+        public const string CTX_ISOWNER = "IsDataOwner";
+
+        public const string CTX_USER_ID = "UserId";
+
+        public const string CTX_USER_TYPE = "UserType";
 
         private readonly IHttpContextAccessor _httpContext;
         private readonly IRoleService _roleService;
@@ -49,8 +53,9 @@ namespace jahndigital.studentbank.server.Permissions
         /// <returns>true if the current user/student is a data owner.</returns>
         private bool IsDataOwner(AuthorizationHandlerContext context, IResolverContext resolverContext)
         {
-            if (resolverContext.ScopedContextData.ContainsKey(CTXNAME)) {
-                return (bool)resolverContext.ScopedContextData[CTXNAME];
+            // If we've cached the result, return it
+            if (resolverContext.ScopedContextData.ContainsKey(CTX_ISOWNER)) {
+                return (bool)resolverContext.ScopedContextData[CTX_ISOWNER];
             }
 
             var route = resolverContext.FieldSelection.Arguments;
@@ -58,18 +63,26 @@ namespace jahndigital.studentbank.server.Permissions
             string userId = string.Empty;
             UserType? userType = null;
 
-            resolverContext.ScopedContextData = resolverContext.ScopedContextData.SetItem(CTXNAME, false);
+            resolverContext.ScopedContextData = resolverContext.ScopedContextData.SetItem(CTX_ISOWNER, false);
 
-            HotChocolate.Language.ArgumentNode? arg = route.FirstOrDefault(x => x.Name.Value == "userId");
-            if (arg != null) {
-                userType = UserType.User;
-                userId = arg.Value.Value.ToString()!;
-            }
+            // Check to see if the caller has specified the user ID and type
+            if (resolverContext.ScopedContextData.ContainsKey(CTX_USER_ID)
+                && resolverContext.ScopedContextData.ContainsKey(CTX_USER_TYPE))
+            {
+                userId = resolverContext.ScopedContextData[CTX_USER_ID]?.ToString() ?? "";
+                userType = (UserType)resolverContext.ScopedContextData[CTX_USER_TYPE];
+            } else {
+                HotChocolate.Language.ArgumentNode? arg = route.FirstOrDefault(x => x.Name.Value == "userId");
+                if (arg != null) {
+                    userType = UserType.User;
+                    userId = arg.Value.Value.ToString()!;
+                }
 
-            arg = route.FirstOrDefault(x => x.Name.Value == "studentId");
-            if (arg != null) {
-                userType = UserType.Student;
-                userId = arg.Value.Value.ToString()!;
+                arg = route.FirstOrDefault(x => x.Name.Value == "studentId");
+                if (arg != null) {
+                    userType = UserType.Student;
+                    userId = arg.Value.Value.ToString()!;
+                }
             }
 
             if (userType == null) return false;
@@ -89,7 +102,7 @@ namespace jahndigital.studentbank.server.Permissions
             if (userType.Name != userTypeClaim.Value) return false;
 
             if (routeId == claimId) {
-                resolverContext.ScopedContextData = resolverContext.ScopedContextData.SetItem(CTXNAME, true);
+                resolverContext.ScopedContextData = resolverContext.ScopedContextData.SetItem(CTX_ISOWNER, true);
                 return true;
             }
 

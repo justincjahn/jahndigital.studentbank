@@ -68,6 +68,8 @@ namespace jahndigital.studentbank.server
                     .AddMutationType(x => x.Name("Mutation"))
                         .AddType<GraphQL.Mutations.UserMutations>()
                         .AddType<GraphQL.Mutations.StudentMutations>()
+                        .AddType<GraphQL.Mutations.GroupMutations>()
+                        .AddType<GraphQL.Mutations.InstanceMutations>()
                     .AddAuthorizeDirectiveType()
                     .AddType<GraphQL.ObjectTypes.GroupType>()
                     .AddType<GraphQL.ObjectTypes.InstanceType>()

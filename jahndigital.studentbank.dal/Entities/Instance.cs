@@ -36,5 +36,15 @@ namespace jahndigital.studentbank.dal.Entities
         /// Gets or sets the collection of stocks associated with this instance.
         /// </summary>
         public ICollection<Stock> Stocks { get; set; } = new HashSet<Stock>();
+
+        /// <summary>
+        /// Get the date the instance was created.
+        /// </summary>
+        public DateTime DateCreated {get; private set;} = DateTime.UtcNow;
+
+        /// <summary>
+        /// Get or set the date the instance was deleted.
+        /// </summary>
+        public DateTime? DateDeleted {get; set;} = null;
     }
 }

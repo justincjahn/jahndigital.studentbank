@@ -29,16 +29,8 @@ namespace jahndigital.studentbank.server.GraphQL.Queries
                 .Select(x => x.Group.InstanceId)
                 .FirstOrDefaultAsync();
             
-            if (instanceId == null) {
-                throw new QueryException(
-                    ErrorBuilder.New()
-                        .SetMessage("Student not found.")
-                        .SetCode("NOT_FOUND")
-                        .Build()
-                );
-            }
-
-            return context.Stocks.Where(x => x.InstanceId == instanceId);
+            if (instanceId == null) throw ErrorFactory.NotFound();
+            return context.Stocks.Where(x => x.InstanceId == instanceId && x.DateDeleted == null);
         }
 
         /// <summary>
@@ -50,6 +42,16 @@ namespace jahndigital.studentbank.server.GraphQL.Queries
         [UsePaging, UseFiltering, UseSelection, UseSorting,
         Authorize(Policy = Constants.Privilege.PRIVILEGE_MANAGE_STOCKS)]
         public IQueryable<dal.Entities.Stock> GetStocks(long instanceId, [Service]AppDbContext context) =>
-            context.Stocks.Where(x => x.InstanceId == instanceId);
+            context.Stocks.Where(x => x.InstanceId == instanceId && x.DateDeleted == null);
+        
+        /// <summary>
+        /// Get all deleted stocks.
+        /// </summary>
+        /// <param name="context"></param>
+        /// <returns></returns>
+        [UsePaging, UseFiltering, UseSelection, UseSorting,
+        Authorize(Policy = Constants.Privilege.PRIVILEGE_MANAGE_STOCKS)]
+        public IQueryable<dal.Entities.Stock> GetDeletedStocks([Service]AppDbContext context) =>
+            context.Stocks.Where(x => x.DateDeleted != null);
     }
 }

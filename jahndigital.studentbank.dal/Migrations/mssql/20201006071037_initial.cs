@@ -1,7 +1,7 @@
 ﻿using System;
 using Microsoft.EntityFrameworkCore.Migrations;
 
-namespace jahndigital.studentbank.dal.Migrations.sqlite
+namespace jahndigital.studentbank.dal.Migrations.mssql
 {
     public partial class initial : Migration
     {
@@ -14,7 +14,9 @@ namespace jahndigital.studentbank.dal.Migrations.sqlite
                     Id = table.Column<long>(nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
                     Description = table.Column<string>(maxLength: 32, nullable: false),
-                    IsActive = table.Column<bool>(nullable: false)
+                    IsActive = table.Column<bool>(nullable: false),
+                    DateCreated = table.Column<DateTime>(nullable: false),
+                    DateDeleted = table.Column<DateTime>(nullable: true)
                 },
                 constraints: table =>
                 {
@@ -28,7 +30,8 @@ namespace jahndigital.studentbank.dal.Migrations.sqlite
                     Id = table.Column<long>(nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
                     Name = table.Column<string>(maxLength: 16, nullable: false),
-                    Description = table.Column<string>(maxLength: 128, nullable: false)
+                    Description = table.Column<string>(maxLength: 128, nullable: false),
+                    DateCreated = table.Column<DateTime>(nullable: false)
                 },
                 constraints: table =>
                 {
@@ -45,7 +48,9 @@ namespace jahndigital.studentbank.dal.Migrations.sqlite
                     Description = table.Column<string>(maxLength: 256, nullable: true),
                     Cost = table.Column<long>(nullable: false),
                     IsLimitedQuantity = table.Column<bool>(nullable: false),
-                    Quantity = table.Column<int>(nullable: false)
+                    Quantity = table.Column<int>(nullable: false),
+                    DateCreated = table.Column<DateTime>(nullable: false),
+                    DateDeleted = table.Column<DateTime>(nullable: true)
                 },
                 constraints: table =>
                 {
@@ -60,7 +65,8 @@ namespace jahndigital.studentbank.dal.Migrations.sqlite
                         .Annotation("SqlServer:Identity", "1, 1"),
                     Name = table.Column<string>(maxLength: 32, nullable: false),
                     Description = table.Column<string>(maxLength: 128, nullable: true),
-                    IsBuiltIn = table.Column<bool>(nullable: false)
+                    IsBuiltIn = table.Column<bool>(nullable: false),
+                    DateCreated = table.Column<DateTime>(nullable: false)
                 },
                 constraints: table =>
                 {
@@ -74,7 +80,9 @@ namespace jahndigital.studentbank.dal.Migrations.sqlite
                     Id = table.Column<long>(nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
                     Name = table.Column<string>(maxLength: 32, nullable: false),
-                    DividendRate = table.Column<long>(nullable: false)
+                    DividendRate = table.Column<long>(nullable: false),
+                    DateCreated = table.Column<DateTime>(nullable: false),
+                    DateDeleted = table.Column<DateTime>(nullable: true)
                 },
                 constraints: table =>
                 {
@@ -88,7 +96,9 @@ namespace jahndigital.studentbank.dal.Migrations.sqlite
                     Id = table.Column<long>(nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
                     Name = table.Column<string>(maxLength: 32, nullable: false),
-                    InstanceId = table.Column<long>(nullable: false)
+                    InstanceId = table.Column<long>(nullable: false),
+                    DateCreated = table.Column<DateTime>(nullable: false),
+                    DateDeleted = table.Column<DateTime>(nullable: true)
                 },
                 constraints: table =>
                 {
@@ -112,7 +122,9 @@ namespace jahndigital.studentbank.dal.Migrations.sqlite
                     Name = table.Column<string>(maxLength: 32, nullable: false),
                     TotalShares = table.Column<long>(nullable: false),
                     AvailableShares = table.Column<long>(nullable: false),
-                    CurrentValue = table.Column<long>(nullable: false)
+                    CurrentValue = table.Column<long>(nullable: false),
+                    DateCreated = table.Column<DateTime>(nullable: false),
+                    DateDeleted = table.Column<DateTime>(nullable: true)
                 },
                 constraints: table =>
                 {
@@ -177,7 +189,9 @@ namespace jahndigital.studentbank.dal.Migrations.sqlite
                         .Annotation("SqlServer:Identity", "1, 1"),
                     Email = table.Column<string>(maxLength: 64, nullable: false),
                     Password = table.Column<string>(maxLength: 84, nullable: false),
-                    RoleId = table.Column<long>(nullable: false)
+                    RoleId = table.Column<long>(nullable: false),
+                    DateCreated = table.Column<DateTime>(nullable: false),
+                    DateDeleted = table.Column<DateTime>(nullable: true)
                 },
                 constraints: table =>
                 {
@@ -225,7 +239,9 @@ namespace jahndigital.studentbank.dal.Migrations.sqlite
                     FirstName = table.Column<string>(maxLength: 64, nullable: false),
                     LastName = table.Column<string>(maxLength: 64, nullable: false),
                     Password = table.Column<string>(maxLength: 84, nullable: false),
-                    GroupId = table.Column<long>(nullable: false)
+                    GroupId = table.Column<long>(nullable: false),
+                    DateDeleted = table.Column<DateTime>(nullable: true),
+                    DateCreated = table.Column<DateTime>(nullable: false)
                 },
                 constraints: table =>
                 {
@@ -294,7 +310,9 @@ namespace jahndigital.studentbank.dal.Migrations.sqlite
                     ShareTypeId = table.Column<long>(nullable: false),
                     StudentId = table.Column<long>(nullable: false),
                     Balance = table.Column<long>(nullable: false),
-                    DateLastActive = table.Column<DateTime>(nullable: false)
+                    DateLastActive = table.Column<DateTime>(nullable: false),
+                    DateCreated = table.Column<DateTime>(nullable: false),
+                    DateDeleted = table.Column<DateTime>(nullable: true)
                 },
                 constraints: table =>
                 {
@@ -320,7 +338,8 @@ namespace jahndigital.studentbank.dal.Migrations.sqlite
                     Id = table.Column<long>(nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
                     StudentId = table.Column<long>(nullable: false),
-                    TotalCost = table.Column<long>(nullable: false)
+                    TotalCost = table.Column<long>(nullable: false),
+                    DateCreated = table.Column<DateTime>(nullable: false)
                 },
                 constraints: table =>
                 {
@@ -366,7 +385,9 @@ namespace jahndigital.studentbank.dal.Migrations.sqlite
                     Id = table.Column<long>(nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
                     StudentId = table.Column<long>(nullable: false),
-                    StockId = table.Column<long>(nullable: false)
+                    StockId = table.Column<long>(nullable: false),
+                    DateLastActive = table.Column<DateTime>(nullable: false),
+                    DateCreated = table.Column<DateTime>(nullable: false)
                 },
                 constraints: table =>
                 {

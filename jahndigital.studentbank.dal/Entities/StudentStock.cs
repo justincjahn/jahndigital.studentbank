@@ -43,5 +43,15 @@ namespace jahndigital.studentbank.dal.Entities
         /// The history of buy/sells for this stock.
         /// </summary>
         public ICollection<StudentStockHistory> History {get; set;} = new HashSet<StudentStockHistory>();
+
+        /// <summary>
+        /// Get or set the date that this stock was last purchased or sold.
+        /// </summary>
+        public DateTime DateLastActive {get; set;} = DateTime.UtcNow;
+
+        /// <summary>
+        /// Get the date that the student originally acquired the stock.
+        /// </summary>
+        public DateTime DateCreated {get; private set;} = DateTime.UtcNow;
     }
 }

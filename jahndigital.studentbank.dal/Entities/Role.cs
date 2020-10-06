@@ -36,5 +36,10 @@ namespace jahndigital.studentbank.dal.Entities
         /// A list of Privileges assigned to this role.
         /// </summary>
         public ICollection<RolePrivilege> RolePrivileges {get; set;} = new HashSet<RolePrivilege>();
+
+        /// <summary>
+        /// Get the date the role was created.
+        /// </summary>
+        public DateTime DateCreated {get; private set;} = DateTime.UtcNow;
     }
 }

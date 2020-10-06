@@ -80,5 +80,15 @@ namespace jahndigital.studentbank.dal.Entities
         /// The history of the stock.
         /// </summary>
         public ICollection<StockHistory> History {get; set;} = new HashSet<StockHistory>();
+
+        /// <summary>
+        /// Get the date that the stock was created.
+        /// </summary>
+        public DateTime DateCreated {get; private set;} = DateTime.UtcNow;
+
+        /// <summary>
+        /// Get or set the date that the stock was deleted.
+        /// </summary>
+        public DateTime? DateDeleted {get; set;} = null;
     }
 }

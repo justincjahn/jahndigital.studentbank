@@ -27,11 +27,7 @@ namespace jahndigital.studentbank.dal.Entities
         /// to set this value.
         /// </summary>
         [Column("DividendRate"), Required]
-        public long RawDividendRate
-        {
-            get;
-            private set;
-        }
+        public long RawDividendRate { get; private set; }
 
         /// <summary>
         /// The interest/dividend rate for this share type.
@@ -39,20 +35,23 @@ namespace jahndigital.studentbank.dal.Entities
         [NotMapped]
         public Rate DividendRate
         {
-            get
-            {
-                return Rate.FromDatabase(RawDividendRate);
-            }
-
-            set
-            {
-                RawDividendRate = value.DatabaseValue;
-            }
+            get => Rate.FromDatabase(RawDividendRate);
+            set => RawDividendRate = value.DatabaseValue;
         }
 
         /// <summary>
         /// Gets the list of shares associated with this share type.
         /// </summary>
         public ICollection<Share> Shares { get; set; } = new HashSet<Share>();
+
+        /// <summary>
+        /// Get the date that the share type was created.
+        /// </summary>
+        public DateTime DateCreated {get; private set;} = DateTime.UtcNow;
+
+        /// <summary>
+        /// Get or set the date the share type was deleted.
+        /// </summary>
+        public DateTime? DateDeleted {get; set;} = null;
     }
 }

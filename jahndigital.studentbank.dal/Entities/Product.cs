@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
@@ -65,5 +66,15 @@ namespace jahndigital.studentbank.dal.Entities
         /// <typeparam name="ProductGroup"></typeparam>
         /// <returns></returns>
         public ICollection<ProductGroup> ProductGroups {get; set;} = new HashSet<ProductGroup>();
+
+        /// <summary>
+        /// Get the date the product was created.
+        /// </summary>
+        public DateTime DateCreated {get; private set;} = DateTime.UtcNow;
+
+        /// <summary>
+        /// Get the date the product was deleted.
+        /// </summary>
+        public DateTime? DateDeleted {get; set;} = null;
     }
 }

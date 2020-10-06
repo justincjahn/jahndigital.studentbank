@@ -1,6 +1,8 @@
 using System.Linq;
 using HotChocolate;
+using HotChocolate.AspNetCore.Authorization;
 using HotChocolate.Types;
+using HotChocolate.Types.Relay;
 using jahndigital.studentbank.dal.Contexts;
 
 namespace jahndigital.studentbank.server.GraphQL.Queries
@@ -18,6 +20,16 @@ namespace jahndigital.studentbank.server.GraphQL.Queries
         /// <returns></returns>
         [UseFiltering, UseSorting, UseSelection]
         public IQueryable<dal.Entities.Instance> GetInstances([Service]AppDbContext context) =>
-            context.Instances;
+            context.Instances.Where(x => x.DateDeleted == null);
+
+        /// <summary>
+        /// Get instances if authorized (Manage Instances)
+        /// </summary>
+        /// <param name="context"></param>
+        /// <returns></returns>
+        [UsePaging, UseFiltering, UseSorting, UseSelection,
+        Authorize(Policy = Constants.Privilege.PRIVILEGE_MANAGE_INSTANCES)]
+        public IQueryable<dal.Entities.Instance> GetDeletedInstances([Service]AppDbContext context) =>
+            context.Instances.Where(x => x.DateDeleted != null);
     }
 }

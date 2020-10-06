@@ -42,5 +42,15 @@ namespace jahndigital.studentbank.dal.Entities
         /// Gets the list of products deployed to this group.
         /// </summary>
         public ICollection<ProductGroup> ProductGroups {get; set;} = new HashSet<ProductGroup>();
+
+        /// <summary>
+        /// Get the date the group was created.
+        /// </summary>
+        public DateTime DateCreated {get; private set;} = DateTime.UtcNow;
+
+        /// <summary>
+        /// Get or set the date the group was deleted.
+        /// </summary>
+        public DateTime? DateDeleted {get; set;} = null;
     }
 }

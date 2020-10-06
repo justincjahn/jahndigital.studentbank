@@ -72,5 +72,15 @@ namespace jahndigital.studentbank.dal.Entities
         /// </summary>
         [JsonIgnore]
         public ICollection<RefreshToken> RefreshTokens {get;set;} = new HashSet<RefreshToken>();
+
+        /// <summary>
+        /// Get the date the user was created.
+        /// </summary>
+        public DateTime DateCreated {get; private set;} = DateTime.UtcNow;
+
+        /// <summary>
+        /// Get or set the date the user was deleted.
+        /// </summary>
+        public DateTime? DateDeleted {get; set;} = null;
     }
 }

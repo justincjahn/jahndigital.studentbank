@@ -26,6 +26,12 @@ namespace jahndigital.studentbank.dal.Migrations.sqlite
                         .HasColumnType("bigint")
                         .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
 
+                    b.Property<DateTime>("DateCreated")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime?>("DateDeleted")
+                        .HasColumnType("datetime2");
+
                     b.Property<long>("InstanceId")
                         .HasColumnType("bigint");
 
@@ -51,6 +57,12 @@ namespace jahndigital.studentbank.dal.Migrations.sqlite
                         .HasColumnType("bigint")
                         .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
 
+                    b.Property<DateTime>("DateCreated")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime?>("DateDeleted")
+                        .HasColumnType("datetime2");
+
                     b.Property<string>("Description")
                         .IsRequired()
                         .HasColumnType("nvarchar(32)")
@@ -74,6 +86,9 @@ namespace jahndigital.studentbank.dal.Migrations.sqlite
                         .HasColumnType("bigint")
                         .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
 
+                    b.Property<DateTime>("DateCreated")
+                        .HasColumnType("datetime2");
+
                     b.Property<string>("Description")
                         .IsRequired()
                         .HasColumnType("nvarchar(128)")
@@ -95,6 +110,12 @@ namespace jahndigital.studentbank.dal.Migrations.sqlite
                         .ValueGeneratedOnAdd()
                         .HasColumnType("bigint")
                         .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
+
+                    b.Property<DateTime>("DateCreated")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime?>("DateDeleted")
+                        .HasColumnType("datetime2");
 
                     b.Property<string>("Description")
                         .HasColumnType("nvarchar(256)")
@@ -142,6 +163,9 @@ namespace jahndigital.studentbank.dal.Migrations.sqlite
                         .HasColumnType("bigint")
                         .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
 
+                    b.Property<DateTime>("DateCreated")
+                        .HasColumnType("datetime2");
+
                     b.Property<string>("Description")
                         .HasColumnType("nvarchar(128)")
                         .HasMaxLength(128);
@@ -181,6 +205,12 @@ namespace jahndigital.studentbank.dal.Migrations.sqlite
                         .HasColumnType("bigint")
                         .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
 
+                    b.Property<DateTime>("DateCreated")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime?>("DateDeleted")
+                        .HasColumnType("datetime2");
+
                     b.Property<DateTime>("DateLastActive")
                         .HasColumnType("datetime2");
 
@@ -210,6 +240,12 @@ namespace jahndigital.studentbank.dal.Migrations.sqlite
                         .HasColumnType("bigint")
                         .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
 
+                    b.Property<DateTime>("DateCreated")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime?>("DateDeleted")
+                        .HasColumnType("datetime2");
+
                     b.Property<string>("Name")
                         .IsRequired()
                         .HasColumnType("nvarchar(32)")
@@ -233,6 +269,12 @@ namespace jahndigital.studentbank.dal.Migrations.sqlite
 
                     b.Property<long>("AvailableShares")
                         .HasColumnType("bigint");
+
+                    b.Property<DateTime>("DateCreated")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime?>("DateDeleted")
+                        .HasColumnType("datetime2");
 
                     b.Property<long>("InstanceId")
                         .HasColumnType("bigint");
@@ -297,6 +339,12 @@ namespace jahndigital.studentbank.dal.Migrations.sqlite
                         .HasColumnType("nvarchar(10)")
                         .HasMaxLength(10);
 
+                    b.Property<DateTime>("DateCreated")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime?>("DateDeleted")
+                        .HasColumnType("datetime2");
+
                     b.Property<string>("Email")
                         .IsRequired()
                         .HasColumnType("nvarchar(64)")
@@ -336,6 +384,9 @@ namespace jahndigital.studentbank.dal.Migrations.sqlite
                         .ValueGeneratedOnAdd()
                         .HasColumnType("bigint")
                         .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
+
+                    b.Property<DateTime>("DateCreated")
+                        .HasColumnType("datetime2");
 
                     b.Property<long>("RawTotalCost")
                         .HasColumnName("TotalCost")
@@ -386,6 +437,12 @@ namespace jahndigital.studentbank.dal.Migrations.sqlite
                         .ValueGeneratedOnAdd()
                         .HasColumnType("bigint")
                         .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
+
+                    b.Property<DateTime>("DateCreated")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime>("DateLastActive")
+                        .HasColumnType("datetime2");
 
                     b.Property<long>("StockId")
                         .HasColumnType("bigint");
@@ -473,6 +530,12 @@ namespace jahndigital.studentbank.dal.Migrations.sqlite
                         .ValueGeneratedOnAdd()
                         .HasColumnType("bigint")
                         .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
+
+                    b.Property<DateTime>("DateCreated")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime?>("DateDeleted")
+                        .HasColumnType("datetime2");
 
                     b.Property<string>("Email")
                         .IsRequired()
@@ -673,7 +736,7 @@ namespace jahndigital.studentbank.dal.Migrations.sqlite
             modelBuilder.Entity("jahndigital.studentbank.dal.Entities.StudentStock", b =>
                 {
                     b.HasOne("jahndigital.studentbank.dal.Entities.Stock", "Stock")
-                        .WithMany()
+                        .WithMany("StudentStock")
                         .HasForeignKey("StockId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();

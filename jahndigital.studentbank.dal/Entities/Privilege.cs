@@ -30,5 +30,10 @@ namespace jahndigital.studentbank.dal.Entities
         /// Gets the intermediate table that links a Privilege to a collection or roles.
         /// </summary>
         public ICollection<RolePrivilege> RolePrivileges { get; set; } = new HashSet<RolePrivilege>();
+
+        /// <summary>
+        /// Get the date that the privilege was created.
+        /// </summary>
+        public DateTime DateCreated {get; private set;} = DateTime.UtcNow;
     }
 }

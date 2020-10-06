@@ -74,5 +74,15 @@ namespace jahndigital.studentbank.dal.Entities
         /// </summary>
         [Required]
         public DateTime DateLastActive {get; set;} = DateTime.UtcNow;
+
+        /// <summary>
+        /// Get the date the share was created.
+        /// </summary>
+        public DateTime DateCreated {get; private set;} = DateTime.UtcNow;
+
+        /// <summary>
+        /// Get or set the date the share was deleted.
+        /// </summary>
+        public DateTime? DateDeleted {get; set;} = null;
     }
 }

@@ -32,7 +32,20 @@ namespace jahndigital.studentbank.server.Services
         /// <inheritdoc />
         public AuthenticateResponse? Authenticate(AuthenticateRequest model, string ipAddress)
         {
-            var student = _context.Students.SingleOrDefault(x => x.AccountNumber == model.Username || x.Email == model.Username);
+            // Only select students in the active instance
+            var activeInstances = _context.Instances.Where(x => x.IsActive).Select(x => x.Id);
+
+            // Only select students in groups that aren't deleted
+            var groups = _context.Groups
+                .Where(x => activeInstances.Contains(x.InstanceId) && x.DateDeleted == null)
+                .Select(x => x.Id);
+
+            var student = _context.Students.SingleOrDefault(x =>
+                (x.AccountNumber == model.Username || x.Email == model.Username)
+                && x.DateDeleted == null
+                && groups.Contains(x.GroupId)
+            );
+        
             if (student == null) return null;
 
             var valid = student.ValidatePassword(model.Password);
@@ -65,7 +78,11 @@ namespace jahndigital.studentbank.server.Services
         /// <inheritdoc />
         public AuthenticateResponse? RefreshToken(string token, string ipAddress)
         {
-            var student = _context.Students.SingleOrDefault(u => u.RefreshTokens.Any(t => t.Token == token));
+            var student = _context.Students.SingleOrDefault(u =>
+                u.RefreshTokens.Any(t => t.Token == token)
+                && u.DateDeleted == null
+            );
+
             if (student == null) return null;
 
             var refreshToken = student.RefreshTokens.Single(x => x.Token == token);

@@ -31,21 +31,14 @@ namespace jahndigital.studentbank.server.GraphQL.Queries
                 .Where(x => x.Id == studentId)
                 .SingleOrDefaultAsync();
 
-            if (student == null) {
-                throw new QueryException(
-                    ErrorBuilder.New()
-                        .SetMessage("Student not found.")
-                        .SetCode("NOT_FOUND")
-                        .Build()
-                );
-            }
+            if (student == null) throw ErrorFactory.NotFound();
 
             var productGroups = await context.ProductGroups
                 .Where(x => x.GroupId == student.Group.Id)
                 .Select(x => x.ProductId)
                 .ToListAsync();
 
-            return context.Products.Where(x => productGroups.Contains(x.Id));
+            return context.Products.Where(x => productGroups.Contains(x.Id) && x.DateDeleted == null);
         }
 
         /// <summary>
@@ -56,6 +49,16 @@ namespace jahndigital.studentbank.server.GraphQL.Queries
         [UsePaging, UseFiltering, UseSorting, UseSelection,
         Authorize(Policy = Constants.Privilege.PRIVILEGE_MANAGE_PRODUCTS)]
         public IQueryable<dal.Entities.Product> GetProducts([Service]AppDbContext context) =>
-            context.Products;
+            context.Products.Where(x => x.DateDeleted == null);
+        
+        /// <summary>
+        /// Get a list of all products if authorized (Manage Products).
+        /// </summary>
+        /// <param name="context"></param>
+        /// <returns></returns>
+        [UsePaging, UseFiltering, UseSorting, UseSelection,
+        Authorize(Policy = Constants.Privilege.PRIVILEGE_MANAGE_PRODUCTS)]
+        public IQueryable<dal.Entities.Product> GetDeletedProducts([Service]AppDbContext context) =>
+            context.Products.Where(x => x.DateDeleted != null);
     }
 }

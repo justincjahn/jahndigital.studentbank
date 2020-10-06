@@ -310,5 +310,17 @@ namespace jahndigital.studentbank.server
             /// </summary>
             public static readonly UserType Student = new UserType("student");
         }
+    
+        /// <summary>
+        /// A list of error codes.
+        /// </summary>
+        public static class ErrorStrings
+        {
+            public const string ERROR_UNAUTHORIZED = "AUTH_NOT_AUTHORIZED";
+
+            public const string ERROR_NOT_FOUND = "ERROR_NOT_FOUND";
+
+            public const string ERROR_QUERY_FAILED = "ERROR_QUERY_FAILED";
+        }
     }
 }

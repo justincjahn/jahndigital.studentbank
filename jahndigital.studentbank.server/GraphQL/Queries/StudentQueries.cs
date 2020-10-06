@@ -52,7 +52,7 @@ namespace jahndigital.studentbank.server.GraphQL.Queries
             }
 
             resolverContext.ScopedContextData = resolverContext.ScopedContextData.SetItem(
-                DataOwnerAuthorizationHandlerGraphQL.CTXNAME, true);
+                DataOwnerAuthorizationHandlerGraphQL.CTX_ISOWNER, true);
 
             return context.Students.Where(x => x.Id == int.Parse(id.Value));
         }
