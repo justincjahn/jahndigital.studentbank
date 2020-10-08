@@ -66,10 +66,11 @@ namespace jahndigital.studentbank.server
                         .AddType<GraphQL.Queries.TransactionQueries>()
                         .AddType<GraphQL.Queries.UserQueries>()
                     .AddMutationType(x => x.Name("Mutation"))
-                        .AddType<GraphQL.Mutations.UserMutations>()
-                        .AddType<GraphQL.Mutations.StudentMutations>()
                         .AddType<GraphQL.Mutations.GroupMutations>()
                         .AddType<GraphQL.Mutations.InstanceMutations>()
+                        .AddType<GraphQL.Mutations.PurchaseMutations>()
+                        .AddType<GraphQL.Mutations.StudentMutations>()
+                        .AddType<GraphQL.Mutations.UserMutations>()
                     .AddAuthorizeDirectiveType()
                     .AddType<GraphQL.ObjectTypes.GroupType>()
                     .AddType<GraphQL.ObjectTypes.InstanceType>()
@@ -122,7 +123,8 @@ namespace jahndigital.studentbank.server
             services
                 .AddScoped<IUserService, UserService>()
                 .AddScoped<IStudentService, StudentService>()
-                .AddScoped<IRoleService, RoleService>();
+                .AddScoped<IRoleService, RoleService>()
+                .AddScoped<ITransactionService, TransactionService>();
 
             #if DEBUG
                 services.AddSwaggerGen(options => {

@@ -498,6 +498,10 @@ namespace jahndigital.studentbank.dal.Migrations.sqlite
                         .HasColumnType("bigint")
                         .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
 
+                    b.Property<string>("Comment")
+                        .HasColumnType("nvarchar(255)")
+                        .HasMaxLength(255);
+
                     b.Property<DateTime>("EffectiveDate")
                         .HasColumnType("datetime2");
 

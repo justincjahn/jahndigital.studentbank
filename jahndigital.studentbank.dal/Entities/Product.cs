@@ -55,10 +55,19 @@ namespace jahndigital.studentbank.dal.Entities
         /// </summary>
         public bool IsLimitedQuantity { get; set; } = false;
 
+        [Column("Quantity"), Required]
+        private int _quantity = -1;
+
         /// <summary>
         /// Gets or sets the in-stock quantity of the product.
         /// </summary>
-        public int Quantity { get; set; } = -1;
+        [Required]
+        public int Quantity {
+            get => _quantity;
+            set {
+                if (IsLimitedQuantity) _quantity = value;
+            }
+        }
 
         /// <summary>
         /// Gets a list of <see cname="ProductGroup" /> objects linking this product to a group.

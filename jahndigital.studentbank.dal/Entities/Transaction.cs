@@ -34,6 +34,12 @@ namespace jahndigital.studentbank.dal.Entities
         public Share TargetShare {get; set;}
 
         /// <summary>
+        /// An optional transaction comment.
+        /// </summary>
+        [MaxLength(255)]
+        public string Comment {get; set;}
+
+        /// <summary>
         /// Raw dollar amount of the transaction.
         /// </summary>
         [Column("Amount"), Required]

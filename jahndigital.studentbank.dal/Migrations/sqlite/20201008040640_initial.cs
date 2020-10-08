@@ -1,7 +1,7 @@
 ﻿using System;
 using Microsoft.EntityFrameworkCore.Migrations;
 
-namespace jahndigital.studentbank.dal.Migrations.mssql
+namespace jahndigital.studentbank.dal.Migrations.sqlite
 {
     public partial class initial : Migration
     {
@@ -414,6 +414,7 @@ namespace jahndigital.studentbank.dal.Migrations.mssql
                         .Annotation("SqlServer:Identity", "1, 1"),
                     TransactionType = table.Column<string>(maxLength: 1, nullable: false),
                     TargetShareId = table.Column<long>(nullable: false),
+                    Comment = table.Column<string>(maxLength: 255, nullable: true),
                     Amount = table.Column<long>(nullable: false),
                     NewBalance = table.Column<long>(nullable: false),
                     EffectiveDate = table.Column<DateTime>(nullable: false)

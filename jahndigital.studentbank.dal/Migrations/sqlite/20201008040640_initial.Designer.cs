@@ -7,10 +7,10 @@ using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using jahndigital.studentbank.dal.Contexts;
 
-namespace jahndigital.studentbank.dal.Migrations.mssql
+namespace jahndigital.studentbank.dal.Migrations.sqlite
 {
-    [DbContext(typeof(AppDbContext))]
-    [Migration("20201006071037_initial")]
+    [DbContext(typeof(SqliteDbContext))]
+    [Migration("20201008040640_initial")]
     partial class initial
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -499,6 +499,10 @@ namespace jahndigital.studentbank.dal.Migrations.mssql
                         .ValueGeneratedOnAdd()
                         .HasColumnType("bigint")
                         .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
+
+                    b.Property<string>("Comment")
+                        .HasColumnType("nvarchar(255)")
+                        .HasMaxLength(255);
 
                     b.Property<DateTime>("EffectiveDate")
                         .HasColumnType("datetime2");
