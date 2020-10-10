@@ -1,6 +1,7 @@
 using System.Linq;
 using HotChocolate;
 using HotChocolate.AspNetCore.Authorization;
+using HotChocolate.Resolvers;
 using HotChocolate.Types;
 using HotChocolate.Types.Relay;
 using jahndigital.studentbank.dal.Contexts;
@@ -14,22 +15,21 @@ namespace jahndigital.studentbank.server.GraphQL.Queries
     public class PurchaseQueries
     {
         /// <summary>
-        /// Get a list of purchases for a specific student.
-        /// </summary>
-        /// <param name="studentId"></param>
-        /// <param name="context"></param>
-        /// <returns></returns>
-        [UsePaging, UseFiltering, UseSelection, UseSorting]
-        public IQueryable<dal.Entities.StudentPurchase> GetStudentPurchases(long studentId, [Service]AppDbContext context) =>
-            context.StudentPurchases.Where(x => x.StudentId == studentId);
-        
-        /// <summary>
-        /// Get a list of purchases for all students.
+        /// Get the purchases the user has available to them.
         /// </summary>
         /// <param name="context"></param>
+        /// <param name="resolverContext"></param>
         /// <returns></returns>
-        [UsePaging, UseFiltering, UseSelection, UseSorting]
-        public IQueryable<dal.Entities.StudentPurchase> GetPurchases([Service]AppDbContext context) =>
-            context.StudentPurchases;
+        [UsePaging, UseFiltering, UseSelection, UseSorting, Authorize]
+        public IQueryable<dal.Entities.StudentPurchase> GetPurchases(
+            [Service]AppDbContext context,
+            [Service]IResolverContext resolverContext
+        ) {
+            var userType = resolverContext.GetUserType() ?? throw ErrorFactory.Unauthorized();
+            var userId = resolverContext.GetUserId() ?? throw ErrorFactory.Unauthorized();
+            resolverContext.SetUser(userId, userType);
+            if (userType == Constants.UserType.User) return context.StudentPurchases;
+            return context.StudentPurchases.Where(x => x.StudentId == userId);
+        }
     }
 }

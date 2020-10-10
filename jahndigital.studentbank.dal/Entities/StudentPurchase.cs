@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using jahndigital.studentbank.dal.Enums;
 using jahndigital.studentbank.utils;
 
 namespace jahndigital.studentbank.dal.Entities
@@ -43,6 +44,12 @@ namespace jahndigital.studentbank.dal.Entities
             get => Money.FromDatabase(RawTotalCost);
             set => RawTotalCost = value.DatabaseAmount;
         }
+
+        /// <summary>
+        /// Get or set the status of the purchase.
+        /// </summary>
+        [Column(TypeName = "nvarchar(32)"), Required]
+        public PurchaseStatus Status {get; set;} = PurchaseStatus.Placed;
 
         /// <summary>
         /// Get a list of line items on this purchase.

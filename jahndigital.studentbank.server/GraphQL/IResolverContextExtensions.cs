@@ -36,6 +36,40 @@ namespace jahndigital.studentbank.server.GraphQL
             
             return context;
         }
+
+        /// <summary>
+        /// Get the <see cref="UserType"/> of the user currently logged in, if any.
+        /// </summary>
+        /// <param name="context"></param>
+        /// <returns></returns>
+        public static UserType? GetUserType(this IResolverContext context)
+        {
+            var type = context.GetHttpContext().User.Claims
+                .FirstOrDefault(x => x.Type == Constants.Auth.CLAIM_USER_TYPE);
+            
+            if (type != null) {
+                return (UserType)type.Value;
+            }
+
+            return null;
+        }
+
+        /// <summary>
+        /// Get the ID of the user currently logged in, if any.
+        /// </summary>
+        /// <param name="context"></param>
+        /// <returns></returns>
+        public static long? GetUserId(this IResolverContext context)
+        {
+            var id = context.GetHttpContext().User.Claims
+                .FirstOrDefault(x => x.Type == ClaimTypes.NameIdentifier);
+            
+            if (id != null) {
+                return long.Parse(id.Value);
+            }
+
+            return null;
+        }
         
         /// <summary>
         /// Set the user ID and type for the appropriate authentication to occur.

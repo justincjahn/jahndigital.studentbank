@@ -144,17 +144,14 @@ namespace jahndigital.studentbank.server.Services
         /// <param name="context"></param>
         public void SeedShareTypes(AppDbContext context)
         {
-            if (!context.ShareTypes.Any())
-            {
-                _shareType = new ShareType
-                {
+            if (!context.ShareTypes.Any()) {
+                _shareType = new ShareType {
                     DividendRate = Rate.FromRate(0.05m), // 0.05%
                     Name = "Savings"
                 };
 
                 context.Add(_shareType);
-                context.Add(new ShareType
-                {
+                context.Add(new ShareType {
                     Name = "Checking",
                     DividendRate = Rate.FromRate(0)
                 });
@@ -162,8 +159,7 @@ namespace jahndigital.studentbank.server.Services
                 context.SaveChanges();
             } else {
                 _shareType = context.ShareTypes.Where(x => x.RawDividendRate > 0).FirstOrDefault();
-                if (_shareType == null)
-                {
+                if (_shareType == null) {
                     _shareType = context.ShareTypes.FirstOrDefault();
                 }
             }
@@ -200,12 +196,19 @@ namespace jahndigital.studentbank.server.Services
         /// <returns></returns>
         private IEnumerable<Instance> SeedInstances(AppDbContext context)
         {
+            var shareTypes = context.ShareTypes.ToList();
             var instances = new List<Instance>();
-            if (!context.Instances.Any())
-            {
-                for (var i = 0; i < 3; i++)
-                {
+            if (!context.Instances.Any()) {
+                for (var i = 0; i < 3; i++) {
                     var instance = new Instance { Description = $"Instance {i}" };
+
+                    shareTypes.ForEach(x => instance.ShareTypeInstances.Add(
+                        new ShareTypeInstance {
+                            Instance = instance,
+                            ShareType = x
+                        }
+                    ));
+
                     instances.Add(instance);
                     context.Instances.Add(instance);
                 }
@@ -224,11 +227,9 @@ namespace jahndigital.studentbank.server.Services
         private void SeedGroups(AppDbContext context, IEnumerable<Instance> instances)
         {
             var products = context.Products.ToList();
-            foreach (var instance in instances)
-            {
+            foreach (var instance in instances) {
                 var groups = new List<Group>();
-                for (var i = 0; i < 5; i++)
-                {
+                for (var i = 0; i < 5; i++) {
                     var group = new Group
                     {
                         Name = $"Group {i}",
@@ -252,7 +253,6 @@ namespace jahndigital.studentbank.server.Services
                 }
 
                 context.SaveChanges();
-
                 SeedStudents(context, groups);
             }
 
@@ -269,15 +269,12 @@ namespace jahndigital.studentbank.server.Services
         /// <param name="groups"></param>
         private void SeedStudents(AppDbContext context, IEnumerable<Group> groups)
         {
-            foreach (var group in groups)
-            {
+            foreach (var group in groups) {
                 var students = new List<Student>();
                 var max = new Random().Next(5, 100);
-                for (var i = 0; i <= max; i++)
-                {
+                for (var i = 0; i <= max; i++) {
                     var accountNumber = $"{group.Id}{i}".PadLeft(10, '0');
-                    var student = new Student
-                    {
+                    var student = new Student {
                         AccountNumber = accountNumber,
                         Group = group,
                         Password = "student",
@@ -303,10 +300,8 @@ namespace jahndigital.studentbank.server.Services
         private void SeedShares(AppDbContext context, IEnumerable<Student> students)
         {
             var shares = new List<Share>();
-            foreach (var student in students)
-            {
-                var share = new Share
-                {
+            foreach (var student in students) {
+                var share = new Share {
                     Student = student,
                     Balance = Money.FromCurrency(0),
                     ShareType = _shareType,
@@ -328,18 +323,15 @@ namespace jahndigital.studentbank.server.Services
         /// <param name="shares"></param>
         private void SeedTransactions(AppDbContext context, IEnumerable<Share> shares)
         {
-            foreach (var share in shares)
-            {
+            foreach (var share in shares) {
                 var max = new Random().Next(5, 500);
-                for (var i = 0; i <= max; i++)
-                {
+                for (var i = 0; i <= max; i++) {
                     var amount = new Random().Next(1, 50000); // between $0.01 and $500.00
                     amount *= new Random().Next(0, 2) == 1 ? 1 : -1;
                     var oAmount = Money.FromDatabase(amount);
                     var newBalance = share.Balance + oAmount;
 
-                    var transaction = new Transaction
-                    {
+                    var transaction = new Transaction {
                         EffectiveDate = DateTime.UtcNow,
                         Amount = oAmount,
                         TargetShare = share,

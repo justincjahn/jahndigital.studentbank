@@ -18,7 +18,8 @@ namespace jahndigital.studentbank.server.GraphQL.Queries
         /// </summary>
         /// <param name="context"></param>
         /// <returns></returns>
-        [UseSelection, UseFiltering]
+        [UsePaging, UseFiltering, UseSorting, UseSelection,
+        Authorize(Policy = Constants.Privilege.PRIVILEGE_MANAGE_GROUPS)]
         public IQueryable<dal.Entities.Group> GetGroups([Service]AppDbContext context)
             => context.Groups.Where(x => x.DateDeleted == null);
 

@@ -38,6 +38,13 @@ namespace jahndigital.studentbank.dal.Entities
         public ICollection<Stock> Stocks { get; set; } = new HashSet<Stock>();
 
         /// <summary>
+        /// Get or set a collection of share types linked to this instance.
+        /// </summary>
+        /// <typeparam name="ShareTypeInstance"></typeparam>
+        /// <returns></returns>
+        public ICollection<ShareTypeInstance> ShareTypeInstances { get; set; } = new HashSet<ShareTypeInstance>();
+
+        /// <summary>
         /// Get the date the instance was created.
         /// </summary>
         public DateTime DateCreated {get; private set;} = DateTime.UtcNow;

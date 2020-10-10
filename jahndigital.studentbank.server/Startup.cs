@@ -19,6 +19,7 @@ using HotChocolate.Execution.Configuration;
 using HotChocolate.AspNetCore;
 using jahndigital.studentbank.utils;
 using jahndigital.studentbank.server.GraphQL.Types;
+using HotChocolate.Types;
 
 namespace jahndigital.studentbank.server
 {
@@ -63,12 +64,14 @@ namespace jahndigital.studentbank.server
                         .AddType<GraphQL.Queries.StockHistoryQueries>()
                         .AddType<GraphQL.Queries.StockQueries>()
                         .AddType<GraphQL.Queries.StudentQueries>()
+                        .AddType<GraphQL.Queries.StudentStockQueries>()
                         .AddType<GraphQL.Queries.TransactionQueries>()
                         .AddType<GraphQL.Queries.UserQueries>()
                     .AddMutationType(x => x.Name("Mutation"))
                         .AddType<GraphQL.Mutations.GroupMutations>()
                         .AddType<GraphQL.Mutations.InstanceMutations>()
                         .AddType<GraphQL.Mutations.PurchaseMutations>()
+                        .AddType<GraphQL.Mutations.ShareTypeMutations>()
                         .AddType<GraphQL.Mutations.StudentMutations>()
                         .AddType<GraphQL.Mutations.UserMutations>()
                     .AddAuthorizeDirectiveType()
@@ -83,6 +86,8 @@ namespace jahndigital.studentbank.server
                     .AddType<GraphQL.ObjectTypes.StudentType>()
                     .AddType<GraphQL.ObjectTypes.TransactionTypes>()
                     .AddType<GraphQL.ObjectTypes.UserTypes>()
+                    .AddType(new PaginationAmountType(100))
+                    .BindClrType<int, IntType>()
                     .BindClrType<Money, MoneyType>()
                     .BindClrType<Rate, RateType>()
                     .Create(),

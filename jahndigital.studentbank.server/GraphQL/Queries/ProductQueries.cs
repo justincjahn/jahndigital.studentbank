@@ -2,7 +2,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using HotChocolate;
 using HotChocolate.AspNetCore.Authorization;
-using HotChocolate.Execution;
+using HotChocolate.Resolvers;
 using HotChocolate.Types;
 using HotChocolate.Types.Relay;
 using jahndigital.studentbank.dal.Contexts;
@@ -19,40 +19,36 @@ namespace jahndigital.studentbank.server.GraphQL.Queries
         /// <summary>
         /// Lists all products available to a given student.
         /// </summary>
-        /// <param name="studentId"></param>
         /// <param name="context"></param>
+        /// <param name="resolverContext"></param>
         /// <returns></returns>
-        [UsePaging, UseFiltering, UseSorting, UseSelection,
-        Authorize(Policy = Constants.AuthPolicy.DataOwner + "<" + Constants.Privilege.PRIVILEGE_MANAGE_PRODUCTS + ">")]
-        public async Task<IQueryable<dal.Entities.Product>> GetAvailableProductsAsync(long studentId, [Service]AppDbContext context)
-        {
+        [UsePaging, UseFiltering, UseSorting, UseSelection, Authorize]
+        public async Task<IQueryable<dal.Entities.Product>> GetProductsAsync(
+            [Service]AppDbContext context,
+            [Service]IResolverContext resolverContext
+        ) {
+            var userType = resolverContext.GetUserType() ?? throw ErrorFactory.Unauthorized();
+            var userId = resolverContext.GetUserId() ?? throw ErrorFactory.Unauthorized();
+            resolverContext.SetUser(userId, userType);
+
+            if (userType == Constants.UserType.User) {
+                return context.Products.Where(x => x.DateDeleted == null);
+            }
+
+            // Fetch the product IDs the user has access to
             var student = await context.Students
                 .Include(x => x.Group)
-                .Where(x => x.Id == studentId)
-                .SingleOrDefaultAsync();
+                    .ThenInclude(x => x.ProductGroups)
+                .Where(x => x.Id == userId)
+                .FirstOrDefaultAsync()
+            ?? throw ErrorFactory.NotFound();
 
-            if (student == null) throw ErrorFactory.NotFound();
-
-            var productGroups = await context.ProductGroups
-                .Where(x => x.GroupId == student.Group.Id)
-                .Select(x => x.ProductId)
-                .ToListAsync();
-
-            return context.Products.Where(x => productGroups.Contains(x.Id) && x.DateDeleted == null);
+            var productIds = student.Group.ProductGroups.Select(x => x.ProductId);
+            return context.Products.Where(x => productIds.Contains(x.Id) && x.DateDeleted == null);
         }
-
-        /// <summary>
-        /// Get a list of all products if authorized (Manage Products).
-        /// </summary>
-        /// <param name="context"></param>
-        /// <returns></returns>
-        [UsePaging, UseFiltering, UseSorting, UseSelection,
-        Authorize(Policy = Constants.Privilege.PRIVILEGE_MANAGE_PRODUCTS)]
-        public IQueryable<dal.Entities.Product> GetProducts([Service]AppDbContext context) =>
-            context.Products.Where(x => x.DateDeleted == null);
         
         /// <summary>
-        /// Get a list of all products if authorized (Manage Products).
+        /// Get a list of deleted products if authorized (Manage Products).
         /// </summary>
         /// <param name="context"></param>
         /// <returns></returns>

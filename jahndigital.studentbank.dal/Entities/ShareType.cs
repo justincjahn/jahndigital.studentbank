@@ -40,6 +40,13 @@ namespace jahndigital.studentbank.dal.Entities
         }
 
         /// <summary>
+        /// Get or set the collection of instances linked to this Share Type.
+        /// </summary>
+        /// <typeparam name="ShareTypeInstance"></typeparam>
+        /// <returns></returns>
+        public ICollection<ShareTypeInstance> ShareTypeInstances { get; set; } = new HashSet<ShareTypeInstance>();
+
+        /// <summary>
         /// Gets the list of shares associated with this share type.
         /// </summary>
         public ICollection<Share> Shares { get; set; } = new HashSet<Share>();

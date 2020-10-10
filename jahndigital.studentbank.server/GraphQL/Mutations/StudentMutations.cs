@@ -2,13 +2,13 @@ using System;
 using System.Linq;
 using System.Threading.Tasks;
 using HotChocolate;
+using HotChocolate.AspNetCore.Authorization;
 using HotChocolate.Execution;
 using HotChocolate.Resolvers;
 using HotChocolate.Types;
 using jahndigital.studentbank.dal.Contexts;
 using jahndigital.studentbank.server.Models;
 using jahndigital.studentbank.server.Services;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
 using static jahndigital.studentbank.server.Constants;
@@ -24,37 +24,21 @@ namespace jahndigital.studentbank.server.GraphQL.Mutations
         /// <summary>
         /// Log the student in using a username and password and return JWT tokens.
         /// </summary>
-        /// <param name="request"></param>
+        /// <param name="input"></param>
         /// <param name="context"></param>
         /// <param name="studentService"></param>
         /// <param name="contextAccessor"></param>
         /// <returns></returns>
-        [AllowAnonymous]
         public AuthenticateResponse StudentLogin(
-            AuthenticateRequest request,
+            AuthenticateRequest input,
             [Service] AppDbContext context,
             [Service] IStudentService studentService,
             [Service] IHttpContextAccessor contextAccessor
         ) {
-            if (string.IsNullOrEmpty(request.Username)) {
-                throw new QueryException(
-                    ErrorBuilder.New()
-                        .SetMessage("The username can't be empty.")
-                        .SetCode("USERNAME_EMPTY")
-                        .Build()
-                );
-            }
+            if (string.IsNullOrEmpty(input.Username)) throw ErrorFactory.Unauthorized();
+            if (string.IsNullOrEmpty(input.Password)) throw ErrorFactory.Unauthorized();
 
-            if (string.IsNullOrEmpty(request.Password)) {
-                throw new QueryException(
-                    ErrorBuilder.New()
-                        .SetMessage("The password can't be empty.")
-                        .SetCode("PASSWORD_EMPTY")
-                        .Build()
-                );
-            }
-
-            var response = studentService.Authenticate(request, getIp(contextAccessor));
+            var response = studentService.Authenticate(input, getIp(contextAccessor));
 
             if (response == null) {
                 throw new QueryException(
@@ -77,7 +61,6 @@ namespace jahndigital.studentbank.server.GraphQL.Mutations
         /// <param name="studentService"></param>
         /// <param name="contextAccessor"></param>
         /// <returns></returns>
-        [AllowAnonymous]
         public AuthenticateResponse? StudentRefreshToken(
             string token,
             [Service] AppDbContext context,
@@ -167,7 +150,13 @@ namespace jahndigital.studentbank.server.GraphQL.Mutations
             student.Email = input.Email ?? student.Email;
             student.FirstName = input.FirstName ?? student.FirstName;
             student.LastName = input.LastName ?? student.LastName;
-            student.GroupId = input.GroupId ?? student.GroupId;
+
+            if (input.GroupId != null) {
+                var type = resolverContext.GetUserType() ?? throw ErrorFactory.Unauthorized();
+                if (type != Constants.UserType.User) throw ErrorFactory.Unauthorized();
+                student.GroupId = input.GroupId ?? student.GroupId;
+            }
+
             if (input.Password != null) student.Password = input.Password;
 
             try {

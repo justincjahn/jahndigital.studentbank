@@ -205,6 +205,30 @@ namespace jahndigital.studentbank.dal.Migrations.mssql
                 });
 
             migrationBuilder.CreateTable(
+                name: "ShareTypeInstances",
+                columns: table => new
+                {
+                    ShareTypeId = table.Column<long>(nullable: false),
+                    InstanceId = table.Column<long>(nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_ShareTypeInstances", x => new { x.InstanceId, x.ShareTypeId });
+                    table.ForeignKey(
+                        name: "FK_ShareTypeInstances_Instances_InstanceId",
+                        column: x => x.InstanceId,
+                        principalTable: "Instances",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_ShareTypeInstances_ShareTypes_ShareTypeId",
+                        column: x => x.ShareTypeId,
+                        principalTable: "ShareTypes",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "ProductGroups",
                 columns: table => new
                 {
@@ -339,6 +363,7 @@ namespace jahndigital.studentbank.dal.Migrations.mssql
                         .Annotation("SqlServer:Identity", "1, 1"),
                     StudentId = table.Column<long>(nullable: false),
                     TotalCost = table.Column<long>(nullable: false),
+                    Status = table.Column<string>(type: "nvarchar(32)", nullable: false),
                     DateCreated = table.Column<DateTime>(nullable: false)
                 },
                 constraints: table =>
@@ -530,6 +555,11 @@ namespace jahndigital.studentbank.dal.Migrations.mssql
                 column: "StudentId");
 
             migrationBuilder.CreateIndex(
+                name: "IX_ShareTypeInstances_ShareTypeId",
+                table: "ShareTypeInstances",
+                column: "ShareTypeId");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_StockHistory_StockId",
                 table: "StockHistory",
                 column: "StockId");
@@ -616,6 +646,9 @@ namespace jahndigital.studentbank.dal.Migrations.mssql
 
             migrationBuilder.DropTable(
                 name: "RolePrivileges");
+
+            migrationBuilder.DropTable(
+                name: "ShareTypeInstances");
 
             migrationBuilder.DropTable(
                 name: "StockHistory");

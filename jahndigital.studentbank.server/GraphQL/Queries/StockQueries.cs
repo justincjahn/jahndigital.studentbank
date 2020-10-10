@@ -2,7 +2,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using HotChocolate;
 using HotChocolate.AspNetCore.Authorization;
-using HotChocolate.Execution;
+using HotChocolate.Resolvers;
 using HotChocolate.Types;
 using HotChocolate.Types.Relay;
 using jahndigital.studentbank.dal.Contexts;
@@ -14,36 +14,35 @@ namespace jahndigital.studentbank.server.GraphQL.Queries
     public class StockQueries
     {
         /// <summary>
-        /// Get a list of available stocks.
+        /// Get a list of stocks available to the user.
         /// </summary>
-        /// <param name="studentId"></param>
         /// <param name="context"></param>
+        /// <param name="resolverContext"></param>
         /// <returns></returns>
-        [UsePaging, UseFiltering, UseSelection, UseSorting,
-        Authorize(Policy = Constants.AuthPolicy.DataOwner + "<" + Constants.Privilege.PRIVILEGE_MANAGE_STOCKS + ">")]
-        public async Task<IQueryable<dal.Entities.Stock>> GetAvailableStocks(long studentId, [Service]AppDbContext context)
-        {
-            long? instanceId = await context.Students
+        [UsePaging, UseFiltering, UseSelection, UseSorting, Authorize]
+        public async Task<IQueryable<dal.Entities.Stock>> GetStocksAsync(
+            [Service]AppDbContext context,
+            [Service]IResolverContext resolverContext
+        ) {
+            var userType = resolverContext.GetUserType() ?? throw ErrorFactory.Unauthorized();
+            var userId = resolverContext.GetUserId() ?? throw ErrorFactory.Unauthorized();
+            resolverContext.SetUser(userId, userType);
+
+            if (userType == Constants.UserType.User) {
+                var auth = await resolverContext.AuthorizeAsync(Constants.Privilege.ManageStocks.Name);
+                if (!auth.Succeeded) throw ErrorFactory.Unauthorized();
+                return context.Stocks.Where(x => x.DateDeleted == null);
+            }
+
+            var student = await context.Students
                 .Include(x => x.Group)
-                .Where(x => x.Id == studentId)
-                .Select(x => x.Group.InstanceId)
-                .FirstOrDefaultAsync();
-            
-            if (instanceId == null) throw ErrorFactory.NotFound();
-            return context.Stocks.Where(x => x.InstanceId == instanceId && x.DateDeleted == null);
+                .Where(x => x.Id == userId)
+                .FirstOrDefaultAsync()
+            ?? throw ErrorFactory.NotFound();
+
+            return context.Stocks.Where(x => x.DateDeleted == null && x.InstanceId == student.Group.InstanceId);
         }
 
-        /// <summary>
-        /// Get all stocks available for an instance if authorized (Manage Stocks).
-        /// </summary>
-        /// <param name="instanceId"></param>
-        /// <param name="context"></param>
-        /// <returns></returns>
-        [UsePaging, UseFiltering, UseSelection, UseSorting,
-        Authorize(Policy = Constants.Privilege.PRIVILEGE_MANAGE_STOCKS)]
-        public IQueryable<dal.Entities.Stock> GetStocks(long instanceId, [Service]AppDbContext context) =>
-            context.Stocks.Where(x => x.InstanceId == instanceId && x.DateDeleted == null);
-        
         /// <summary>
         /// Get all deleted stocks.
         /// </summary>

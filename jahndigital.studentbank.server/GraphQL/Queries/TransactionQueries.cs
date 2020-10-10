@@ -2,7 +2,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using HotChocolate;
 using HotChocolate.AspNetCore.Authorization;
-using HotChocolate.Execution;
+using HotChocolate.Resolvers;
 using HotChocolate.Types;
 using HotChocolate.Types.Relay;
 using jahndigital.studentbank.dal.Contexts;
@@ -19,23 +19,30 @@ namespace jahndigital.studentbank.server.GraphQL.Queries
         /// <summary>
         /// Get transactions by Student ID and Share ID
         /// </summary>
-        /// <param name="studentId"></param>
         /// <param name="shareId"></param>
         /// <param name="context"></param>
+        /// <param name="resolverContext"></param>
         /// <returns></returns>
-        [UsePaging, UseFiltering, UseSorting,
-        Authorize(Policy = Constants.AuthPolicy.DataOwner + "<" + Constants.Privilege.PRIVILEGE_MANAGE_TRANSACTIONS + ">")]
-        public async Task<IQueryable<dal.Entities.Transaction>> GetTransactionsAsync(long studentId, long shareId, [Service]AppDbContext context) {
-            // The auth policy is there, but this step ensures students can't "fake" their studentId
-            var share = await context.Shares.Where(x => x.StudentId == studentId && x.Id == shareId).AnyAsync();
-            if (!share) {
-                throw new QueryException(
-                    ErrorBuilder.New()
-                        .SetMessage("You are not authorized to access this resource.")
-                        .SetCode("UNAUTHORIZED")
-                        .Build()
-                );
-            }
+        [UsePaging, UseFiltering, UseSorting, Authorize]
+        public async Task<IQueryable<dal.Entities.Transaction>> GetTransactionsAsync(
+            long shareId,
+            [Service]AppDbContext context,
+            [Service] IResolverContext resolverContext
+        ) {
+            var id = resolverContext.GetUserId() ?? throw ErrorFactory.NotFound();
+            var type = resolverContext.GetUserType() ?? throw ErrorFactory.NotFound();
+
+            var share = await context.Shares
+                .Where(x => x.Id == shareId)
+                .FirstOrDefaultAsync()
+            ?? throw ErrorFactory.NotFound();
+
+            resolverContext.SetUser(share.StudentId, Constants.UserType.Student);
+
+            var auth = await resolverContext
+                .AuthorizeAsync($"{Constants.AuthPolicy.DataOwner}<{Constants.Privilege.ManageTransactions}>");
+
+            if (!auth.Succeeded) throw ErrorFactory.Unauthorized();
 
             return context.Transactions.Where(x => x.TargetShareId == shareId);
         }

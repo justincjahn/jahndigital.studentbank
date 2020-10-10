@@ -17,6 +17,7 @@ namespace jahndigital.studentbank.dal.Contexts
         public DbSet<RolePrivilege> RolePrivileges { get; set; }
         public DbSet<Share> Shares { get; set; }
         public DbSet<ShareType> ShareTypes { get; set; }
+        public DbSet<ShareTypeInstance> ShareTypeInstances { get; set; }
         public DbSet<Stock> Stocks { get; set; }
         public DbSet<StockHistory> StockHistory { get; set; }
         public DbSet<Student> Students { get; set; }
@@ -28,6 +29,6 @@ namespace jahndigital.studentbank.dal.Contexts
         public DbSet<StudentPurchaseItem> StudentPurchaseItems { get; set; }
         public DbSet<Product> Products { get; set; }
         public DbSet<ProductGroup> ProductGroups { get; set; }
-        public DbSet<ProductImages> ProductImages {get; set;}
+        public DbSet<ProductImage> ProductImages {get; set;}
     }
 }

@@ -8,7 +8,7 @@ namespace jahndigital.studentbank.dal.Entities
     /// Represents a list of images for a given product.
     /// </summary>
     [Owned]
-    public class ProductImages
+    public class ProductImage
     {
         /// <summary>
         /// Gets the unique ID of the record.

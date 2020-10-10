@@ -2,13 +2,13 @@ using System;
 using System.Linq;
 using System.Threading.Tasks;
 using HotChocolate;
+using HotChocolate.AspNetCore.Authorization;
 using HotChocolate.Execution;
 using HotChocolate.Resolvers;
 using HotChocolate.Types;
 using jahndigital.studentbank.dal.Contexts;
 using jahndigital.studentbank.server.Models;
 using jahndigital.studentbank.server.Services;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
 using static jahndigital.studentbank.server.Constants;
@@ -24,37 +24,21 @@ namespace jahndigital.studentbank.server.GraphQL.Mutations
         /// <summary>
         /// Log the user in using a username and password and return JWT tokens.
         /// </summary>
-        /// <param name="request"></param>
+        /// <param name="input"></param>
         /// <param name="context"></param>
         /// <param name="userService"></param>
         /// <param name="contextAccessor"></param>
         /// <returns></returns>
-        [AllowAnonymous]
         public AuthenticateResponse UserLogin(
-            AuthenticateRequest request,
+            AuthenticateRequest input,
             [Service] AppDbContext context,
             [Service] IUserService userService,
             [Service] IHttpContextAccessor contextAccessor
         ) {
-            if (string.IsNullOrEmpty(request.Username)) {
-                throw new QueryException(
-                    ErrorBuilder.New()
-                        .SetMessage("The username can't be empty.")
-                        .SetCode("USERNAME_EMPTY")
-                        .Build()
-                );
-            }
+            if (string.IsNullOrEmpty(input.Username)) throw ErrorFactory.Unauthorized();
+            if (string.IsNullOrEmpty(input.Password)) throw ErrorFactory.Unauthorized();
 
-            if (string.IsNullOrEmpty(request.Password)) {
-                throw new QueryException(
-                    ErrorBuilder.New()
-                        .SetMessage("The password can't be empty.")
-                        .SetCode("PASSWORD_EMPTY")
-                        .Build()
-                );
-            }
-
-            var response = userService.Authenticate(request, getIp(contextAccessor));
+            var response = userService.Authenticate(input, getIp(contextAccessor));
 
             if (response == null) {
                 throw new QueryException(
@@ -77,7 +61,6 @@ namespace jahndigital.studentbank.server.GraphQL.Mutations
         /// <param name="userService"></param>
         /// <param name="contextAccessor"></param>
         /// <returns></returns>
-        [AllowAnonymous]
         public AuthenticateResponse? UserRefreshToken(
             string token,
             [Service] AppDbContext context,
@@ -212,12 +195,22 @@ namespace jahndigital.studentbank.server.GraphQL.Mutations
         /// </summary>
         /// <param name="id"></param>
         /// <param name="context"></param>
+        /// <param name="resolverContext"></param>
         /// <returns></returns>
         [Authorize(Policy = Constants.Privilege.PRIVILEGE_MANAGE_USERS)]
-        public async Task<bool> DeleteUserAsync(long id, [Service]AppDbContext context)
-        {
+        public async Task<bool> DeleteUserAsync(
+            long id,
+            [Service] AppDbContext context,
+            [Service] IResolverContext resolverContext
+        ) {
             var user = await context.Users.FindAsync(id);
             if (user == null) throw ErrorFactory.NotFound();
+
+            var uid = resolverContext.GetUserId() ?? throw ErrorFactory.NotFound();
+
+            if (id == uid) {
+                throw ErrorFactory.QueryFailed("Cannot delete yourself!");
+            }
 
             user.DateDeleted = DateTime.UtcNow;
 

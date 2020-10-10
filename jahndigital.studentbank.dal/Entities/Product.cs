@@ -31,9 +31,9 @@ namespace jahndigital.studentbank.dal.Entities
         /// <summary>
         /// Gets a list of images for the provided product.
         /// </summary>
-        /// <typeparam name="ProductImages"></typeparam>
+        /// <typeparam name="ProductImage"></typeparam>
         /// <returns></returns>
-        public ICollection<ProductImages> Images {get;set;} = new HashSet<ProductImages>();
+        public ICollection<ProductImage> Images {get;set;} = new HashSet<ProductImage>();
 
         /// <summary>
         /// Get the raw (database storage format) cost.

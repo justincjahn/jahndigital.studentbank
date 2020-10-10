@@ -260,6 +260,21 @@ namespace jahndigital.studentbank.dal.Migrations.sqlite
                     b.ToTable("ShareTypes");
                 });
 
+            modelBuilder.Entity("jahndigital.studentbank.dal.Entities.ShareTypeInstance", b =>
+                {
+                    b.Property<long>("InstanceId")
+                        .HasColumnType("bigint");
+
+                    b.Property<long>("ShareTypeId")
+                        .HasColumnType("bigint");
+
+                    b.HasKey("InstanceId", "ShareTypeId");
+
+                    b.HasIndex("ShareTypeId");
+
+                    b.ToTable("ShareTypeInstances");
+                });
+
             modelBuilder.Entity("jahndigital.studentbank.dal.Entities.Stock", b =>
                 {
                     b.Property<long>("Id")
@@ -391,6 +406,10 @@ namespace jahndigital.studentbank.dal.Migrations.sqlite
                     b.Property<long>("RawTotalCost")
                         .HasColumnName("TotalCost")
                         .HasColumnType("bigint");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(32)");
 
                     b.Property<long>("StudentId")
                         .HasColumnType("bigint");
@@ -572,7 +591,7 @@ namespace jahndigital.studentbank.dal.Migrations.sqlite
 
             modelBuilder.Entity("jahndigital.studentbank.dal.Entities.Product", b =>
                 {
-                    b.OwnsMany("jahndigital.studentbank.dal.Entities.ProductImages", "Images", b1 =>
+                    b.OwnsMany("jahndigital.studentbank.dal.Entities.ProductImage", "Images", b1 =>
                         {
                             b1.Property<long>("Id")
                                 .ValueGeneratedOnAdd()
@@ -639,6 +658,21 @@ namespace jahndigital.studentbank.dal.Migrations.sqlite
                     b.HasOne("jahndigital.studentbank.dal.Entities.Student", "Student")
                         .WithMany("Shares")
                         .HasForeignKey("StudentId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("jahndigital.studentbank.dal.Entities.ShareTypeInstance", b =>
+                {
+                    b.HasOne("jahndigital.studentbank.dal.Entities.Instance", "Instance")
+                        .WithMany("ShareTypeInstances")
+                        .HasForeignKey("InstanceId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("jahndigital.studentbank.dal.Entities.ShareType", "ShareType")
+                        .WithMany("ShareTypeInstances")
+                        .HasForeignKey("ShareTypeId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
                 });
