@@ -23,7 +23,7 @@ namespace jahndigital.studentbank.server.GraphQL.Queries
         /// <param name="context"></param>
         /// <param name="resolverContext"></param>
         /// <returns></returns>
-        [UsePaging, UseFiltering, UseSorting, Authorize]
+        [UsePaging, UseSorting, UseFiltering,Authorize]
         public async Task<IQueryable<dal.Entities.Transaction>> GetTransactionsAsync(
             long shareId,
             [Service]AppDbContext context,

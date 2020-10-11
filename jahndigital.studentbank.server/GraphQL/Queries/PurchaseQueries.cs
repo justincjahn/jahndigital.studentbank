@@ -20,7 +20,7 @@ namespace jahndigital.studentbank.server.GraphQL.Queries
         /// <param name="context"></param>
         /// <param name="resolverContext"></param>
         /// <returns></returns>
-        [UsePaging, UseFiltering, UseSelection, UseSorting, Authorize]
+        [UsePaging, UseSelection, UseSorting, UseFiltering, Authorize]
         public IQueryable<dal.Entities.StudentPurchase> GetPurchases(
             [Service]AppDbContext context,
             [Service]IResolverContext resolverContext

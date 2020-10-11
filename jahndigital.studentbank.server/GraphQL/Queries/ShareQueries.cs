@@ -18,7 +18,7 @@ namespace jahndigital.studentbank.server.GraphQL.Queries
         /// <param name="context"></param>
         /// <param name="resolverContext"></param>
         /// <returns></returns>
-        [UsePaging, UseFiltering, UseSelection, UseSorting, Authorize]
+        [UsePaging, UseSelection, UseSorting, UseFiltering, Authorize]
         public async Task<IQueryable<dal.Entities.Share>> GetShares(
             [Service]AppDbContext context,
             [Service]IResolverContext resolverContext
@@ -30,7 +30,7 @@ namespace jahndigital.studentbank.server.GraphQL.Queries
             if (userType == Constants.UserType.User) {
                 var auth = await resolverContext.AuthorizeAsync(Constants.Privilege.ManageShares.Name);
                 if (!auth.Succeeded) throw ErrorFactory.Unauthorized();
-                return context.Shares;
+                return context.Shares.AsQueryable();
             }
 
             return context.Shares.Where(x => x.StudentId == userId);
@@ -41,7 +41,7 @@ namespace jahndigital.studentbank.server.GraphQL.Queries
         /// </summary>
         /// <param name="context"></param>
         /// <returns></returns>
-        [UsePaging, UseFiltering, UseSorting, UseSelection,
+        [UsePaging, UseSelection, UseSorting, UseFiltering,
         Authorize(Policy = Constants.Privilege.PRIVILEGE_MANAGE_SHARES)]
         public IQueryable<dal.Entities.Share> GetDeletedShares([Service]AppDbContext context) =>
             context.Shares.Where(x => x.DateDeleted != null);

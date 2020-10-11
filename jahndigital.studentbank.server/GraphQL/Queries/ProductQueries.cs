@@ -22,7 +22,7 @@ namespace jahndigital.studentbank.server.GraphQL.Queries
         /// <param name="context"></param>
         /// <param name="resolverContext"></param>
         /// <returns></returns>
-        [UsePaging, UseFiltering, UseSorting, UseSelection, Authorize]
+        [UsePaging, UseSelection, UseSorting, UseFiltering, Authorize]
         public async Task<IQueryable<dal.Entities.Product>> GetProductsAsync(
             [Service]AppDbContext context,
             [Service]IResolverContext resolverContext
@@ -52,7 +52,7 @@ namespace jahndigital.studentbank.server.GraphQL.Queries
         /// </summary>
         /// <param name="context"></param>
         /// <returns></returns>
-        [UsePaging, UseFiltering, UseSorting, UseSelection,
+        [UsePaging, UseSelection, UseSorting, UseFiltering,
         Authorize(Policy = Constants.Privilege.PRIVILEGE_MANAGE_PRODUCTS)]
         public IQueryable<dal.Entities.Product> GetDeletedProducts([Service]AppDbContext context) =>
             context.Products.Where(x => x.DateDeleted != null);

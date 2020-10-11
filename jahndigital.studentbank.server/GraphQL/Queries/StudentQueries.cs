@@ -53,7 +53,7 @@ namespace jahndigital.studentbank.server.GraphQL.Queries
         /// </summary>
         /// <param name="context"></param>
         /// <returns></returns>
-        [UsePaging, UseFiltering, UseSelection, UseSorting,
+        [UsePaging, UseSelection, UseSorting, UseFiltering,
         Authorize(Policy = Constants.Privilege.PRIVILEGE_MANAGE_STUDENTS)]
         public IQueryable<dal.Entities.Student> GetStudents([Service]AppDbContext context) =>
             context.Students.Where(x => x.DateDeleted == null);
@@ -63,7 +63,7 @@ namespace jahndigital.studentbank.server.GraphQL.Queries
         /// </summary>
         /// <param name="context"></param>
         /// <returns></returns>
-        [UsePaging, UseFiltering, UseSelection, UseSorting,
+        [UsePaging, UseSelection, UseSorting, UseFiltering,
         Authorize(Policy = Constants.Privilege.PRIVILEGE_MANAGE_STUDENTS)]
         public IQueryable<dal.Entities.Student> GetDeletedStudents([Service]AppDbContext context) =>
             context.Students.Where(x => x.DateDeleted != null);

@@ -19,7 +19,7 @@ namespace jahndigital.studentbank.server.GraphQL.Queries
         /// <param name="context"></param>
         /// <param name="resolverContext"></param>
         /// <returns></returns>
-        [UsePaging, UseFiltering, UseSorting, UseSelection, Authorize]
+        [UsePaging, UseSelection, UseSorting, UseFiltering, Authorize]
         public async Task<IQueryable<dal.Entities.ShareType>> GetShareTypesAsync(
             [Service]AppDbContext context,
             [Service]IResolverContext resolverContext
@@ -50,7 +50,7 @@ namespace jahndigital.studentbank.server.GraphQL.Queries
         /// </summary>
         /// <param name="context"></param>
         /// <returns></returns>
-        [UsePaging, UseFiltering, UseSorting, UseSelection,
+        [UsePaging, UseSelection, UseSorting, UseFiltering,
         Authorize(Policy = Constants.Privilege.PRIVILEGE_MANAGE_SHARE_TYPES)]
         public IQueryable<dal.Entities.ShareType> GetDeletedShareTypes([Service]AppDbContext context)
             => context.ShareTypes.Where(x => x.DateDeleted != null);
