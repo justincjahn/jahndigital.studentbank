@@ -5,30 +5,30 @@ namespace jahndigital.studentbank.dal.Contexts
 {
     public class AppDbContext : DbContext
     {
+        public DbSet<Group> Groups => Set<Group>();
+        public DbSet<Instance> Instances => Set<Instance>();
+        public DbSet<Privilege> Privileges => Set<Privilege>();
+        public DbSet<Role> Roles => Set<Role>();
+        public DbSet<RolePrivilege> RolePrivileges => Set<RolePrivilege>();
+        public DbSet<Share> Shares => Set<Share>();
+        public DbSet<ShareType> ShareTypes => Set<ShareType>();
+        public DbSet<ShareTypeInstance> ShareTypeInstances => Set<ShareTypeInstance>();
+        public DbSet<Stock> Stocks => Set<Stock>();
+        public DbSet<StockHistory> StockHistory => Set<StockHistory>();
+        public DbSet<Student> Students => Set<Student>();
+        public DbSet<StudentStock> StudentStocks => Set<StudentStock>();
+        public DbSet<StudentStockHistory> StudentStockHistory => Set<StudentStockHistory>();
+        public DbSet<Transaction> Transactions => Set<Transaction>();
+        public DbSet<User> Users => Set<User>();
+        public DbSet<StudentPurchase> StudentPurchases => Set<StudentPurchase>();
+        public DbSet<StudentPurchaseItem> StudentPurchaseItems => Set<StudentPurchaseItem>();
+        public DbSet<Product> Products => Set<Product>();
+        public DbSet<ProductInstance> ProductInstances => Set<ProductInstance>();
+        public DbSet<ProductImage> ProductImages => Set<ProductImage>();
+
         public AppDbContext(DbContextOptions options): base(options) {}
 
         protected override void OnModelCreating(ModelBuilder modelBuilder) =>
            modelBuilder.ApplyConfigurationsFromAssembly(GetType().Assembly);
-
-        public DbSet<Group> Groups { get; set; }
-        public DbSet<Instance> Instances { get; set; }
-        public DbSet<Privilege> Privileges { get; set; }
-        public DbSet<Role> Roles { get; set; }
-        public DbSet<RolePrivilege> RolePrivileges { get; set; }
-        public DbSet<Share> Shares { get; set; }
-        public DbSet<ShareType> ShareTypes { get; set; }
-        public DbSet<ShareTypeInstance> ShareTypeInstances { get; set; }
-        public DbSet<Stock> Stocks { get; set; }
-        public DbSet<StockHistory> StockHistory { get; set; }
-        public DbSet<Student> Students { get; set; }
-        public DbSet<StudentStock> StudentStocks { get; set; }
-        public DbSet<StudentStockHistory> StudentStockHistory { get; set; }
-        public DbSet<Transaction> Transactions { get; set; }
-        public DbSet<User> Users { get; set; }
-        public DbSet<StudentPurchase> StudentPurchases { get; set; }
-        public DbSet<StudentPurchaseItem> StudentPurchaseItems { get; set; }
-        public DbSet<Product> Products { get; set; }
-        public DbSet<ProductGroup> ProductGroups { get; set; }
-        public DbSet<ProductImage> ProductImages {get; set;}
     }
 }

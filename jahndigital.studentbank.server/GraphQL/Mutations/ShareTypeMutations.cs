@@ -14,6 +14,39 @@ namespace jahndigital.studentbank.server.GraphQL.Mutations
     public class ShareTypeMutations
     {
         /// <summary>
+        /// Create a new <see cref="dal.Entities.ShareType"/>.
+        /// </summary>
+        /// <param name="input"></param>
+        /// <param name="context"></param>
+        /// <returns></returns>
+        [Authorize(Policy = Constants.Privilege.PRIVILEGE_MANAGE_SHARE_TYPES)]
+        public async Task<IQueryable<dal.Entities.ShareType>> NewShareTypeAsync(
+            NewShareTypeRequest input,
+            [Service] AppDbContext context
+        ) {
+            if (await context.ShareTypes.AnyAsync(x => x.Name == input.Name)) {
+                throw new ArgumentOutOfRangeException(
+                    "Name",
+                    $"A Share Type with the name '{input.Name}' already exists."
+                );
+            }
+
+            var shareType = new dal.Entities.ShareType {
+                Name = input.Name,
+                DividendRate = input.DividendRate,
+            };
+
+            try {
+                context.Add(shareType);
+                await context.SaveChangesAsync();
+            } catch (Exception e) {
+                throw ErrorFactory.QueryFailed(e.Message);
+            }
+
+            return context.ShareTypes.Where(x => x.Id == shareType.Id);
+        }
+
+        /// <summary>
         /// Update a <see cref="dal.Entities.ShareType"/>.
         /// </summary>
         /// <param name="input"></param>
@@ -41,39 +74,6 @@ namespace jahndigital.studentbank.server.GraphQL.Mutations
             }
 
             try {
-                await context.SaveChangesAsync();
-            } catch (Exception e) {
-                throw ErrorFactory.QueryFailed(e.Message);
-            }
-
-            return context.ShareTypes.Where(x => x.Id == shareType.Id);
-        }
-
-        /// <summary>
-        /// Create a new <see cref="dal.Entities.ShareType"/>.
-        /// </summary>
-        /// <param name="input"></param>
-        /// <param name="context"></param>
-        /// <returns></returns>
-        [Authorize(Policy = Constants.Privilege.PRIVILEGE_MANAGE_SHARE_TYPES)]
-        public async Task<IQueryable<dal.Entities.ShareType>> NewShareTypeAsync(
-            NewShareTypeRequest input,
-            [Service] AppDbContext context
-        ) {
-            if (await context.ShareTypes.AnyAsync(x => x.Name == input.Name)) {
-                throw new ArgumentOutOfRangeException(
-                    "Name",
-                    $"A Share Type with the name '{input.Name}' already exists."
-                );
-            }
-
-            var shareType = new dal.Entities.ShareType {
-                Name = input.Name,
-                DividendRate = input.DividendRate,
-            };
-
-            try {
-                context.Add(shareType);
                 await context.SaveChangesAsync();
             } catch (Exception e) {
                 throw ErrorFactory.QueryFailed(e.Message);

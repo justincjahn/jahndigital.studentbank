@@ -1,3 +1,4 @@
+using System;
 using System.ComponentModel.DataAnnotations;
 using System.Text.Json.Serialization;
 using Microsoft.EntityFrameworkCore;
@@ -20,6 +21,6 @@ namespace jahndigital.studentbank.dal.Entities
         /// Gets the image URL.
         /// </summary>
         [MaxLength(256), Required]
-        public string Url {get;set;}
+        public string Url {get; set;} = default!;
     }
 }

@@ -12,7 +12,7 @@ using Microsoft.EntityFrameworkCore;
 namespace jahndigital.studentbank.server.GraphQL.Mutations
 {
     /// <summary>
-    /// CRUD operations for <see cref="dal.Entities.Product"/> and <see cref="dal.Entities.ProductGroup"/>
+    /// CRUD operations for <see cref="dal.Entities.Product"/> and <see cref="dal.Entities.ProductInstance"/>
     /// </summary>
     [ExtendObjectType(Name = "Mutation")]
     public class ProductMutations
@@ -104,18 +104,18 @@ namespace jahndigital.studentbank.server.GraphQL.Mutations
             LinkProductRequest input,
             [Service] AppDbContext context
         ) {
-            var hasLink = await context.ProductGroups
-                .AnyAsync(x => x.ProductId == input.ProductId && x.GroupId == input.GroupId);
+            var hasLink = await context.ProductInstances
+                .AnyAsync(x => x.ProductId == input.ProductId && x.InstanceId == input.InstanceId);
 
             if (hasLink) throw ErrorFactory.QueryFailed("A link already exists!");
 
-            var productGroup = new dal.Entities.ProductGroup {
+            var productInstance = new dal.Entities.ProductInstance {
                 ProductId = input.ProductId,
-                GroupId = input.GroupId
+                InstanceId = input.InstanceId
             };
 
             try {
-                context.Add(productGroup);
+                context.Add(productInstance);
                 await context.SaveChangesAsync();
             } catch (Exception e) {
                 throw ErrorFactory.QueryFailed(e.Message);
@@ -135,8 +135,8 @@ namespace jahndigital.studentbank.server.GraphQL.Mutations
             LinkProductRequest input,
             [Service] AppDbContext context
         ) {
-            var link = await context.ProductGroups
-                .Where(x => x.ProductId == input.ProductId && x.GroupId == input.GroupId)
+            var link = await context.ProductInstances
+                .Where(x => x.ProductId == input.ProductId && x.InstanceId == input.InstanceId)
                 .FirstOrDefaultAsync()
             ?? throw ErrorFactory.NotFound();
 

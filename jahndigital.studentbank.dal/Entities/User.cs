@@ -19,11 +19,23 @@ namespace jahndigital.studentbank.dal.Entities
         public long Id { get; set; }
 
         /// <summary>
+        /// Foreign key for user's role.
+        /// </summary>
+        [ForeignKey("Role"), Required]
+        public long RoleId {get; set;}
+
+        /// <summary>
         /// The email address of the user.
         /// </summary>
         /// <value></value>
         [MaxLength(64), Required]
-        public string Email {get; set;}
+        public string Email {get; set;} = default!;
+
+        /// <summary>
+        /// The user's role.
+        /// </summary>
+        [Required]
+        public Role Role {get; set;} = default!;
 
         /// <summary>
         /// Backing field for encrypted password.
@@ -36,9 +48,7 @@ namespace jahndigital.studentbank.dal.Entities
         [MaxLength(84), Required, JsonIgnore]
         public string Password {
             get => _password;
-
-            set
-            {
+            set {
                 var passwordHasher = new PasswordHasher<User>();
                 _password = passwordHasher.HashPassword(this, value);
             }
@@ -54,18 +64,6 @@ namespace jahndigital.studentbank.dal.Entities
             var passwordHasher = new PasswordHasher<User>();
             return passwordHasher.VerifyHashedPassword(this, Password, password);
         }
-
-        /// <summary>
-        /// Foreign key for user's role.
-        /// </summary>
-        [ForeignKey("Role")]
-        public long RoleId {get; set;}
-
-        /// <summary>
-        /// The user's role.
-        /// </summary>
-        [Required]
-        public Role Role {get; set;}
 
         /// <summary>
         /// A list of JWT refresh tokens for the user.

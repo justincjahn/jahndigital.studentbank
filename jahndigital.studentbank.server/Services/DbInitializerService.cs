@@ -197,7 +197,9 @@ namespace jahndigital.studentbank.server.Services
         private IEnumerable<Instance> SeedInstances(AppDbContext context)
         {
             var shareTypes = context.ShareTypes.ToList();
+            var products = context.Products.ToList();
             var instances = new List<Instance>();
+
             if (!context.Instances.Any()) {
                 for (var i = 0; i < 3; i++) {
                     var instance = new Instance { Description = $"Instance {i}" };
@@ -206,6 +208,13 @@ namespace jahndigital.studentbank.server.Services
                         new ShareTypeInstance {
                             Instance = instance,
                             ShareType = x
+                        }
+                    ));
+
+                    products.ForEach(x => instance.ProductInstances.Add(
+                        new ProductInstance {
+                            Instance = instance,
+                            Product = x
                         }
                     ));
 
@@ -238,18 +247,6 @@ namespace jahndigital.studentbank.server.Services
 
                     groups.Add(group);
                     context.Groups.Add(group);
-                }
-
-                context.SaveChanges();
-
-                // Link all products to all groups
-                foreach(var group in groups) {
-                    foreach (var product in products) {
-                        context.Add(new ProductGroup {
-                            Group = group,
-                            Product = product
-                        });
-                    }
                 }
 
                 context.SaveChanges();
@@ -304,7 +301,7 @@ namespace jahndigital.studentbank.server.Services
                 var share = new Share {
                     Student = student,
                     Balance = Money.FromCurrency(0),
-                    ShareType = _shareType,
+                    ShareType = _shareType!,
                     DateLastActive = DateTime.UtcNow
                 };
 

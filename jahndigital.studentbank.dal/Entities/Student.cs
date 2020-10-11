@@ -18,7 +18,7 @@ namespace jahndigital.studentbank.dal.Entities
         /// </summary>
         public long Id {get; set;}
 
-        private string _accountNumber;
+        private string _accountNumber = null!;
 
         /// <summary>
         /// Student's account number. Left-zero-fill to 10 characters.
@@ -43,24 +43,24 @@ namespace jahndigital.studentbank.dal.Entities
         /// </summary>
         /// <value></value>
         [MaxLength(64), Required]
-        public string Email {get; set;}
+        public string Email {get; set;} = default!;
 
         /// <summary>
         /// The student's given name.
         /// </summary>
         [MaxLength(64), Required]
-        public string FirstName {get; set;}
+        public string FirstName {get; set;} = default!;
 
         /// <summary>
         /// The student's surname.
         /// </summary>
         [MaxLength(64), Required]
-        public string LastName {get; set;}
+        public string LastName {get; set;} = default!;
 
         /// <summary>
         /// Backing field for encrypted password.
         /// </summary>
-        private string _password;
+        private string _password = null!;
 
         /// <summary>
         /// The encrypted credentials of the user.
@@ -69,9 +69,7 @@ namespace jahndigital.studentbank.dal.Entities
         public string Password
         {
             get => _password;
-
-            set
-            {
+            set {
                 var passwordHasher = new PasswordHasher<Student>();
                 _password = passwordHasher.HashPassword(this, value);
             }
@@ -92,13 +90,13 @@ namespace jahndigital.studentbank.dal.Entities
         /// 
         /// </summary>
         [ForeignKey("Group"), Required]
-        public long GroupId { get; set;}
+        public long GroupId {get; set;}
 
         /// <summary>
         /// Student's group (class/period/etc.).
         /// </summary>
         [Required]
-        public Group Group { get; set; }
+        public Group Group {get; set;} = null!;
 
         /// <summary>
         /// Student's shares.

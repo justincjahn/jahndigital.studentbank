@@ -8,7 +8,7 @@ namespace jahndigital.studentbank.server.GraphQL.ObjectTypes
         protected override void Configure(IObjectTypeDescriptor<Product> descriptor)
         {
             // Only administrators can manage product groups
-            descriptor.Field(f => f.ProductGroups)
+            descriptor.Field(f => f.ProductInstances)
                 .Authorize(Constants.Privilege.ManageProducts.Name);
         }
     }

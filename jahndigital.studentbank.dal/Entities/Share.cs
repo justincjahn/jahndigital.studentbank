@@ -14,7 +14,7 @@ namespace jahndigital.studentbank.dal.Entities
         /// <summary>
         /// The unique ID of the share.
         /// </summary>
-        public long Id { get; set; }
+        public long Id {get; set;}
 
         /// <summary>
         /// Get the ShareType ID
@@ -23,28 +23,28 @@ namespace jahndigital.studentbank.dal.Entities
         public long ShareTypeId {get; set;}
 
         /// <summary>
-        /// The Share Type information for this product.
-        /// </summary>
-        [Required]
-        public ShareType ShareType { get; set; }
-
-        /// <summary>
         /// Get the Student ID
         /// </summary>
         [ForeignKey("Student")]
-        public long StudentId {get;set;}
+        public long StudentId {get; set;}
+
+        /// <summary>
+        /// The Share Type information for this product.
+        /// </summary>
+        [Required]
+        public ShareType ShareType {get; set;} = default!;
 
         /// <summary>
         /// The owner of the share.
         /// </summary>
         [Required]
-        public Student Student {get; set;}
+        public Student Student {get; set;} = default!;
 
         /// <summary>
         /// 
         /// </summary>
         [Column("Balance"), Required]
-        public long RawBalance { get; private set; } = 0;
+        public long RawBalance {get; private set;} = 0;
 
         /// <summary>
         /// The current balance of the share.
@@ -52,7 +52,7 @@ namespace jahndigital.studentbank.dal.Entities
         [NotMapped]
         public Money Balance {
             get => Money.FromDatabase(RawBalance);
-            set =>RawBalance = value.DatabaseAmount;
+            set => RawBalance = value.DatabaseAmount;
         }
 
         /// <summary>

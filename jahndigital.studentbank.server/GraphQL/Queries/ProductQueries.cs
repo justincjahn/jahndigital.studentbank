@@ -38,12 +38,13 @@ namespace jahndigital.studentbank.server.GraphQL.Queries
             // Fetch the product IDs the user has access to
             var student = await context.Students
                 .Include(x => x.Group)
-                    .ThenInclude(x => x.ProductGroups)
+                    .ThenInclude(x => x.Instance)
+                        .ThenInclude(x => x.ProductInstances)
                 .Where(x => x.Id == userId)
                 .FirstOrDefaultAsync()
             ?? throw ErrorFactory.NotFound();
 
-            var productIds = student.Group.ProductGroups.Select(x => x.ProductId);
+            var productIds = student.Group.Instance.ProductInstances.Select(x => x.ProductId);
             return context.Products.Where(x => productIds.Contains(x.Id) && x.DateDeleted == null);
         }
         

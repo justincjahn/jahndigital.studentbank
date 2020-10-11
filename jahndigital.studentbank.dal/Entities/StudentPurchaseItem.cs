@@ -13,7 +13,7 @@ namespace jahndigital.studentbank.dal.Entities
         /// Get the unique key for this purchase item.
         /// </summary>
         [Key]
-        public long Id { get; set; }
+        public long Id {get; set;}
 
         /// <summary>
         /// Get the ID of the StudentPurchase.
@@ -22,26 +22,26 @@ namespace jahndigital.studentbank.dal.Entities
         public long StudentPurchaseId {get; set;}
 
         /// <summary>
-        /// Get or set the StudentPurchase object that this purchase item belongs to.
-        /// </summary>
-        [Required]
-        public StudentPurchase StudentPurchase {get; set;}
-
-        /// <summary>
-        /// Get the total number of items purchased.
-        /// </summary>
-        public int Quantity { get; set;} = 1;
-
-        /// <summary>
         /// Get the ID number of the purchased product.
         /// </summary>
         [ForeignKey("Product"), Required]
         public long ProductId {get; set;}
 
         /// <summary>
+        /// Get or set the StudentPurchase object that this purchase item belongs to.
+        /// </summary>
+        [Required]
+        public StudentPurchase StudentPurchase {get; set;} = default!;
+
+        /// <summary>
         /// Get the product that was purchased.
         /// </summary>
-        public Product Product {get; set;}
+        public Product Product {get; set;} = default!;
+
+        /// <summary>
+        /// Get the total number of items purchased.
+        /// </summary>
+        public int Quantity { get; set;} = 1;
 
         /// <summary>
         /// Get the raw (database stored) purchase cost of the item.

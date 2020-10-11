@@ -22,22 +22,22 @@ namespace jahndigital.studentbank.dal.Entities
         public long StudentId {get;set;}
 
         /// <summary>
-        /// The student who owns the stock.
-        /// </summary>
-        [Required]
-        public Student Student {get; set;}
-
-        /// <summary>
         /// Get the ID number of the stock.
         /// </summary>
         [ForeignKey("Stock")]
         public long StockId {get; set;}
 
         /// <summary>
+        /// The student who owns the stock.
+        /// </summary>
+        [Required]
+        public Student Student {get; set;} = default!;
+
+        /// <summary>
         /// The stock the student owns.
         /// </summary>
         [Required]
-        public Stock Stock {get; set;}
+        public Stock Stock {get; set;} = default!;
 
         /// <summary>
         /// The history of buy/sells for this stock.

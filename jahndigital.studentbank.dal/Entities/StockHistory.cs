@@ -25,14 +25,14 @@ namespace jahndigital.studentbank.dal.Entities
         /// The stock.
         /// </summary>
         [Required]
-        public Stock Stock {get; set;}
+        public Stock Stock {get; set;} = default!;
 
         /// <summary>
         /// Represents the raw value of the stock at the time.
         /// Use Value to set this value.
         /// </summary>
         [Column("Value"), Required]
-        public long RawValue { get; private set; } = 0;
+        public long RawValue {get; private set;} = 0;
 
         /// <summary>
         /// The new value of the stock.
@@ -40,15 +40,8 @@ namespace jahndigital.studentbank.dal.Entities
         [NotMapped]
         public Money Value
         {
-            get
-            {
-                return Money.FromDatabase(RawValue);
-            }
-
-            set
-            {
-                RawValue = value.DatabaseAmount;
-            }
+            get => Money.FromDatabase(RawValue);
+            set => RawValue = value.DatabaseAmount;
         }
 
         /// <summary>

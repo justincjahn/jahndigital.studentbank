@@ -162,16 +162,16 @@ namespace jahndigital.studentbank.server.Services
                     && x.Student.Group.DateDeleted == null)
                 .Select(x => new {
                     StudentId = x.StudentId,
-                    GroupId = x.Student.GroupId
+                    InstanceId = x.Student.Group.InstanceId
                 }).FirstOrDefaultAsync()
             ?? throw new ShareNotFoundException(input.ShareId);
 
             // Pull the list of requested products to validate cost and quantity
             var productIds = input.Items.Select(x => x.ProductId).ToList();
-            var products = await _context.ProductGroups
+            var products = await _context.ProductInstances
                 .Include(x => x.Product)
                 .Where(x =>
-                    x.GroupId == share.GroupId
+                    x.InstanceId == share.InstanceId
                     && productIds.Contains(x.ProductId))
                 .Select(x => x.Product)
                 .ToListAsync();

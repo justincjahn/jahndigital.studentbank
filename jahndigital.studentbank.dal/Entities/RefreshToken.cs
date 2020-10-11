@@ -12,29 +12,25 @@ namespace jahndigital.studentbank.dal.Entities
     [Owned]
     public class RefreshToken
     {
-        [Key]
-        [JsonIgnore]
-        public long Id {get; set;}
-
-        /// <summary>
+        // <summary>
         /// 
         /// </summary>
-        public string Token {get; set;}
+        public string Token {get; set;} = null!;
 
         /// <summary>
         /// The date the token was created.
         /// </summary>
-        public DateTime Created {get;set;}
+        public DateTime Created {get; set;}
 
         /// <summary>
         /// The date the token expires.
         /// </summary>
-        public DateTime Expires {get;set;}
+        public DateTime Expires {get; set;}
 
         /// <summary>
         /// The date the token was revoked (if any).
         /// </summary>
-        public DateTime? Revoked {get;set;}
+        public DateTime? Revoked {get; set;}
 
         /// <summary>
         /// If the token is expired.
@@ -46,18 +42,18 @@ namespace jahndigital.studentbank.dal.Entities
         /// The IP address that created the token.
         /// </summary>
         [MaxLength(39)]
-        public string CreatedByIpAddress {get;set;}
+        public string CreatedByIpAddress {get; set;} = default!;
 
         /// <summary>
         /// The IP address that revoked the certificate.
         /// </summary>
         [MaxLength(39)]
-        public string RevokedByIpAddress {get;set;}
+        public string RevokedByIpAddress {get; set;} = default!;
 
         /// <summary>
         /// The token that replaced this one.
         /// </summary>
-        public string ReplacedByToken {get;set;}
+        public string ReplacedByToken {get; set;} = default!;
 
         /// <summary>
         /// 

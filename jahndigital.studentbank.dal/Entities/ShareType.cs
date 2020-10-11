@@ -14,20 +14,20 @@ namespace jahndigital.studentbank.dal.Entities
         /// <summary>
         /// Unique id of the share type.
         /// </summary>
-        public long Id { get; set; }
+        public long Id {get; set;}
 
         /// <summary>
         /// Unique name for this share type.
         /// </summary>
         [MaxLength(32), Required]
-        public string Name { get; set; }
+        public string Name {get; set;} = default!;
 
         /// <summary>
         /// The raw interest/dividend rate from the database.  Use DividendRate
         /// to set this value.
         /// </summary>
         [Column("DividendRate"), Required]
-        public long RawDividendRate { get; private set; }
+        public long RawDividendRate {get; private set;}
 
         /// <summary>
         /// The interest/dividend rate for this share type.
@@ -44,12 +44,12 @@ namespace jahndigital.studentbank.dal.Entities
         /// </summary>
         /// <typeparam name="ShareTypeInstance"></typeparam>
         /// <returns></returns>
-        public ICollection<ShareTypeInstance> ShareTypeInstances { get; set; } = new HashSet<ShareTypeInstance>();
+        public ICollection<ShareTypeInstance> ShareTypeInstances {get; set;} = new HashSet<ShareTypeInstance>();
 
         /// <summary>
         /// Gets the list of shares associated with this share type.
         /// </summary>
-        public ICollection<Share> Shares { get; set; } = new HashSet<Share>();
+        public ICollection<Share> Shares {get; set;} = new HashSet<Share>();
 
         /// <summary>
         /// Get the date that the share type was created.

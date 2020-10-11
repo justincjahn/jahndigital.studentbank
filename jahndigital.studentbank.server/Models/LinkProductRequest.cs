@@ -4,6 +4,6 @@ namespace jahndigital.studentbank.server.Models
     {
         public long ProductId {get; set;}
 
-        public long GroupId {get; set;}
+        public long InstanceId {get; set;}
     }
 }

@@ -55,7 +55,7 @@ namespace jahndigital.studentbank.server.Permissions
         {
             // If we've cached the result, return it
             if (resolverContext.ScopedContextData.ContainsKey(CTX_ISOWNER)) {
-                return (bool)resolverContext.ScopedContextData[CTX_ISOWNER];
+                return (bool)resolverContext.ScopedContextData[CTX_ISOWNER]!;
             }
 
             var route = resolverContext.FieldSelection.Arguments;
@@ -70,18 +70,18 @@ namespace jahndigital.studentbank.server.Permissions
                 && resolverContext.ScopedContextData.ContainsKey(CTX_USER_TYPE))
             {
                 userId = resolverContext.ScopedContextData[CTX_USER_ID]?.ToString() ?? "";
-                userType = (UserType)resolverContext.ScopedContextData[CTX_USER_TYPE];
+                userType = (UserType)resolverContext.ScopedContextData[CTX_USER_TYPE]!;
             } else {
                 HotChocolate.Language.ArgumentNode? arg = route.FirstOrDefault(x => x.Name.Value == "userId");
                 if (arg != null) {
                     userType = UserType.User;
-                    userId = arg.Value.Value.ToString()!;
+                    userId = arg.Value.Value!.ToString()!;
                 }
 
                 arg = route.FirstOrDefault(x => x.Name.Value == "studentId");
                 if (arg != null) {
                     userType = UserType.Student;
-                    userId = arg.Value.Value.ToString()!;
+                    userId = arg.Value.Value!.ToString()!;
                 }
             }
 

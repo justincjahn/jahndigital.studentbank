@@ -19,13 +19,13 @@ namespace jahndigital.studentbank.dal.Entities
         /// The name of the role.
         /// </summary>
         [MaxLength(32), Required]
-        public string Name {get; set;}
+        public string Name {get; set;} = default!;
 
         /// <summary>
         /// Short description of the role.
         /// </summary>
         [MaxLength(128)]
-        public string Description {get; set;} = String.Empty;
+        public string? Description {get; set;}
 
         /// <summary>
         /// If the role is a built-in role that cannot be deleted.

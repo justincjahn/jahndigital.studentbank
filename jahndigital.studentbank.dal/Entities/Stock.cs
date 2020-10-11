@@ -25,20 +25,20 @@ namespace jahndigital.studentbank.dal.Entities
         /// <summary>
         /// Gets the instance for this stock item.
         /// </summary>
-        public Instance Instance {get; set;}
+        public Instance Instance {get; set;} = default!;
 
         /// <summary>
         /// Unique name of th
         /// </summary>
         /// <value></value>
         [MaxLength(10), Required]
-        public string Symbol {get; set;}
+        public string Symbol {get; set;} = default!;
 
         /// <summary>
         /// Name of the company.
         /// </summary>
         [MaxLength(32), Required]
-        public string Name {get; set;}
+        public string Name {get; set;} = default!;
 
         /// <summary>
         /// Total number of shares for the stock.
@@ -72,14 +72,17 @@ namespace jahndigital.studentbank.dal.Entities
         /// <summary>
         /// Get the student stock.
         /// </summary>
-        /// <typeparam name="StudentStock"></typeparam>
-        /// <returns></returns>
         public ICollection<StudentStock> StudentStock {get; set;} = new HashSet<StudentStock>();
 
         /// <summary>
         /// The history of the stock.
         /// </summary>
         public ICollection<StockHistory> History {get; set;} = new HashSet<StockHistory>();
+
+        /// <summary>
+        /// Get or set a collection of instances this stock is linked to.
+        /// </summary>
+        public ICollection<StockInstance> StockInstances {get; set;} = new HashSet<StockInstance>();
 
         /// <summary>
         /// Get the date that the stock was created.

@@ -28,7 +28,7 @@ namespace jahndigital.studentbank.dal.Entities
         /// Get or set the student associated with this purchase.
         /// </summary>
         [Required]
-        public Student Student {get; set;}
+        public Student Student {get; set;} = default!;
 
         /// <summary>
         /// Get the raw (database stored) total cost of the purchase.
@@ -54,8 +54,6 @@ namespace jahndigital.studentbank.dal.Entities
         /// <summary>
         /// Get a list of line items on this purchase.
         /// </summary>
-        /// <typeparam name="StudentPurchaseItem"></typeparam>
-        /// <returns></returns>
         public ICollection<StudentPurchaseItem> Items {get; set;} = new HashSet<StudentPurchaseItem>();
 
         /// <summary>

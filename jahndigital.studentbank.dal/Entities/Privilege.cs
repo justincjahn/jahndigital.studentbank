@@ -18,18 +18,18 @@ namespace jahndigital.studentbank.dal.Entities
         /// Unique name of the privilege.
         /// </summary>
         [MaxLength(16), Required]
-        public string Name {get; set;}
+        public string Name {get; set;} = default!;
 
         /// <summary>
         /// A short description of the privilege.
         /// </summary>
         [MaxLength(128), Required]
-        public string Description {get; set;}
+        public string Description {get; set;} = default!;
 
         /// <summary>
         /// Gets the intermediate table that links a Privilege to a collection or roles.
         /// </summary>
-        public ICollection<RolePrivilege> RolePrivileges { get; set; } = new HashSet<RolePrivilege>();
+        public ICollection<RolePrivilege> RolePrivileges {get; set;} = new HashSet<RolePrivilege>();
 
         /// <summary>
         /// Get the date that the privilege was created.

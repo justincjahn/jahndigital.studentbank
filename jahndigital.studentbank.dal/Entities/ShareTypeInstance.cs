@@ -12,24 +12,24 @@ namespace jahndigital.studentbank.dal.Entities
         /// The ID number of the <see cref="ShareType"/>
         /// </summary>
         [ForeignKey("ShareType"), Required]
-        public long ShareTypeId { get; set; }
-
-        /// <summary>
-        /// The <see cref="ShareType"/> assigned to the instance.
-        /// </summary>
-        [Required]
-        public ShareType ShareType { get; set; }
+        public long ShareTypeId {get; set;}
 
         /// <summary>
         /// The <see cref="Instance"/> ID.
         /// </summary>
         [ForeignKey("Instance"), Required]
-        public long InstanceId { get; set; }
+        public long InstanceId {get; set;}
+
+        /// <summary>
+        /// The <see cref="ShareType"/> assigned to the instance.
+        /// </summary>
+        [Required]
+        public ShareType ShareType {get; set;} = default!;
 
         /// <summary>
         /// The <see cref="Instance"/> the Share Type is linked to.
         /// </summary>
         [Required]
-        public Instance Instance { get; set; }
+        public Instance Instance {get; set;} = default!;
     }
 }
