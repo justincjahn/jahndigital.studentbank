@@ -18,7 +18,7 @@ namespace jahndigital.studentbank.server.GraphQL.Mutations
     public class ProductMutations
     {
         /// <summary>
-        /// Create a new product.
+        /// Create a new <see cref="dal.Entities.Product"/>.
         /// </summary>
         /// <param name="input"></param>
         /// <param name="context"></param>
@@ -55,7 +55,7 @@ namespace jahndigital.studentbank.server.GraphQL.Mutations
         }
 
         /// <summary>
-        /// Update a product.
+        /// Update a <see cref="dal.Entities.Product"/>.
         /// </summary>
         /// <param name="input"></param>
         /// <param name="context"></param>
@@ -94,7 +94,7 @@ namespace jahndigital.studentbank.server.GraphQL.Mutations
         }
 
         /// <summary>
-        /// Link a product with the provided group.
+        /// Link a <see cref="dal.Entities.Product"/> with the provided <see cref="dal.Entities.Group"/>.
         /// </summary>
         /// <param name="input"></param>
         /// <param name="context"></param>
@@ -125,7 +125,7 @@ namespace jahndigital.studentbank.server.GraphQL.Mutations
         }
 
         /// <summary>
-        /// Unlink a product from the provided group.
+        /// Unlink a <see cref="dal.Entities.Product"/> from the provided <see cref="dal.Entities.Group"/>.
         /// </summary>
         /// <param name="input"></param>
         /// <param name="context"></param>
@@ -142,6 +142,54 @@ namespace jahndigital.studentbank.server.GraphQL.Mutations
 
             try {
                 context.Remove(link);
+                await context.SaveChangesAsync();
+            } catch (Exception e) {
+                throw ErrorFactory.QueryFailed(e.Message);
+            }
+
+            return true;
+        }
+
+        /// <summary>
+        /// Soft-delete a <see cref="dal.Entities.Product"/>.
+        /// </summary>
+        /// <param name="id"></param>
+        /// <param name="context"></param>
+        /// <returns></returns>
+        [Authorize(Policy = Constants.Privilege.PRIVILEGE_MANAGE_PRODUCTS)]
+        public async Task<bool> DeleteProductAsync(long id, [Service]AppDbContext context)
+        {
+            var product = await context.Products.FindAsync(id)
+                ?? throw ErrorFactory.NotFound();
+
+            product.DateDeleted = DateTime.UtcNow;
+
+            try {
+                await context.SaveChangesAsync();
+            } catch (Exception e) {
+                throw ErrorFactory.QueryFailed(e.Message);
+            }
+
+            return true;
+        }
+
+        /// <summary>
+        /// Restore a soft-deleted <see cref="dal.Entities.Product"/>.
+        /// </summary>
+        /// <param name="id"></param>
+        /// <param name="context"></param>
+        /// <returns></returns>
+        [Authorize(Policy = Constants.Privilege.PRIVILEGE_MANAGE_PRODUCTS)]
+        public async Task<bool> RestoreProductAsync(long id, [Service]AppDbContext context)
+        {
+            var product = await context.Products
+                .Where(x => x.Id == id && x.DateDeleted != null)
+                .SingleOrDefaultAsync()
+            ?? throw ErrorFactory.NotFound();
+
+            product.DateDeleted = null;
+
+            try {
                 await context.SaveChangesAsync();
             } catch (Exception e) {
                 throw ErrorFactory.QueryFailed(e.Message);

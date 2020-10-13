@@ -11,13 +11,13 @@ using Microsoft.EntityFrameworkCore;
 namespace jahndigital.studentbank.server.GraphQL.Mutations
 {
     /// <summary>
-    /// CRUD operations for groups.
+    /// CRUD operations for <see cref="dal.Entities.Group"/> entities..
     /// </summary>
     [ExtendObjectType(Name = "Mutation")]
     public class GroupMutations
     {
         /// <summary>
-        /// Update a group.
+        /// Update a <see cref="dal.Entities.Group"/>.
         /// </summary>
         /// <param name="input"></param>
         /// <param name="context"></param>
@@ -27,8 +27,8 @@ namespace jahndigital.studentbank.server.GraphQL.Mutations
             UpdateGroupRequest input,
             [Service] AppDbContext context
         ) {
-            var group = await context.Groups.Where(x => x.Id == input.Id).SingleOrDefaultAsync();
-            if (group == null) throw ErrorFactory.NotFound();
+            var group = await context.Groups.Where(x => x.Id == input.Id).SingleOrDefaultAsync()
+             ?? throw ErrorFactory.NotFound();
 
             if (input.InstanceId != null) {
                 var instanceExists = await context.Instances.Where(x => x.Id == input.InstanceId).AnyAsync();
@@ -37,9 +37,12 @@ namespace jahndigital.studentbank.server.GraphQL.Mutations
             }
 
             if (input.Name != null) {
-                var groupExists = await context.Groups.Where(x => 
-                    x.Name == input.Name && x.InstanceId == group.InstanceId
-                ).AnyAsync();
+                var groupExists = await context.Groups
+                    .Where(x => 
+                        x.Name == input.Name
+                        && x.Id != group.Id
+                        && x.InstanceId == group.InstanceId)
+                    .AnyAsync();
 
                 if (groupExists) {
                     throw ErrorFactory.QueryFailed(
@@ -51,7 +54,6 @@ namespace jahndigital.studentbank.server.GraphQL.Mutations
             }
 
             try {
-                context.Update(group);
                 await context.SaveChangesAsync();
             } catch (Exception e) {
                 throw ErrorFactory.QueryFailed(e.Message);
@@ -61,7 +63,7 @@ namespace jahndigital.studentbank.server.GraphQL.Mutations
         }
 
         /// <summary>
-        /// Create a new group.
+        /// Create a new <see cref="dal.Entities.Group"/>.
         /// </summary>
         /// <param name="input"></param>
         /// <param name="context"></param>
@@ -102,9 +104,9 @@ namespace jahndigital.studentbank.server.GraphQL.Mutations
 
             return context.Groups.Where(x => x.Id == group.Id);
         }
-    
+
         /// <summary>
-        /// Delete a group.
+        /// Delete a <see cref="dal.Entities.Group"/>.
         /// </summary>
         /// <param name="id"></param>
         /// <param name="context"></param>
@@ -125,6 +127,31 @@ namespace jahndigital.studentbank.server.GraphQL.Mutations
                 await context.SaveChangesAsync();
             } catch {
                 return false;
+            }
+
+            return true;
+        }
+
+        /// <summary>
+        /// Restore a soft-deleted <see cref="dal.Entities.Group"/>.
+        /// </summary>
+        /// <param name="id"></param>
+        /// <param name="context"></param>
+        /// <returns></returns>
+        [Authorize(Policy = Constants.Privilege.PRIVILEGE_MANAGE_GROUPS)]
+        public async Task<bool> RestoreGroupAsync(long id, [Service]AppDbContext context)
+        {
+            var group = await context.Groups
+                .Where(x => x.Id == id && x.DateDeleted != null)
+                .SingleOrDefaultAsync()
+            ?? throw ErrorFactory.NotFound();
+
+            group.DateDeleted = null;
+
+            try {
+                await context.SaveChangesAsync();
+            } catch (Exception e) {
+                throw ErrorFactory.QueryFailed(e.Message);
             }
 
             return true;

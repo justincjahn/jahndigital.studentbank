@@ -2,6 +2,9 @@ using jahndigital.studentbank.server.Models;
 
 namespace jahndigital.studentbank.server.Services
 {
+    /// <summary>
+    /// Contract to describe methods that authenticate users.
+    /// </summary>
     public interface IUserService
     {
         /// <summary>
@@ -21,7 +24,7 @@ namespace jahndigital.studentbank.server.Services
          AuthenticateResponse? RefreshToken(string token, string ipAddress);
 
         /// <summary>
-        /// 
+        /// Revoke a valid JWT token.
         /// </summary>
         /// <param name="token"></param>
         /// <param name="ipAddress"></param>

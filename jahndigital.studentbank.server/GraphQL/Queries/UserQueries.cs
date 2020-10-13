@@ -20,7 +20,7 @@ namespace jahndigital.studentbank.server.GraphQL.Queries
         /// <param name="context"></param>
         /// <param name="resolverContext"></param>
         /// <returns></returns>
-        [Authorize]
+        [Authorize, UseSelection]
         public IQueryable<dal.Entities.User> GetCurrentUser(
             [Service] AppDbContext context,
             [Service] IResolverContext resolverContext

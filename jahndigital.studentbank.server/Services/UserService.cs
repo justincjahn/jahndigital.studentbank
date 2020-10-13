@@ -13,8 +13,14 @@ namespace jahndigital.studentbank.server.Services
     /// </summary>
     public class UserService : IUserService
     {
+        /// <summary>
+        /// The database context to use when querying and updating the data store.
+        /// </summary>
         private readonly AppDbContext _context;
 
+        /// <summary>
+        /// Application configuration containing the token secret.
+        /// </summary>
         private readonly AppConfig _config;
 
         public UserService(AppDbContext context, IOptions<AppConfig> config)

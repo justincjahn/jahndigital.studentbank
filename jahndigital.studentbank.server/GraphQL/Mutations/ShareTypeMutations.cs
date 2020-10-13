@@ -10,6 +10,9 @@ using Microsoft.EntityFrameworkCore;
 
 namespace jahndigital.studentbank.server.GraphQL.Mutations
 {
+    /// <summary>
+    /// CRUD operations for <see cref="dal.Entities.ShareType"/> entities.
+    /// </summary>
     [ExtendObjectType(Name = "Mutation")]
     public class ShareTypeMutations
     {
@@ -88,6 +91,7 @@ namespace jahndigital.studentbank.server.GraphQL.Mutations
         /// <param name="id"></param>
         /// <param name="context"></param>
         /// <returns></returns>
+        [Authorize(Policy = Constants.Privilege.PRIVILEGE_MANAGE_SHARE_TYPES)]
         public async Task<bool> DeleteShareTypeAsync(long id, [Service]AppDbContext context)
         {
             var shareType = await context.ShareTypes.FindAsync(id)
@@ -97,6 +101,31 @@ namespace jahndigital.studentbank.server.GraphQL.Mutations
             if (hasShares) throw ErrorFactory.QueryFailed("Cannot delete a share type with active shares.");
 
             shareType.DateDeleted = DateTime.UtcNow;
+
+            try {
+                await context.SaveChangesAsync();
+            } catch (Exception e) {
+                throw ErrorFactory.QueryFailed(e.Message);
+            }
+
+            return true;
+        }
+
+        /// <summary>
+        /// Restore a soft-deleted <see cref="dal.Entities.ShareType"/>.
+        /// </summary>
+        /// <param name="id"></param>
+        /// <param name="context"></param>
+        /// <returns></returns>
+        [Authorize(Policy = Constants.Privilege.PRIVILEGE_MANAGE_SHARE_TYPES)]
+        public async Task<bool> RestoreShareTypeAsync(long id, [Service]AppDbContext context)
+        {
+            var shareType = await context.ShareTypes
+                .Where(x => x.Id == id && x.DateDeleted != null)
+                .SingleOrDefaultAsync()
+            ?? throw ErrorFactory.NotFound();
+
+            shareType.DateDeleted = null;
 
             try {
                 await context.SaveChangesAsync();

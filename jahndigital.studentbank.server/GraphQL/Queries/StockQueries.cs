@@ -34,13 +34,17 @@ namespace jahndigital.studentbank.server.GraphQL.Queries
                 return context.Stocks.Where(x => x.DateDeleted == null);
             }
 
-            var student = await context.Students
+            // Fetch the stock IDs the user has access to
+            var shares = await context.Students
                 .Include(x => x.Group)
+                    .ThenInclude(x => x.Instance)
+                        .ThenInclude(x => x.StockInstances)
                 .Where(x => x.Id == userId)
                 .FirstOrDefaultAsync()
             ?? throw ErrorFactory.NotFound();
 
-            return context.Stocks.Where(x => x.DateDeleted == null && x.InstanceId == student.Group.InstanceId);
+            var stockIds = shares.Group.Instance.StockInstances.Select(x => x.StockId);
+            return context.Stocks.Where(x => x.DateDeleted == null && stockIds.Contains(x.Id));
         }
 
         /// <summary>

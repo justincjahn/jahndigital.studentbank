@@ -11,8 +11,15 @@ namespace jahndigital.studentbank.server.Services
     /// </summary>
     public class RoleService : IRoleService
     {
+        /// <summary>
+        /// The database context to use when querying and updating the data store.
+        /// </summary>
         private readonly AppDbContext _context;
 
+        /// <summary>
+        /// Initialize the instance with a database context.
+        /// </summary>
+        /// <param name="context"></param>
         public RoleService(AppDbContext context) => _context = context;
 
         /// <inheritdoc />
@@ -44,11 +51,5 @@ namespace jahndigital.studentbank.server.Services
             
             return dbPermissions != null;
         }
-
-        /// <inheritdoc />
-        public bool HasPermission(string role, string permission) => HasPermissionAsync(role, permission).Result;
-
-        /// <inheritdoc />
-        public bool HasPermission(string role, IEnumerable<string> permissions) => HasPermissionAsync(role, permissions).Result;
     }
 }

@@ -57,8 +57,7 @@ namespace jahndigital.studentbank.server.Services
                 claims.Add(new Claim(ClaimTypes.Surname, lastName));
             }
 
-            var descriptor = new SecurityTokenDescriptor
-            {
+            var descriptor = new SecurityTokenDescriptor {
                 Issuer = Constants.Auth.Issuer,
                 Expires = DateTime.UtcNow.AddMinutes(expires ?? Constants.Auth.DefaultExpirationMinutes),
                 Subject = new ClaimsIdentity(claims),

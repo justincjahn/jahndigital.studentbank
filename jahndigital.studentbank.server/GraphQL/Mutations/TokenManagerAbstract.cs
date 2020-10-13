@@ -9,14 +9,13 @@ namespace jahndigital.studentbank.server.GraphQL.Mutations
     public class TokenManagerAbstract
     {
         /// <summary>
-        /// 
+        /// Set an HTTP cookie containing the current refresh token.
         /// </summary>
         /// <param name="context"></param>
         /// <param name="token"></param>
         protected void setTokenCookie(IHttpContextAccessor context, string token)
         {
-            var cookieOptions = new CookieOptions
-            {
+            var cookieOptions = new CookieOptions{
                 HttpOnly = true,
                 Expires = DateTime.UtcNow.AddDays(7)
             };
@@ -25,7 +24,7 @@ namespace jahndigital.studentbank.server.GraphQL.Mutations
         }
 
         /// <summary>
-        /// 
+        /// Attempt to get the IP address of the device that placed the HTTP request.
         /// </summary>
         /// <param name="context"></param>
         /// <returns></returns>

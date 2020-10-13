@@ -13,7 +13,7 @@ using Microsoft.EntityFrameworkCore;
 namespace jahndigital.studentbank.server.GraphQL.Mutations
 {
     /// <summary>
-    /// CRUD operations for purchases.
+    /// CRUD operations for <see cref="dal.Entities.StudentPurchase"/> entities.
     /// </summary>
     [ExtendObjectType(Name = "Mutation")]
     public class PurchaseMutations
@@ -34,12 +34,11 @@ namespace jahndigital.studentbank.server.GraphQL.Mutations
             [Service] IResolverContext resolverContext
         ) {
             // Fetch the student ID that owns the share and validate they are authorized
-            long studentId = await context.Shares
+            var studentId = await context.Shares
                 .Where(x => x.Id == input.ShareId)
-                .Select(x => x.StudentId)
-                .FirstOrDefaultAsync();
-
-            if (studentId == 0) throw ErrorFactory.NotFound();
+                .Select(x => (long?)x.StudentId)
+                .FirstOrDefaultAsync()
+            ?? throw ErrorFactory.NotFound();
 
             resolverContext.SetUser(studentId, Constants.UserType.Student);
             var auth = await resolverContext.AuthorizeAsync(
@@ -48,14 +47,14 @@ namespace jahndigital.studentbank.server.GraphQL.Mutations
 
             if (!auth.Succeeded) throw ErrorFactory.Unauthorized();
 
-            long id = -1;
+            dal.Entities.StudentPurchase? purchase;
             try {
-                id = await transactionService.PurchaseAsync(input);
+                purchase = await transactionService.PurchaseAsync(input);
             } catch (Exception e) {
                 throw e;
             }
 
-            return context.StudentPurchases.Where(x => x.Id == id);
+            return context.StudentPurchases.Where(x => x.Id == purchase.Id);
         }
     }
 }

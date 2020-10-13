@@ -12,13 +12,13 @@ using Microsoft.EntityFrameworkCore;
 namespace jahndigital.studentbank.server.GraphQL.Mutations
 {
     /// <summary>
-    /// CRUD operations for shares.
+    /// CRUD operations for <see cref="dal.Entities.Share"/> entities.
     /// </summary>
     [ExtendObjectType(Name = "Mutation")]
     public class ShareMutations
     {
         /// <summary>
-        /// Create a new share.
+        /// Create a new <see cref="dal.Entities.Share"/> .
         /// </summary>
         /// <param name="input"></param>
         /// <param name="context"></param>
@@ -59,7 +59,7 @@ namespace jahndigital.studentbank.server.GraphQL.Mutations
         }
 
         /// <summary>
-        /// Update a share.
+        /// Update a <see cref="dal.Entities.Share"/> .
         /// </summary>
         /// <param name="input"></param>
         /// <param name="context"></param>
@@ -96,7 +96,7 @@ namespace jahndigital.studentbank.server.GraphQL.Mutations
         }
 
         /// <summary>
-        /// Soft-delete a share.
+        /// Soft-delete a <see cref="dal.Entities.Share"/> .
         /// </summary>
         /// <param name="id"></param>
         /// <param name="context"></param>
@@ -104,10 +104,43 @@ namespace jahndigital.studentbank.server.GraphQL.Mutations
         [Authorize(Policy = Constants.Privilege.PRIVILEGE_MANAGE_SHARES)]
         public async Task<bool> DeleteShareAsync(long id, [Service]AppDbContext context)
         {
-            var share = await context.Shares.Where(x => x.Id == id).FirstOrDefaultAsync()
-                ?? throw ErrorFactory.NotFound();
-            
+            var share = await context.Shares
+                .Where(x => x.Id == id)
+                .FirstOrDefaultAsync()
+            ?? throw ErrorFactory.NotFound();
+
+            if (share.Balance != Money.FromCurrency(0.0m)) {
+                throw ErrorFactory.QueryFailed(
+                    "Share must be zero-balance before being deleted!"
+                );
+            }
+
             share.DateDeleted = DateTime.UtcNow;
+
+            try {
+                await context.SaveChangesAsync();
+            } catch (Exception e) {
+                throw ErrorFactory.QueryFailed(e.Message);
+            }
+
+            return true;
+        }
+
+        /// <summary>
+        /// Restore a soft-deleted <see cref="dal.Entities.Share"/>.
+        /// </summary>
+        /// <param name="id"></param>
+        /// <param name="context"></param>
+        /// <returns></returns>
+        [Authorize(Policy = Constants.Privilege.PRIVILEGE_MANAGE_SHARES)]
+        public async Task<bool> RestoreShareAsync(long id, [Service]AppDbContext context)
+        {
+            var share = await context.Shares
+                .Where(x => x.Id == id && x.DateDeleted != null)
+                .SingleOrDefaultAsync()
+            ?? throw ErrorFactory.NotFound();
+
+            share.DateDeleted = null;
 
             try {
                 await context.SaveChangesAsync();

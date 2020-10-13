@@ -9,6 +9,6 @@ namespace jahndigital.studentbank.server
         /// AppConfig__Secret is used as a unique secret per-environment for JWT tokens
         /// and the like.
         /// </summary>
-        public string Secret {get;set;} = string.Empty;
+        public string Secret {get; set;} = default!;
     }
 }

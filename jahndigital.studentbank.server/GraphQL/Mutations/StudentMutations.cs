@@ -16,7 +16,7 @@ using static jahndigital.studentbank.server.Constants;
 namespace jahndigital.studentbank.server.GraphQL.Mutations
 {
     /// <summary>
-    /// CRUD operations for students.
+    /// CRUD operations for <see cref="dal.Entities.Student"/> entities.
     /// </summary>
     [ExtendObjectType(Name = "Mutation")]
     public class StudentMutations : TokenManagerAbstract
@@ -232,6 +232,31 @@ namespace jahndigital.studentbank.server.GraphQL.Mutations
                 await context.SaveChangesAsync();
             } catch {
                 return false;
+            }
+
+            return true;
+        }
+
+        /// <summary>
+        /// Restore a deleted student.
+        /// </summary>
+        /// <param name="id"></param>
+        /// <param name="context"></param>
+        /// <returns></returns>
+        [Authorize(Policy = Constants.Privilege.PRIVILEGE_MANAGE_STUDENTS)]
+        public async Task<bool> RestoreStudent(long id, [Service]AppDbContext context)
+        {
+            var student = await context.Students
+                .Where(x => x.Id == id && x.DateDeleted != null)
+                .SingleOrDefaultAsync()
+            ?? throw ErrorFactory.NotFound();
+
+            student.DateDeleted = null;
+
+            try {
+                await context.SaveChangesAsync();
+            } catch (Exception e) {
+                throw ErrorFactory.QueryFailed(e.Message);
             }
 
             return true;

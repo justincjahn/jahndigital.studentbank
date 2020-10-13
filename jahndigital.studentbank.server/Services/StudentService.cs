@@ -10,7 +10,6 @@ using jahndigital.studentbank.server.Models;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
-using Microsoft.IdentityModel.Tokens;
 
 namespace jahndigital.studentbank.server.Services
 {

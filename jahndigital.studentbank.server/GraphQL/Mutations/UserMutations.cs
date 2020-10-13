@@ -16,7 +16,7 @@ using static jahndigital.studentbank.server.Constants;
 namespace jahndigital.studentbank.server.GraphQL.Mutations
 {
     /// <summary>
-    /// CRUD operations for users.
+    /// CRUD operations for <see cref="dal.Entities.User"/> entities.
     /// </summary>
     [ExtendObjectType(Name = "Mutation")]
     public class UserMutations : TokenManagerAbstract
@@ -25,58 +25,46 @@ namespace jahndigital.studentbank.server.GraphQL.Mutations
         /// Log the user in using a username and password and return JWT tokens.
         /// </summary>
         /// <param name="input"></param>
-        /// <param name="context"></param>
         /// <param name="userService"></param>
         /// <param name="contextAccessor"></param>
         /// <returns></returns>
         public AuthenticateResponse UserLogin(
             AuthenticateRequest input,
-            [Service] AppDbContext context,
             [Service] IUserService userService,
             [Service] IHttpContextAccessor contextAccessor
         ) {
             if (string.IsNullOrEmpty(input.Username)) throw ErrorFactory.Unauthorized();
             if (string.IsNullOrEmpty(input.Password)) throw ErrorFactory.Unauthorized();
 
-            var response = userService.Authenticate(input, getIp(contextAccessor));
-
-            if (response == null) {
-                throw new QueryException(
+            var response = userService.Authenticate(input, getIp(contextAccessor))
+                ?? throw new QueryException(
                     ErrorBuilder.New()
                         .SetMessage("Bad username or password.")
                         .SetCode("LOGIN_FAIL")
-                        .Build()
-                );
-            }
+                        .Build());
 
             setTokenCookie(contextAccessor, response.RefreshToken);
-            return response!;
+            return response;
         }
 
         /// <summary>
         /// Obtain a new JWT token using a refresh token.
         /// </summary>
         /// <param name="token">The refresh token to use when obtaining a new JWT token. Must be valid and not expired.</param>
-        /// <param name="context"></param>
         /// <param name="userService"></param>
         /// <param name="contextAccessor"></param>
         /// <returns></returns>
-        public AuthenticateResponse? UserRefreshToken(
+        public AuthenticateResponse UserRefreshToken(
             string token,
-            [Service] AppDbContext context,
             [Service] IUserService userService,
             [Service] IHttpContextAccessor contextAccessor
         ) {
-            var response = userService.RefreshToken(token, getIp(contextAccessor));
-
-            if (response == null) {
-                throw new QueryException(
+            var response = userService.RefreshToken(token, getIp(contextAccessor))
+                ?? throw new QueryException(
                     ErrorBuilder.New()
                         .SetMessage("Invalid refresh token.")
                         .SetCode("INVALID_REFRESH_TOKEN")
-                        .Build()
-                );
-            }
+                        .Build());
 
             setTokenCookie(contextAccessor, response.RefreshToken);
             return response;
@@ -86,14 +74,12 @@ namespace jahndigital.studentbank.server.GraphQL.Mutations
         /// Revoke a refresh token.
         /// </summary>
         /// <param name="token">The refresh token to revoke.</param>
-        /// <param name="context"></param>
         /// <param name="userService"></param>
         /// <param name="contextAccessor"></param>
         /// <returns></returns>
         [Authorize]
         public bool UserRevokeRefreshToken(
             string token,
-            [Service] AppDbContext context,
             [Service] IUserService userService,
             [Service] IHttpContextAccessor contextAccessor
         ) {
@@ -140,15 +126,16 @@ namespace jahndigital.studentbank.server.GraphQL.Mutations
 
             if (!auth.Succeeded) throw ErrorFactory.Unauthorized();
 
-            var user = await context.Users.Where(x => x.Id == input.Id).SingleOrDefaultAsync();
-            if (user == null) throw ErrorFactory.NotFound();
+            var user = await context.Users
+                .Where(x => x.Id == input.Id)
+                .SingleOrDefaultAsync()
+            ?? throw ErrorFactory.NotFound();
 
             user.Email = input.Email ?? user.Email;
             user.RoleId = input.RoleId ?? user.RoleId;
             if (input.Password != null) user.Password = input.Password;
 
             try {
-                context.Update(user);
                 await context.SaveChangesAsync();
             } catch (Exception e) {
                 throw ErrorFactory.QueryFailed(e.Message);
@@ -203,8 +190,8 @@ namespace jahndigital.studentbank.server.GraphQL.Mutations
             [Service] AppDbContext context,
             [Service] IResolverContext resolverContext
         ) {
-            var user = await context.Users.FindAsync(id);
-            if (user == null) throw ErrorFactory.NotFound();
+            var user = await context.Users.FindAsync(id)
+                ?? throw ErrorFactory.NotFound();
 
             var uid = resolverContext.GetUserId() ?? throw ErrorFactory.NotFound();
 

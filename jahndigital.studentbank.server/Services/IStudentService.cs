@@ -2,6 +2,9 @@ using jahndigital.studentbank.server.Models;
 
 namespace jahndigital.studentbank.server.Services
 {
+    /// <summary>
+    /// Contract to describe methods that authenticate students.
+    /// </summary>
     public interface IStudentService
     {
         /// <summary>

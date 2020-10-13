@@ -20,23 +20,26 @@ using HotChocolate.AspNetCore;
 using jahndigital.studentbank.utils;
 using jahndigital.studentbank.server.GraphQL.Types;
 using HotChocolate.Types;
+using Microsoft.Extensions.Logging.Console;
+using Microsoft.Extensions.Logging;
 
 namespace jahndigital.studentbank.server
 {
     public class Startup
     {
-        public Startup(IConfiguration configuration)
-        {
-            Configuration = configuration;
-        }
+        public static readonly ILoggerFactory factory = LoggerFactory.Create(builder => {
+            builder.AddConsole();
+        });
 
         public IConfiguration Configuration { get; }
+
+        public Startup(IConfiguration configuration) => Configuration = configuration;
 
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
             var appConfig = Configuration.GetSection("AppConfig");
-            if (appConfig.Get<AppConfig>().Secret == null) {
+            if (string.IsNullOrEmpty(appConfig.Get<AppConfig>().Secret)) {
                 throw new ArgumentNullException("AppSetting__Secret must be provided as an environment variable.");
             }
 
@@ -46,6 +49,7 @@ namespace jahndigital.studentbank.server
 
             services.AddDbContext<AppDbContext, SqliteDbContext>(options => {
                 options.UseSqlite(Configuration.GetConnectionString("Default"));
+                options.UseLoggerFactory(factory);
             });
 
             services.AddHttpContextAccessor();

@@ -11,13 +11,13 @@ using Microsoft.EntityFrameworkCore;
 namespace jahndigital.studentbank.server.GraphQL.Mutations
 {
     /// <summary>
-    /// CRUD operations for instances.
+    /// CRUD operations for <see cref="dal.Entities.Instance"/> entities.
     /// </summary>
     [ExtendObjectType(Name = "Mutation")]
     public class InstanceMutations
     {
         /// <summary>
-        /// Update an instance.
+        /// Update an <see cref="dal.Entities.Instance"/>.
         /// </summary>
         /// <param name="input"></param>
         /// <param name="context"></param>
@@ -27,11 +27,11 @@ namespace jahndigital.studentbank.server.GraphQL.Mutations
             UpdateInstanceRequest input,
             [Service]AppDbContext context
         ) {
-            var instance = await context.Instances.FindAsync(input.Id);
-            if (instance == null) throw ErrorFactory.NotFound();
+            var instance = await context.Instances.FindAsync(input.Id)
+                ?? throw ErrorFactory.NotFound();
 
             if (input.Description != null) {
-                var hasName = await context.Instances.AnyAsync(x => x.Description == input.Description);
+                var hasName = await context.Instances.AnyAsync(x => x.Description == input.Description && x.Id != instance.Id);
                 if (hasName) {
                     throw ErrorFactory.QueryFailed(
                         $"Instance with name '{input.Description}' already exists."
@@ -52,7 +52,6 @@ namespace jahndigital.studentbank.server.GraphQL.Mutations
             }
 
             try {
-                context.Update(instance);
                 await context.SaveChangesAsync();
             } catch (Exception e) {
                 throw ErrorFactory.QueryFailed(e.Message);
@@ -62,7 +61,7 @@ namespace jahndigital.studentbank.server.GraphQL.Mutations
         }
 
         /// <summary>
-        /// Create an instance.
+        /// Create an <see cref="dal.Entities.Instance"/>.
         /// </summary>
         /// <param name="input"></param>
         /// <param name="context"></param>
@@ -94,7 +93,7 @@ namespace jahndigital.studentbank.server.GraphQL.Mutations
         }
 
         /// <summary>
-        /// Delete an instance.
+        /// Soft-delete an <see cref="dal.Entities.Instance"/>.
         /// </summary>
         /// <param name="id"></param>
         /// <param name="context"></param>
@@ -115,6 +114,31 @@ namespace jahndigital.studentbank.server.GraphQL.Mutations
                 await context.SaveChangesAsync();
             } catch {
                 return false;
+            }
+
+            return true;
+        }
+
+        /// <summary>
+        /// Restore a soft-deleted <see cref="dal.Entities.Instance"/>.
+        /// </summary>
+        /// <param name="id"></param>
+        /// <param name="context"></param>
+        /// <returns></returns>
+        [Authorize(Policy = Constants.Privilege.PRIVILEGE_MANAGE_INSTANCES)]
+        public async Task<bool> RestoreInstanceAsync(long id, [Service]AppDbContext context)
+        {
+            var instance = await context.Instances
+                .Where(x => x.Id == id && x.DateDeleted != null)
+                .SingleOrDefaultAsync()
+            ?? throw ErrorFactory.NotFound();
+
+            instance.DateDeleted = null;
+
+            try {
+                await context.SaveChangesAsync();
+            } catch (Exception e) {
+                throw ErrorFactory.QueryFailed(e.Message);
             }
 
             return true;

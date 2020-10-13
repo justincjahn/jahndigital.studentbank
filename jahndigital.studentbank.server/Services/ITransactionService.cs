@@ -6,6 +6,9 @@ using jahndigital.studentbank.utils;
 
 namespace jahndigital.studentbank.server.Services
 {
+    /// <summary>
+    /// Contract for posting monetary transactions and purchasing stocks/products.
+    /// </summary>
     public interface ITransactionService
     {
         /// <summary>
@@ -17,9 +20,9 @@ namespace jahndigital.studentbank.server.Services
         /// <param name="comment"></param>
         /// <param name="effectiveDate"></param>
         /// <param name="takeNegative"></param>
-        /// <returns></returns>
+        /// <returns>The resulting transaction object.</returns>
         /// <exception cref="NonsufficientFundsException">If the share doesn't have enough funds.</exception>
-        Task PostAsync(
+        Task<dal.Entities.Transaction> PostAsync(
             long shareId,
             Money amount,
             string? comment = null,
@@ -37,8 +40,8 @@ namespace jahndigital.studentbank.server.Services
         /// <param name="comment">An optional transaction comment.</param>
         /// <param name="effectiveDate">The date the transaction was effective.</param>
         /// <param name="takeNegative">If the source share can be taken negative as a result of this transaction.</param>
-        /// <returns></returns>
-        Task TransferAsync(
+        /// <returns>A tuple with the source and destination transactions respectively.</returns>
+        Task<(dal.Entities.Transaction, dal.Entities.Transaction)> TransferAsync(
             long sourceShareId,
             long destinationShareId,
             Money amount,
@@ -54,6 +57,13 @@ namespace jahndigital.studentbank.server.Services
         /// <returns></returns>
         /// <exception cref="NonsufficientFundsException">If the share doesn't have enough funds.</exception>
         /// <exception cref="InvalidQuantityException">If a product doesn't have stock to fulfill the requested quantity.</exception>
-        Task<long> PurchaseAsync(PurchaseRequest input);
+        Task<dal.Entities.StudentPurchase> PurchaseAsync(PurchaseRequest input);
+
+        /// <summary>
+        /// Attempt to buy or sell shares of a stock.
+        /// </summary>
+        /// <param name="input"></param>
+        /// <returns>The ID number of the <see cref="dal.Entities.StudentStock"/> item created.</returns>
+        Task<dal.Entities.StudentStock> PurchaseStockAsync(PurchaseStockRequest input);
     }
 }
