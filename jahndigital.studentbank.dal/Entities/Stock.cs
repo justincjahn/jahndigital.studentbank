@@ -17,17 +17,6 @@ namespace jahndigital.studentbank.dal.Entities
         public long Id {get; set;}
 
         /// <summary>
-        /// Get the instance ID
-        /// </summary>
-        [ForeignKey("Instance")]
-        public long InstanceId {get; set;}
-
-        /// <summary>
-        /// Gets the instance for this stock item.
-        /// </summary>
-        public Instance Instance {get; set;} = default!;
-
-        /// <summary>
         /// Unique name of th
         /// </summary>
         /// <value></value>

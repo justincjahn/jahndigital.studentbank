@@ -10,7 +10,7 @@ using jahndigital.studentbank.dal.Contexts;
 namespace jahndigital.studentbank.dal.Migrations.mssql
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20201010065627_initial")]
+    [Migration("20201013014612_initial")]
     partial class initial
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -120,6 +120,7 @@ namespace jahndigital.studentbank.dal.Migrations.mssql
                         .HasColumnType("datetime2");
 
                     b.Property<string>("Description")
+                        .IsRequired()
                         .HasColumnType("nvarchar(256)")
                         .HasMaxLength(256);
 
@@ -143,19 +144,19 @@ namespace jahndigital.studentbank.dal.Migrations.mssql
                     b.ToTable("Products");
                 });
 
-            modelBuilder.Entity("jahndigital.studentbank.dal.Entities.ProductGroup", b =>
+            modelBuilder.Entity("jahndigital.studentbank.dal.Entities.ProductInstance", b =>
                 {
-                    b.Property<long>("GroupId")
+                    b.Property<long>("InstanceId")
                         .HasColumnType("bigint");
 
                     b.Property<long>("ProductId")
                         .HasColumnType("bigint");
 
-                    b.HasKey("GroupId", "ProductId");
+                    b.HasKey("InstanceId", "ProductId");
 
                     b.HasIndex("ProductId");
 
-                    b.ToTable("ProductGroups");
+                    b.ToTable("ProductInstances");
                 });
 
             modelBuilder.Entity("jahndigital.studentbank.dal.Entities.Role", b =>
@@ -293,9 +294,6 @@ namespace jahndigital.studentbank.dal.Migrations.mssql
                     b.Property<DateTime?>("DateDeleted")
                         .HasColumnType("datetime2");
 
-                    b.Property<long>("InstanceId")
-                        .HasColumnType("bigint");
-
                     b.Property<string>("Name")
                         .IsRequired()
                         .HasColumnType("nvarchar(32)")
@@ -314,8 +312,6 @@ namespace jahndigital.studentbank.dal.Migrations.mssql
                         .HasColumnType("bigint");
 
                     b.HasKey("Id");
-
-                    b.HasIndex("InstanceId");
 
                     b.ToTable("Stocks");
                 });
@@ -342,6 +338,21 @@ namespace jahndigital.studentbank.dal.Migrations.mssql
                     b.HasIndex("StockId");
 
                     b.ToTable("StockHistory");
+                });
+
+            modelBuilder.Entity("jahndigital.studentbank.dal.Entities.StockInstance", b =>
+                {
+                    b.Property<long>("InstanceId")
+                        .HasColumnType("bigint");
+
+                    b.Property<long>("StockId")
+                        .HasColumnType("bigint");
+
+                    b.HasKey("InstanceId", "StockId");
+
+                    b.HasIndex("StockId");
+
+                    b.ToTable("StockInstances");
                 });
 
             modelBuilder.Entity("jahndigital.studentbank.dal.Entities.Student", b =>
@@ -464,6 +475,9 @@ namespace jahndigital.studentbank.dal.Migrations.mssql
 
                     b.Property<DateTime>("DateLastActive")
                         .HasColumnType("datetime2");
+
+                    b.Property<long>("SharesOwned")
+                        .HasColumnType("bigint");
 
                     b.Property<long>("StockId")
                         .HasColumnType("bigint");
@@ -619,16 +633,16 @@ namespace jahndigital.studentbank.dal.Migrations.mssql
                         });
                 });
 
-            modelBuilder.Entity("jahndigital.studentbank.dal.Entities.ProductGroup", b =>
+            modelBuilder.Entity("jahndigital.studentbank.dal.Entities.ProductInstance", b =>
                 {
-                    b.HasOne("jahndigital.studentbank.dal.Entities.Group", "Group")
-                        .WithMany("ProductGroups")
-                        .HasForeignKey("GroupId")
+                    b.HasOne("jahndigital.studentbank.dal.Entities.Instance", "Instance")
+                        .WithMany("ProductInstances")
+                        .HasForeignKey("InstanceId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.HasOne("jahndigital.studentbank.dal.Entities.Product", "Product")
-                        .WithMany("ProductGroups")
+                        .WithMany("ProductInstances")
                         .HasForeignKey("ProductId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
@@ -679,19 +693,25 @@ namespace jahndigital.studentbank.dal.Migrations.mssql
                         .IsRequired();
                 });
 
-            modelBuilder.Entity("jahndigital.studentbank.dal.Entities.Stock", b =>
-                {
-                    b.HasOne("jahndigital.studentbank.dal.Entities.Instance", "Instance")
-                        .WithMany("Stocks")
-                        .HasForeignKey("InstanceId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-                });
-
             modelBuilder.Entity("jahndigital.studentbank.dal.Entities.StockHistory", b =>
                 {
                     b.HasOne("jahndigital.studentbank.dal.Entities.Stock", "Stock")
                         .WithMany("History")
+                        .HasForeignKey("StockId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("jahndigital.studentbank.dal.Entities.StockInstance", b =>
+                {
+                    b.HasOne("jahndigital.studentbank.dal.Entities.Instance", "Instance")
+                        .WithMany("StockInstances")
+                        .HasForeignKey("InstanceId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("jahndigital.studentbank.dal.Entities.Stock", "Stock")
+                        .WithMany("StockInstances")
                         .HasForeignKey("StockId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
@@ -716,6 +736,7 @@ namespace jahndigital.studentbank.dal.Migrations.mssql
                                 .HasColumnType("datetime2");
 
                             b1.Property<string>("CreatedByIpAddress")
+                                .IsRequired()
                                 .HasColumnType("nvarchar(39)")
                                 .HasMaxLength(39);
 
@@ -736,6 +757,7 @@ namespace jahndigital.studentbank.dal.Migrations.mssql
                                 .HasColumnType("bigint");
 
                             b1.Property<string>("Token")
+                                .IsRequired()
                                 .HasColumnType("nvarchar(max)");
 
                             b1.HasKey("Id");
@@ -831,6 +853,7 @@ namespace jahndigital.studentbank.dal.Migrations.mssql
                                 .HasColumnType("datetime2");
 
                             b1.Property<string>("CreatedByIpAddress")
+                                .IsRequired()
                                 .HasColumnType("nvarchar(39)")
                                 .HasMaxLength(39);
 
@@ -848,6 +871,7 @@ namespace jahndigital.studentbank.dal.Migrations.mssql
                                 .HasMaxLength(39);
 
                             b1.Property<string>("Token")
+                                .IsRequired()
                                 .HasColumnType("nvarchar(max)");
 
                             b1.Property<long>("UserId")

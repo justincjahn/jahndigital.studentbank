@@ -15,6 +15,7 @@ namespace jahndigital.studentbank.dal.Contexts
         public DbSet<ShareTypeInstance> ShareTypeInstances => Set<ShareTypeInstance>();
         public DbSet<Stock> Stocks => Set<Stock>();
         public DbSet<StockHistory> StockHistory => Set<StockHistory>();
+        public DbSet<StockInstance> StockInstances => Set<StockInstance>();
         public DbSet<Student> Students => Set<Student>();
         public DbSet<StudentStock> StudentStocks => Set<StudentStock>();
         public DbSet<StudentStockHistory> StudentStockHistory => Set<StudentStockHistory>();

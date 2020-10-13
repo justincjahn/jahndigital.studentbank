@@ -44,13 +44,13 @@ namespace jahndigital.studentbank.dal.Migrations.sqlite
                 {
                     Id = table.Column<long>(nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
-                    Name = table.Column<string>(maxLength: 128, nullable: false),
-                    Description = table.Column<string>(maxLength: 256, nullable: true),
                     Cost = table.Column<long>(nullable: false),
                     IsLimitedQuantity = table.Column<bool>(nullable: false),
                     Quantity = table.Column<int>(nullable: false),
                     DateCreated = table.Column<DateTime>(nullable: false),
-                    DateDeleted = table.Column<DateTime>(nullable: true)
+                    DateDeleted = table.Column<DateTime>(nullable: true),
+                    Name = table.Column<string>(maxLength: 128, nullable: false),
+                    Description = table.Column<string>(maxLength: 256, nullable: false)
                 },
                 constraints: table =>
                 {
@@ -90,34 +90,11 @@ namespace jahndigital.studentbank.dal.Migrations.sqlite
                 });
 
             migrationBuilder.CreateTable(
-                name: "Groups",
-                columns: table => new
-                {
-                    Id = table.Column<long>(nullable: false)
-                        .Annotation("SqlServer:Identity", "1, 1"),
-                    Name = table.Column<string>(maxLength: 32, nullable: false),
-                    InstanceId = table.Column<long>(nullable: false),
-                    DateCreated = table.Column<DateTime>(nullable: false),
-                    DateDeleted = table.Column<DateTime>(nullable: true)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_Groups", x => x.Id);
-                    table.ForeignKey(
-                        name: "FK_Groups_Instances_InstanceId",
-                        column: x => x.InstanceId,
-                        principalTable: "Instances",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
-                });
-
-            migrationBuilder.CreateTable(
                 name: "Stocks",
                 columns: table => new
                 {
                     Id = table.Column<long>(nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
-                    InstanceId = table.Column<long>(nullable: false),
                     Symbol = table.Column<string>(maxLength: 10, nullable: false),
                     Name = table.Column<string>(maxLength: 32, nullable: false),
                     TotalShares = table.Column<long>(nullable: false),
@@ -129,8 +106,24 @@ namespace jahndigital.studentbank.dal.Migrations.sqlite
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_Stocks", x => x.Id);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "Groups",
+                columns: table => new
+                {
+                    Id = table.Column<long>(nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    InstanceId = table.Column<long>(nullable: false),
+                    Name = table.Column<string>(maxLength: 32, nullable: false),
+                    DateCreated = table.Column<DateTime>(nullable: false),
+                    DateDeleted = table.Column<DateTime>(nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Groups", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_Stocks_Instances_InstanceId",
+                        name: "FK_Groups_Instances_InstanceId",
                         column: x => x.InstanceId,
                         principalTable: "Instances",
                         principalColumn: "Id",
@@ -151,6 +144,30 @@ namespace jahndigital.studentbank.dal.Migrations.sqlite
                     table.PrimaryKey("PK_ProductImages", x => x.Id);
                     table.ForeignKey(
                         name: "FK_ProductImages_Products_ProductId",
+                        column: x => x.ProductId,
+                        principalTable: "Products",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "ProductInstances",
+                columns: table => new
+                {
+                    InstanceId = table.Column<long>(nullable: false),
+                    ProductId = table.Column<long>(nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_ProductInstances", x => new { x.InstanceId, x.ProductId });
+                    table.ForeignKey(
+                        name: "FK_ProductInstances_Instances_InstanceId",
+                        column: x => x.InstanceId,
+                        principalTable: "Instances",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_ProductInstances_Products_ProductId",
                         column: x => x.ProductId,
                         principalTable: "Products",
                         principalColumn: "Id",
@@ -187,9 +204,9 @@ namespace jahndigital.studentbank.dal.Migrations.sqlite
                 {
                     Id = table.Column<long>(nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
+                    RoleId = table.Column<long>(nullable: false),
                     Email = table.Column<string>(maxLength: 64, nullable: false),
                     Password = table.Column<string>(maxLength: 84, nullable: false),
-                    RoleId = table.Column<long>(nullable: false),
                     DateCreated = table.Column<DateTime>(nullable: false),
                     DateDeleted = table.Column<DateTime>(nullable: true)
                 },
@@ -229,25 +246,46 @@ namespace jahndigital.studentbank.dal.Migrations.sqlite
                 });
 
             migrationBuilder.CreateTable(
-                name: "ProductGroups",
+                name: "StockHistory",
                 columns: table => new
                 {
-                    GroupId = table.Column<long>(nullable: false),
-                    ProductId = table.Column<long>(nullable: false)
+                    Id = table.Column<long>(nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    StockId = table.Column<long>(nullable: false),
+                    Value = table.Column<long>(nullable: false),
+                    DateChanged = table.Column<DateTime>(nullable: false)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_ProductGroups", x => new { x.GroupId, x.ProductId });
+                    table.PrimaryKey("PK_StockHistory", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_ProductGroups_Groups_GroupId",
-                        column: x => x.GroupId,
-                        principalTable: "Groups",
+                        name: "FK_StockHistory_Stocks_StockId",
+                        column: x => x.StockId,
+                        principalTable: "Stocks",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "StockInstances",
+                columns: table => new
+                {
+                    InstanceId = table.Column<long>(nullable: false),
+                    StockId = table.Column<long>(nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_StockInstances", x => new { x.InstanceId, x.StockId });
+                    table.ForeignKey(
+                        name: "FK_StockInstances_Instances_InstanceId",
+                        column: x => x.InstanceId,
+                        principalTable: "Instances",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
-                        name: "FK_ProductGroups_Products_ProductId",
-                        column: x => x.ProductId,
-                        principalTable: "Products",
+                        name: "FK_StockInstances_Stocks_StockId",
+                        column: x => x.StockId,
+                        principalTable: "Stocks",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                 });
@@ -279,37 +317,16 @@ namespace jahndigital.studentbank.dal.Migrations.sqlite
                 });
 
             migrationBuilder.CreateTable(
-                name: "StockHistory",
-                columns: table => new
-                {
-                    Id = table.Column<long>(nullable: false)
-                        .Annotation("SqlServer:Identity", "1, 1"),
-                    StockId = table.Column<long>(nullable: false),
-                    Value = table.Column<long>(nullable: false),
-                    DateChanged = table.Column<DateTime>(nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_StockHistory", x => x.Id);
-                    table.ForeignKey(
-                        name: "FK_StockHistory_Stocks_StockId",
-                        column: x => x.StockId,
-                        principalTable: "Stocks",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
-                });
-
-            migrationBuilder.CreateTable(
                 name: "Users_RefreshTokens",
                 columns: table => new
                 {
                     Id = table.Column<long>(nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
-                    Token = table.Column<string>(nullable: true),
+                    Token = table.Column<string>(nullable: false),
                     Created = table.Column<DateTime>(nullable: false),
                     Expires = table.Column<DateTime>(nullable: false),
                     Revoked = table.Column<DateTime>(nullable: true),
-                    CreatedByIpAddress = table.Column<string>(maxLength: 39, nullable: true),
+                    CreatedByIpAddress = table.Column<string>(maxLength: 39, nullable: false),
                     RevokedByIpAddress = table.Column<string>(maxLength: 39, nullable: true),
                     ReplacedByToken = table.Column<string>(nullable: true),
                     UserId = table.Column<long>(nullable: false)
@@ -383,11 +400,11 @@ namespace jahndigital.studentbank.dal.Migrations.sqlite
                 {
                     Id = table.Column<long>(nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
-                    Token = table.Column<string>(nullable: true),
+                    Token = table.Column<string>(nullable: false),
                     Created = table.Column<DateTime>(nullable: false),
                     Expires = table.Column<DateTime>(nullable: false),
                     Revoked = table.Column<DateTime>(nullable: true),
-                    CreatedByIpAddress = table.Column<string>(maxLength: 39, nullable: true),
+                    CreatedByIpAddress = table.Column<string>(maxLength: 39, nullable: false),
                     RevokedByIpAddress = table.Column<string>(maxLength: 39, nullable: true),
                     ReplacedByToken = table.Column<string>(nullable: true),
                     StudentId = table.Column<long>(nullable: false)
@@ -411,6 +428,7 @@ namespace jahndigital.studentbank.dal.Migrations.sqlite
                         .Annotation("SqlServer:Identity", "1, 1"),
                     StudentId = table.Column<long>(nullable: false),
                     StockId = table.Column<long>(nullable: false),
+                    SharesOwned = table.Column<long>(nullable: false),
                     DateLastActive = table.Column<DateTime>(nullable: false),
                     DateCreated = table.Column<DateTime>(nullable: false)
                 },
@@ -437,8 +455,8 @@ namespace jahndigital.studentbank.dal.Migrations.sqlite
                 {
                     Id = table.Column<long>(nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
-                    TransactionType = table.Column<string>(maxLength: 1, nullable: false),
                     TargetShareId = table.Column<long>(nullable: false),
+                    TransactionType = table.Column<string>(maxLength: 1, nullable: false),
                     Comment = table.Column<string>(maxLength: 255, nullable: true),
                     Amount = table.Column<long>(nullable: false),
                     NewBalance = table.Column<long>(nullable: false),
@@ -462,8 +480,8 @@ namespace jahndigital.studentbank.dal.Migrations.sqlite
                     Id = table.Column<long>(nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
                     StudentPurchaseId = table.Column<long>(nullable: false),
-                    Quantity = table.Column<int>(nullable: false),
                     ProductId = table.Column<long>(nullable: false),
+                    Quantity = table.Column<int>(nullable: false),
                     PurchasePrice = table.Column<long>(nullable: false)
                 },
                 constraints: table =>
@@ -490,9 +508,9 @@ namespace jahndigital.studentbank.dal.Migrations.sqlite
                     Id = table.Column<long>(nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
                     StudentStockId = table.Column<long>(nullable: false),
+                    TransactionId = table.Column<long>(nullable: false),
                     Count = table.Column<int>(nullable: false),
                     Amount = table.Column<long>(nullable: false),
-                    TransactionId = table.Column<long>(nullable: false),
                     DatePosted = table.Column<DateTime>(nullable: false)
                 },
                 constraints: table =>
@@ -530,13 +548,13 @@ namespace jahndigital.studentbank.dal.Migrations.sqlite
                 unique: true);
 
             migrationBuilder.CreateIndex(
-                name: "IX_ProductGroups_ProductId",
-                table: "ProductGroups",
+                name: "IX_ProductImages_ProductId",
+                table: "ProductImages",
                 column: "ProductId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_ProductImages_ProductId",
-                table: "ProductImages",
+                name: "IX_ProductInstances_ProductId",
+                table: "ProductInstances",
                 column: "ProductId");
 
             migrationBuilder.CreateIndex(
@@ -565,9 +583,9 @@ namespace jahndigital.studentbank.dal.Migrations.sqlite
                 column: "StockId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_Stocks_InstanceId",
-                table: "Stocks",
-                column: "InstanceId");
+                name: "IX_StockInstances_StockId",
+                table: "StockInstances",
+                column: "StockId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_StudentPurchaseItems_ProductId",
@@ -639,10 +657,10 @@ namespace jahndigital.studentbank.dal.Migrations.sqlite
         protected override void Down(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.DropTable(
-                name: "ProductGroups");
+                name: "ProductImages");
 
             migrationBuilder.DropTable(
-                name: "ProductImages");
+                name: "ProductInstances");
 
             migrationBuilder.DropTable(
                 name: "RolePrivileges");
@@ -652,6 +670,9 @@ namespace jahndigital.studentbank.dal.Migrations.sqlite
 
             migrationBuilder.DropTable(
                 name: "StockHistory");
+
+            migrationBuilder.DropTable(
+                name: "StockInstances");
 
             migrationBuilder.DropTable(
                 name: "StudentPurchaseItems");

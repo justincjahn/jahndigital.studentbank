@@ -40,6 +40,12 @@ namespace jahndigital.studentbank.dal.Entities
         public Stock Stock {get; set;} = default!;
 
         /// <summary>
+        /// The number of shares this student currently owns.
+        /// </summary>
+        [Required]
+        public long SharesOwned {get; set;} = 0;
+
+        /// <summary>
         /// The history of buy/sells for this stock.
         /// </summary>
         public ICollection<StudentStockHistory> History {get; set;} = new HashSet<StudentStockHistory>();

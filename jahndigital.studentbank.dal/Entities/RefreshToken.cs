@@ -12,7 +12,13 @@ namespace jahndigital.studentbank.dal.Entities
     [Owned]
     public class RefreshToken
     {
-        // <summary>
+        /// <summary>
+        /// Get or set the unique ID of this record.
+        /// </summary>
+        [Key]
+        public long Id {get; set;} = default!;
+
+        /// <summary>
         /// 
         /// </summary>
         public string Token {get; set;} = null!;
@@ -48,12 +54,12 @@ namespace jahndigital.studentbank.dal.Entities
         /// The IP address that revoked the certificate.
         /// </summary>
         [MaxLength(39)]
-        public string RevokedByIpAddress {get; set;} = default!;
+        public string? RevokedByIpAddress {get; set;} = default!;
 
         /// <summary>
         /// The token that replaced this one.
         /// </summary>
-        public string ReplacedByToken {get; set;} = default!;
+        public string? ReplacedByToken {get; set;} = default!;
 
         /// <summary>
         /// 
