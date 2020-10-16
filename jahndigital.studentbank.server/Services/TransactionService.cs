@@ -3,7 +3,6 @@ using System.Linq;
 using System.Threading.Tasks;
 using jahndigital.studentbank.dal.Contexts;
 using jahndigital.studentbank.server.Exceptions;
-using jahndigital.studentbank.server.Extensions;
 using jahndigital.studentbank.server.GraphQL;
 using jahndigital.studentbank.server.Models;
 using jahndigital.studentbank.utils;
@@ -351,6 +350,80 @@ namespace jahndigital.studentbank.server.Services
             }
 
             return studentStock;
+        }
+
+        /// <inheritdoc />
+        /// <exception cref="ShareTypeNotFoundException">If the share type was not found.</exception>
+        /// <exception cref="ArgumentOutOfRangeException">If any instance(s) or shareTypes specified were invalid.</exception>
+        /// <exception cref="DatabaseException">If any database error(s) occurred during the posting.</exception>
+        public async Task<bool> PostDividendsAsync(PostDividendsRequest input)
+        {
+            var shareType = await _context.ShareTypes
+                .Where(x => x.Id == input.ShareTypeId)
+                .SingleOrDefaultAsync()
+            ?? throw new ShareTypeNotFoundException(input.ShareTypeId);
+
+            if (shareType.DividendRate == Rate.FromRate(0.0m)) {
+                throw new ArgumentOutOfRangeException(
+                    "input", "Share Type provided has no dividend rate.");
+            }
+
+            var instances = await _context.Instances
+                .Where(x => input.Instances.Contains(x.Id))
+                .CountAsync();
+            
+            if (instances != input.Instances.Count()) {
+                throw new ArgumentOutOfRangeException(
+                    "input", "One or more instances provided do not exist.");
+            }
+
+            var transaction = await _context.Database.BeginTransactionAsync();
+            foreach (var instance in input.Instances) {
+                var query = _context.Shares
+                    .Include(x => x.Student)
+                        .ThenInclude(x => x.Group)
+                    .Where(x =>
+                        x.ShareTypeId == shareType.Id
+                        && x.Student.Group.InstanceId == instance
+                        && x.RawBalance > 0);
+
+                var count = await query.CountAsync();
+                for (var i = 0; i < count; i += 100) {
+                    var shares = await query.Skip(i).Take(100).ToListAsync();
+
+                    foreach (var share in shares) {
+                        var dividendAmount = share.Balance * shareType.DividendRate;
+                        var newBalance = share.Balance += dividendAmount;
+
+                        _context.Add(new dal.Entities.Transaction {
+                            Amount = dividendAmount,
+                            EffectiveDate = DateTime.UtcNow,
+                            NewBalance = newBalance,
+                            TargetShareId = share.Id,
+                            TransactionType = "V",
+                            Comment = $"Dividend posting {shareType.DividendRate}"
+                        });
+
+                        share.DividendLastAmount = dividendAmount;
+                        share.TotalDividends += dividendAmount;
+                        share.Balance = newBalance;
+                    }
+
+                    try {
+                        await _context.SaveChangesAsync();
+                    } catch (Exception e) {
+                        throw new DatabaseException(e.Message);
+                    }
+                }
+            }
+
+            try {
+                await transaction.CommitAsync();
+            } catch (Exception e) {
+                throw new DatabaseException(e.Message);
+            }
+
+            return true;
         }
     }
 }

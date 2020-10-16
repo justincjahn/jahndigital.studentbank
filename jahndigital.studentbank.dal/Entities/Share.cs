@@ -56,6 +56,36 @@ namespace jahndigital.studentbank.dal.Entities
         }
 
         /// <summary>
+        /// Backing field for DividendLastAmount
+        /// </summary>
+        [Column("DividendLastAmount"), Required]
+        public long RawDividendLastAmount {get; private set;} = 0;
+
+        /// <summary>
+        /// Get or set the last dividend amount.
+        /// </summary>
+        [NotMapped]
+        public Money DividendLastAmount {
+            get => Money.FromDatabase(RawDividendLastAmount);
+            set => RawDividendLastAmount = value.DatabaseAmount;
+        }
+
+        /// <summary>
+        /// Backing field for TotalDividends.
+        /// </summary>
+        [Column("TotalDividends"), Required]
+        public long RawTotalDividends {get; private set;} = 0;
+
+        /// <summary>
+        /// Get or set the total dividends paid to this account.
+        /// </summary>
+        [NotMapped]
+        public Money TotalDividends {
+            get => Money.FromDatabase(RawTotalDividends);
+            set => RawTotalDividends = value.DatabaseAmount;
+        }
+
+        /// <summary>
         /// A list of transactions for the share.
         /// </summary>
         /// <typeparam name="Transaction"></typeparam>

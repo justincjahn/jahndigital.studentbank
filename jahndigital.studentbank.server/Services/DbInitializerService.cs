@@ -187,6 +187,8 @@ namespace jahndigital.studentbank.server.Services
                 IsLimitedQuantity = true,
                 Quantity = 128
             });
+
+            context.SaveChangesAsync();
         }
 
         /// <summary>

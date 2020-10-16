@@ -10,7 +10,7 @@ using jahndigital.studentbank.dal.Contexts;
 namespace jahndigital.studentbank.dal.Migrations.mssql
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20201013014612_initial")]
+    [Migration("20201016030446_initial")]
     partial class initial
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -219,6 +219,14 @@ namespace jahndigital.studentbank.dal.Migrations.mssql
 
                     b.Property<long>("RawBalance")
                         .HasColumnName("Balance")
+                        .HasColumnType("bigint");
+
+                    b.Property<long>("RawDividendLastAmount")
+                        .HasColumnName("DividendLastAmount")
+                        .HasColumnType("bigint");
+
+                    b.Property<long>("RawTotalDividends")
+                        .HasColumnName("TotalDividends")
                         .HasColumnType("bigint");
 
                     b.Property<long>("ShareTypeId")

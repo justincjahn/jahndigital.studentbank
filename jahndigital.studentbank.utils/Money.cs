@@ -213,6 +213,10 @@ namespace jahndigital.studentbank.utils
                 return CompareTo(m) == 0;
             }
 
+            if (obj is decimal d) {
+                return CompareTo(d) == 0;
+            }
+
             return base.Equals(obj);
         }
 
@@ -220,9 +224,6 @@ namespace jahndigital.studentbank.utils
         /// 
         /// </summary>
         /// <returns></returns>
-        public override int GetHashCode()
-        {
-            return base.GetHashCode();
-        }
+        public override int GetHashCode() => base.GetHashCode();
     }
 }

@@ -10,7 +10,7 @@ using jahndigital.studentbank.dal.Contexts;
 namespace jahndigital.studentbank.dal.Migrations.sqlite
 {
     [DbContext(typeof(SqliteDbContext))]
-    [Migration("20201013014528_initial")]
+    [Migration("20201016030413_initial")]
     partial class initial
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -219,6 +219,14 @@ namespace jahndigital.studentbank.dal.Migrations.sqlite
 
                     b.Property<long>("RawBalance")
                         .HasColumnName("Balance")
+                        .HasColumnType("bigint");
+
+                    b.Property<long>("RawDividendLastAmount")
+                        .HasColumnName("DividendLastAmount")
+                        .HasColumnType("bigint");
+
+                    b.Property<long>("RawTotalDividends")
+                        .HasColumnName("TotalDividends")
                         .HasColumnType("bigint");
 
                     b.Property<long>("ShareTypeId")

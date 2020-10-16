@@ -351,6 +351,8 @@ namespace jahndigital.studentbank.dal.Migrations.mssql
                     ShareTypeId = table.Column<long>(nullable: false),
                     StudentId = table.Column<long>(nullable: false),
                     Balance = table.Column<long>(nullable: false),
+                    DividendLastAmount = table.Column<long>(nullable: false),
+                    TotalDividends = table.Column<long>(nullable: false),
                     DateLastActive = table.Column<DateTime>(nullable: false),
                     DateCreated = table.Column<DateTime>(nullable: false),
                     DateDeleted = table.Column<DateTime>(nullable: true)

@@ -83,5 +83,26 @@ namespace jahndigital.studentbank.server.GraphQL.Mutations
                 throw e;
             }
         }
+
+        /// <summary>
+        /// Post dividends for a specific <see cref="dal.Entities.ShareType"/> and a group
+        /// of <see cref="dal.Entities.Instance"/>.
+        /// </summary>
+        /// <param name="input"></param>
+        /// <param name="transactionService"></param>
+        /// <returns></returns>
+        [Authorize(Policy = Constants.Privilege.PRIVILEGE_MANAGE_TRANSACTIONS)]
+        public async Task<bool> PostDividendsAsync(
+            PostDividendsRequest input,
+            [Service] ITransactionService transactionService
+        ) {
+            try {
+                await transactionService.PostDividendsAsync(input);
+            } catch (Exception e) {
+                throw ErrorFactory.QueryFailed(e.Message);
+            }
+
+            return true;
+        }
     }
 }

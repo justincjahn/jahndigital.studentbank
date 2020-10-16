@@ -219,6 +219,14 @@ namespace jahndigital.studentbank.dal.Migrations.sqlite
                         .HasColumnName("Balance")
                         .HasColumnType("bigint");
 
+                    b.Property<long>("RawDividendLastAmount")
+                        .HasColumnName("DividendLastAmount")
+                        .HasColumnType("bigint");
+
+                    b.Property<long>("RawTotalDividends")
+                        .HasColumnName("TotalDividends")
+                        .HasColumnType("bigint");
+
                     b.Property<long>("ShareTypeId")
                         .HasColumnType("bigint");
 

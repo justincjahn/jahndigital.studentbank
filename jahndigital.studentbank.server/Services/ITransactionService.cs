@@ -65,5 +65,13 @@ namespace jahndigital.studentbank.server.Services
         /// <param name="input"></param>
         /// <returns>The ID number of the <see cref="dal.Entities.StudentStock"/> item created.</returns>
         Task<dal.Entities.StudentStock> PurchaseStockAsync(PurchaseStockRequest input);
+
+        /// <summary>
+        /// Post dividends for a specific <see cref="dal.Entities.ShareType"/> on a specific
+        /// set of <see cref="dal.Entities.Instance"/>.
+        /// </summary>
+        /// <param name="input"></param>
+        /// <returns></returns>
+        Task<bool> PostDividendsAsync(PostDividendsRequest input);
     }
 }
