@@ -9,18 +9,46 @@ namespace jahndigital.studentbank.server.GraphQL.Mutations
     public class TokenManagerAbstract
     {
         /// <summary>
+        /// The name of the cookie that stores the refresh token.
+        /// </summary>
+        public const string TOKEN_COOKIE = "refreshToken";
+
+        /// <summary>
+        /// Get the refresh token from cookies, if set.
+        /// </summary>
+        /// <param name="context"></param>
+        /// <returns></returns>
+        protected string? GetToken(IHttpContextAccessor context)
+        {
+            if (context.HttpContext.Request.Cookies.ContainsKey(TOKEN_COOKIE)) {
+                return context.HttpContext.Request.Cookies[TOKEN_COOKIE];
+            }
+
+            return null;
+        }
+
+        /// <summary>
         /// Set an HTTP cookie containing the current refresh token.
         /// </summary>
         /// <param name="context"></param>
         /// <param name="token"></param>
-        protected void setTokenCookie(IHttpContextAccessor context, string token)
+        protected void SetTokenCookie(IHttpContextAccessor context, string token)
         {
             var cookieOptions = new CookieOptions{
                 HttpOnly = true,
                 Expires = DateTime.UtcNow.AddDays(7)
             };
 
-            context.HttpContext.Response.Cookies.Append("refreshToken", token, cookieOptions);
+            context.HttpContext.Response.Cookies.Append(TOKEN_COOKIE, token, cookieOptions);
+        }
+
+        /// <summary>
+        /// Delete the refresh token from the response cookies.
+        /// </summary>
+        /// <param name="context"></param>
+        protected void ClearTokenCookie(IHttpContextAccessor context)
+        {
+            context.HttpContext.Response.Cookies.Delete(TOKEN_COOKIE);
         }
 
         /// <summary>
@@ -28,7 +56,7 @@ namespace jahndigital.studentbank.server.GraphQL.Mutations
         /// </summary>
         /// <param name="context"></param>
         /// <returns></returns>
-        protected string getIp(IHttpContextAccessor context)
+        protected string GetIp(IHttpContextAccessor context)
         {
             if (context.HttpContext.Request.Headers.ContainsKey("X-Forwarded-For")) {
                 return context.HttpContext.Request.Headers["X-Forwarded-For"];

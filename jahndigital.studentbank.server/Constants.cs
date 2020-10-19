@@ -323,6 +323,8 @@ namespace jahndigital.studentbank.server
             public const string ERROR_NOT_FOUND = "ERROR_NOT_FOUND";
 
             public const string ERROR_QUERY_FAILED = "ERROR_QUERY_FAILED";
+
+            public const string INVALID_REFRESH_TOKEN = "INVALID_REFRESH_TOKEN";
         }
     }
 }

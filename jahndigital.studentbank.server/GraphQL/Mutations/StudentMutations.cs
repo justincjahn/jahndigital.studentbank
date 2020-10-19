@@ -38,7 +38,7 @@ namespace jahndigital.studentbank.server.GraphQL.Mutations
             if (string.IsNullOrEmpty(input.Username)) throw ErrorFactory.Unauthorized();
             if (string.IsNullOrEmpty(input.Password)) throw ErrorFactory.Unauthorized();
 
-            var response = studentService.Authenticate(input, getIp(contextAccessor));
+            var response = studentService.Authenticate(input, GetIp(contextAccessor));
 
             if (response == null) {
                 throw new QueryException(
@@ -49,7 +49,7 @@ namespace jahndigital.studentbank.server.GraphQL.Mutations
                 );
             }
 
-            setTokenCookie(contextAccessor, response.RefreshToken);
+            SetTokenCookie(contextAccessor, response.RefreshToken);
             return response!;
         }
 
@@ -62,23 +62,31 @@ namespace jahndigital.studentbank.server.GraphQL.Mutations
         /// <param name="contextAccessor"></param>
         /// <returns></returns>
         public AuthenticateResponse? StudentRefreshToken(
-            string token,
+            string? token,
             [Service] AppDbContext context,
             [Service] IStudentService studentService,
             [Service] IHttpContextAccessor contextAccessor
         ) {
-            var response = studentService.RefreshToken(token, getIp(contextAccessor));
+            token = token
+                ?? GetToken(contextAccessor)
+                ?? throw new QueryException(
+                    ErrorBuilder.New()
+                        .SetMessage("A token is required.")
+                        .SetCode(Constants.ErrorStrings.INVALID_REFRESH_TOKEN)
+                        .Build());
+
+            var response = studentService.RefreshToken(token, GetIp(contextAccessor));
 
             if (response == null) {
                 throw new QueryException(
                     ErrorBuilder.New()
                         .SetMessage("Invalid refresh token.")
-                        .SetCode("INVALID_REFRESH_TOKEN")
+                        .SetCode(Constants.ErrorStrings.INVALID_REFRESH_TOKEN)
                         .Build()
                 );
             }
 
-            setTokenCookie(contextAccessor, response.RefreshToken);
+            SetTokenCookie(contextAccessor, response.RefreshToken);
             return response;
         }
 
@@ -97,16 +105,15 @@ namespace jahndigital.studentbank.server.GraphQL.Mutations
             [Service] IStudentService studentService,
             [Service] IHttpContextAccessor contextAccessor
         ) {
-            if (string.IsNullOrWhiteSpace(token)) {
-                throw new QueryException(
+            token = token
+                ?? GetToken(contextAccessor)
+                ?? throw new QueryException(
                     ErrorBuilder.New()
                         .SetMessage("A token is required.")
-                        .SetCode("TOKEN_EMPTY")
-                        .Build()
-                );
-            }
+                        .SetCode(Constants.ErrorStrings.INVALID_REFRESH_TOKEN)
+                        .Build());
 
-            var response = studentService.RevokeToken(token, getIp(contextAccessor));
+            var response = studentService.RevokeToken(token, GetIp(contextAccessor));
 
             if (!response) {
                 throw new QueryException(
