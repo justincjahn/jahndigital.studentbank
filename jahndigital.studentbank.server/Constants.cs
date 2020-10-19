@@ -21,7 +21,7 @@ namespace jahndigital.studentbank.server
             /// <summary>
             /// The default expiration time, in minutes for a token.
             /// </summary>
-            public const int DefaultExpirationMinutes = 15;
+            public const int DefaultExpirationMinutes = 1;
 
             /// <summary>
             /// 
@@ -316,6 +316,8 @@ namespace jahndigital.studentbank.server
         /// </summary>
         public static class ErrorStrings
         {
+            public const string ERROR_NOT_AUTHENTICATED = "AUTH_NOT_AUTHENTICATED";
+
             public const string ERROR_UNAUTHORIZED = "AUTH_NOT_AUTHORIZED";
 
             public const string ERROR_NOT_FOUND = "ERROR_NOT_FOUND";

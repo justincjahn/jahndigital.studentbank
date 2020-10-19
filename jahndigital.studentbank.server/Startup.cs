@@ -140,6 +140,8 @@ namespace jahndigital.studentbank.server
                 .AddScoped<IRoleService, RoleService>()
                 .AddScoped<ITransactionService, TransactionService>();
 
+            services.AddErrorFilter<GraphQL.ErrorFilter>();
+
             #if DEBUG
                 services.AddSwaggerGen(options => {
                     options.SwaggerDoc("v1",  new Microsoft.OpenApi.Models.OpenApiInfo {
