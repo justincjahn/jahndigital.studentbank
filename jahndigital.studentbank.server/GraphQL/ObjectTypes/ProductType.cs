@@ -9,7 +9,7 @@ namespace jahndigital.studentbank.server.GraphQL.ObjectTypes
         {
             // Only administrators can manage product groups
             descriptor.Field(f => f.ProductInstances)
-                .Authorize(Constants.Privilege.ManageProducts.Name);
+               .Authorize(Constants.Privilege.ManageProducts.Name);
         }
     }
 }

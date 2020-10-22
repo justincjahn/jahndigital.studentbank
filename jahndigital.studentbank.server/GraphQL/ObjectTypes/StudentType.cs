@@ -9,7 +9,7 @@ namespace jahndigital.studentbank.server.GraphQL.ObjectTypes
             descriptor.Authorize($"{Constants.AuthPolicy.DataOwner}<{Constants.Privilege.ManageStudents}>");
 
             descriptor.Field(f => f.Group)
-                .Authorize($"{Constants.AuthPolicy.DataOwner}<{Constants.Privilege.ManageGroups}>");
+               .Authorize($"{Constants.AuthPolicy.DataOwner}<{Constants.Privilege.ManageGroups}>");
             
             // Hide sensitive fields
             descriptor.Field(f => f.Password).Ignore(true);

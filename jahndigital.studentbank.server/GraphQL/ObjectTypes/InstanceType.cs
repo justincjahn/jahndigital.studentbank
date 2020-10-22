@@ -12,7 +12,7 @@ namespace jahndigital.studentbank.server.GraphQL.ObjectTypes
 
             // Only administrators can pull in groups this way
             descriptor.Field(f => f.Groups)
-                .Authorize(Constants.Privilege.ManageGroups.Name);
+               .Authorize(Constants.Privilege.ManageGroups.Name);
             
             descriptor.Field(f => f.Description).Type<NonNullType<StringType>>();
         }

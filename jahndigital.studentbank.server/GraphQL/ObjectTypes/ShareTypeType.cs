@@ -11,7 +11,7 @@ namespace jahndigital.studentbank.server.GraphQL.ObjectTypes
 
             // Require admin rights to cascade to shares this way
             descriptor.Field(f => f.Shares)
-                .Authorize(Constants.Privilege.ManageShares.Name);
+               .Authorize(Constants.Privilege.ManageShares.Name);
         }
     }
 }
