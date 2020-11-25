@@ -86,6 +86,8 @@ namespace jahndigital.studentbank.server.GraphQL.Mutations
 
             try {
                 await context.SaveChangesAsync();
+            } catch (DbUpdateException e) {
+                throw ErrorFactory.QueryFailed(e.InnerException?.Message ?? e.Message);
             } catch (Exception e) {
                 throw ErrorFactory.QueryFailed(e.Message);
             }
