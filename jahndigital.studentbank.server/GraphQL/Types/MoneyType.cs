@@ -119,6 +119,16 @@ namespace jahndigital.studentbank.server.GraphQL.Types
                 return true;
             }
 
+            if (serialized is long l) {
+                value = Money.FromCurrency(l);
+                return true;
+            }
+
+            if (serialized is decimal d) {
+                value = Money.FromCurrency(d);
+                return true;
+            }
+
             value = null;
             return false;
         }
