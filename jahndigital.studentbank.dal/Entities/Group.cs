@@ -2,6 +2,7 @@ using System;
 using System.ComponentModel.DataAnnotations;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations.Schema;
+using jahndigital.studentbank.dal.Attributes;
 
 namespace jahndigital.studentbank.dal.Entities
 {
@@ -41,11 +42,13 @@ namespace jahndigital.studentbank.dal.Entities
         /// <summary>
         /// Get the date the group was created.
         /// </summary>
+        [DateTimeKind(DateTimeKind.Utc)]
         public DateTime DateCreated {get; private set;} = DateTime.UtcNow;
 
         /// <summary>
         /// Get or set the date the group was deleted.
         /// </summary>
+        [DateTimeKind(DateTimeKind.Utc)]
         public DateTime? DateDeleted {get; set;} = null;
     }
 }

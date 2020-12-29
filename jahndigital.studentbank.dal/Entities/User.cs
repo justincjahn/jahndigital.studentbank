@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Text.Json.Serialization;
+using jahndigital.studentbank.dal.Attributes;
 using Microsoft.AspNetCore.Identity;
 
 namespace jahndigital.studentbank.dal.Entities
@@ -74,11 +75,13 @@ namespace jahndigital.studentbank.dal.Entities
         /// <summary>
         /// Get the date the user was created.
         /// </summary>
+        [DateTimeKind(DateTimeKind.Utc)]
         public DateTime DateCreated {get; private set;} = DateTime.UtcNow;
 
         /// <summary>
         /// Get or set the date the user was deleted.
         /// </summary>
+        [DateTimeKind(DateTimeKind.Utc)]
         public DateTime? DateDeleted {get; set;} = null;
     }
 }

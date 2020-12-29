@@ -3,6 +3,7 @@ using System.ComponentModel.DataAnnotations;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations.Schema;
 using jahndigital.studentbank.utils;
+using jahndigital.studentbank.dal.Attributes;
 
 namespace jahndigital.studentbank.dal.Entities
 {
@@ -76,11 +77,13 @@ namespace jahndigital.studentbank.dal.Entities
         /// <summary>
         /// Get the date that the stock was created.
         /// </summary>
+        [DateTimeKind(DateTimeKind.Utc)]
         public DateTime DateCreated {get; private set;} = DateTime.UtcNow;
 
         /// <summary>
         /// Get or set the date that the stock was deleted.
         /// </summary>
+        [DateTimeKind(DateTimeKind.Utc)]
         public DateTime? DateDeleted {get; set;} = null;
     }
 }

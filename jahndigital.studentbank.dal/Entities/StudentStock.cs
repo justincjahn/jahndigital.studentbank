@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using jahndigital.studentbank.dal.Attributes;
 
 namespace jahndigital.studentbank.dal.Entities
 {
@@ -53,11 +54,13 @@ namespace jahndigital.studentbank.dal.Entities
         /// <summary>
         /// Get or set the date that this stock was last purchased or sold.
         /// </summary>
+        [DateTimeKind(DateTimeKind.Utc)]
         public DateTime DateLastActive {get; set;} = DateTime.UtcNow;
 
         /// <summary>
         /// Get the date that the student originally acquired the stock.
         /// </summary>
+        [DateTimeKind(DateTimeKind.Utc)]
         public DateTime DateCreated {get; private set;} = DateTime.UtcNow;
     }
 }

@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using jahndigital.studentbank.dal.Attributes;
 using jahndigital.studentbank.utils;
 
 namespace jahndigital.studentbank.dal.Entities
@@ -54,11 +55,13 @@ namespace jahndigital.studentbank.dal.Entities
         /// <summary>
         /// Get the date that the share type was created.
         /// </summary>
+        [DateTimeKind(DateTimeKind.Utc)]
         public DateTime DateCreated {get; private set;} = DateTime.UtcNow;
 
         /// <summary>
         /// Get or set the date the share type was deleted.
         /// </summary>
+        [DateTimeKind(DateTimeKind.Utc)]
         public DateTime? DateDeleted {get; set;} = null;
     }
 }

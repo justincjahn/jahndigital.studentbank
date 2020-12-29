@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using jahndigital.studentbank.dal.Attributes;
 using jahndigital.studentbank.dal.Enums;
 using jahndigital.studentbank.utils;
 
@@ -59,6 +60,7 @@ namespace jahndigital.studentbank.dal.Entities
         /// <summary>
         /// Get the date that the purchase was created.
         /// </summary>
+        [DateTimeKind(DateTimeKind.Utc)]
         public DateTime DateCreated {get; private set;} = DateTime.UtcNow;
     }
 }

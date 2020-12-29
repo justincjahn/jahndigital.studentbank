@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using jahndigital.studentbank.dal.Attributes;
 using jahndigital.studentbank.utils;
 
 namespace jahndigital.studentbank.dal.Entities
@@ -95,17 +96,19 @@ namespace jahndigital.studentbank.dal.Entities
         /// <summary>
         /// The last activity date of the share.
         /// </summary>
-        [Required]
+        [Required, DateTimeKind(DateTimeKind.Utc)]
         public DateTime DateLastActive {get; set;} = DateTime.UtcNow;
 
         /// <summary>
         /// Get the date the share was created.
         /// </summary>
+        [DateTimeKind(DateTimeKind.Utc)]
         public DateTime DateCreated {get; private set;} = DateTime.UtcNow;
 
         /// <summary>
         /// Get or set the date the share was deleted.
         /// </summary>
+        [DateTimeKind(DateTimeKind.Utc)]
         public DateTime? DateDeleted {get; set;} = null;
     }
 }

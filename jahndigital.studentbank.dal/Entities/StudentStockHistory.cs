@@ -1,6 +1,7 @@
 using System;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using jahndigital.studentbank.dal.Attributes;
 using jahndigital.studentbank.utils;
 
 namespace jahndigital.studentbank.dal.Entities
@@ -65,7 +66,7 @@ namespace jahndigital.studentbank.dal.Entities
         /// <summary>
         /// The date the stock was bought/sold.
         /// </summary>
-        [Required]
+        [Required, DateTimeKind(DateTimeKind.Utc)]
         public DateTime DatePosted {get; set;} = DateTime.UtcNow;
     }
 }

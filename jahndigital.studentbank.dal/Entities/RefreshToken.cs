@@ -2,6 +2,7 @@ using System;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Text.Json.Serialization;
+using jahndigital.studentbank.dal.Attributes;
 using Microsoft.EntityFrameworkCore;
 
 namespace jahndigital.studentbank.dal.Entities
@@ -26,16 +27,19 @@ namespace jahndigital.studentbank.dal.Entities
         /// <summary>
         /// The date the token was created.
         /// </summary>
+        [DateTimeKind(DateTimeKind.Utc)]
         public DateTime Created {get; set;}
 
         /// <summary>
         /// The date the token expires.
         /// </summary>
+        [DateTimeKind(DateTimeKind.Utc)]
         public DateTime Expires {get; set;}
 
         /// <summary>
         /// The date the token was revoked (if any).
         /// </summary>
+        [DateTimeKind(DateTimeKind.Utc)]
         public DateTime? Revoked {get; set;}
 
         /// <summary>

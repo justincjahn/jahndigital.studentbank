@@ -1,6 +1,7 @@
 using System;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using jahndigital.studentbank.dal.Attributes;
 using jahndigital.studentbank.utils;
 
 namespace jahndigital.studentbank.dal.Entities
@@ -74,7 +75,7 @@ namespace jahndigital.studentbank.dal.Entities
         /// <summary>
         /// The date the transaction was posted.
         /// </summary>
-        [Required]
+        [Required, DateTimeKind(DateTimeKind.Utc)]
         public DateTime EffectiveDate {get; set;} = DateTime.UtcNow;
     }
 }

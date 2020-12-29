@@ -4,6 +4,7 @@ using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Text.Json.Serialization;
 using System.Text.RegularExpressions;
+using jahndigital.studentbank.dal.Attributes;
 using Microsoft.AspNetCore.Identity;
 
 namespace jahndigital.studentbank.dal.Entities
@@ -120,11 +121,13 @@ namespace jahndigital.studentbank.dal.Entities
         /// <summary>
         /// Get or set the date the student was deleted.
         /// </summary>
+        [DateTimeKind(DateTimeKind.Utc)]
         public DateTime? DateDeleted {get; set;} = null;
 
         /// <summary>
         /// Get or set the date the student was created.
         /// </summary>
+        [DateTimeKind(DateTimeKind.Utc)]
         public DateTime DateCreated {get; set;} = DateTime.UtcNow;
     }
 }

@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
+using jahndigital.studentbank.dal.Attributes;
 
 namespace jahndigital.studentbank.dal.Entities
 {
@@ -40,6 +41,7 @@ namespace jahndigital.studentbank.dal.Entities
         /// <summary>
         /// Get the date the role was created.
         /// </summary>
+        [DateTimeKind(DateTimeKind.Utc)]
         public DateTime DateCreated {get; private set;} = DateTime.UtcNow;
     }
 }
