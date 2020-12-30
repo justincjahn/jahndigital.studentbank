@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using jahndigital.studentbank.dal.Contexts;
@@ -51,8 +52,15 @@ namespace jahndigital.studentbank.server.Services
                 .FirstOrDefaultAsync()
             ?? throw ErrorFactory.NotFound();
 
-            if (share.Balance < amount && !takeNegative) {
-                throw new NonsufficientFundsException(share, amount);
+            if (amount < Money.FromCurrency(0.0m) && share.Balance < amount && !takeNegative) {
+                var exception = new NonsufficientFundsException(share, amount);
+                _context.Add(exception.Transaction);
+
+                try {
+                    await _context.SaveChangesAsync();
+                } finally {
+                    throw exception;
+                }
             }
 
             share.Balance += amount;
@@ -76,6 +84,49 @@ namespace jahndigital.studentbank.server.Services
             }
 
             return transaction;
+        }
+
+        /// <inheritdoc />
+        /// <exception cref="NonsufficientFundsException"></exception>
+        /// <exception cref="DatabaseException"></exception>
+        public async Task<IQueryable<dal.Entities.Transaction>> PostAsync(
+            IEnumerable<NewTransactionRequest> transactions,
+            bool stopOnException = true
+        ) {
+            var postedTransactions = new List<dal.Entities.Transaction>();
+            var dbTransaction = await _context.Database.BeginTransactionAsync();
+
+            foreach (var transaction in transactions) {
+                try {
+                    postedTransactions.Add(await PostAsync(
+                        transaction.ShareId,
+                        transaction.Amount,
+                        transaction.Comment,
+                        takeNegative: transaction.TakeNegative ?? false
+                    ));
+                } catch (NonsufficientFundsException e) {
+                    if (stopOnException) {
+                        await dbTransaction.RollbackAsync();
+                        throw e;
+                    } else {
+                        postedTransactions.Add(e.Transaction);
+                    }
+                } catch (DatabaseException e) {
+                    await dbTransaction.RollbackAsync();
+                    throw e;
+                } catch (Exception e) {
+                    await dbTransaction.RollbackAsync();
+                    throw new DatabaseException(e.Message);
+                }
+            }
+
+            try {
+                await dbTransaction.CommitAsync();
+            } catch (Exception e) {
+                throw new DatabaseException(e.Message);
+            }
+
+            return postedTransactions.AsQueryable();
         }
 
         /// <inheritdoc />

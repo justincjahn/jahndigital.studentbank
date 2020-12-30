@@ -1,8 +1,11 @@
 using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using jahndigital.studentbank.server.Exceptions;
 using jahndigital.studentbank.server.Models;
 using jahndigital.studentbank.utils;
+using Microsoft.EntityFrameworkCore.Storage;
 
 namespace jahndigital.studentbank.server.Services
 {
@@ -21,7 +24,9 @@ namespace jahndigital.studentbank.server.Services
         /// <param name="effectiveDate"></param>
         /// <param name="takeNegative"></param>
         /// <returns>The resulting transaction object.</returns>
-        /// <exception cref="NonsufficientFundsException">If the share doesn't have enough funds.</exception>
+        /// <exception cref="NonsufficientFundsException">
+        /// If the share doesn't have enough funds. NSF transactions are posted before being thrown.
+        /// </exception>
         Task<dal.Entities.Transaction> PostAsync(
             long shareId,
             Money amount,
@@ -29,6 +34,22 @@ namespace jahndigital.studentbank.server.Services
             string? type = null,
             DateTime? effectiveDate = null,
             bool takeNegative = false
+        );
+
+        /// <summary>
+        /// Post several transactions in bulk, or throw an error.  Transactions are posted as a
+        /// database transaction, which is rolled back if an error occurs.  Shares that throw a
+        /// <see cref="NonsufficientFundsException"/> can be skipped by setting <paramref name="stopOnException"/>
+        /// to <see langword="false"/>, allowing other transactions to post successfully.
+        /// </summary>
+        /// <param name="transactions"></param>
+        /// <param name="stopOnException">If the post should stop and revert if a <see cref="NonsufficientFundsException"/> occurs.</param>
+        /// <returns>The resulting transaction objects.</returns>
+        /// <exception cref="NonsufficientFundsException">If the share doesn't have enough funds.</exception>
+        /// <exception cref="DatabaseException">If a database error occurs.</exception>
+        Task<IQueryable<dal.Entities.Transaction>> PostAsync(
+            IEnumerable<NewTransactionRequest> transactions,
+            bool stopOnException = true
         );
 
         /// <summary>

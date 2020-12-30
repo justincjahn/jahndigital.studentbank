@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using HotChocolate;
@@ -36,6 +37,30 @@ namespace jahndigital.studentbank.server.GraphQL.Mutations
                 );
 
                 return transaction;
+            } catch (Exception e) {
+                throw e;
+            }
+        }
+
+        /// <summary>
+        /// Perform a bulk transaction and return transaction information.
+        /// </summary>
+        /// <param name="input"></param>
+        /// <param name="transactionService"></param>
+        /// <param name="skipBelowNegative">
+        /// Continue posting other transactions if a withdrawal cannot be completed due to nonsufficient funds
+        /// while the <c>takeNegative</c> flag is set to <see langword="false"/>.
+        /// </param>
+        /// <returns></returns>
+        [Authorize(Policy = Constants.Privilege.PRIVILEGE_MANAGE_TRANSACTIONS)]
+        public async Task<IQueryable<dal.Entities.Transaction>> NewBulkTransactionAsync(
+            IEnumerable<NewTransactionRequest> input,
+            [Service] ITransactionService transactionService,
+            bool skipBelowNegative = false
+        ) {
+            try {
+                var transactions = await transactionService.PostAsync(input, stopOnException: !skipBelowNegative);
+                return transactions;
             } catch (Exception e) {
                 throw e;
             }

@@ -21,7 +21,7 @@ namespace jahndigital.studentbank.server
             /// <summary>
             /// The default expiration time, in minutes for a token.
             /// </summary>
-            public const int DefaultExpirationMinutes = 1;
+            public const int DefaultExpirationMinutes = 60;
 
             /// <summary>
             /// 
