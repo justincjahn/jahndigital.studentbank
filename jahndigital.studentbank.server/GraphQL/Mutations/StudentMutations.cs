@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using HotChocolate;
@@ -153,21 +154,14 @@ namespace jahndigital.studentbank.server.GraphQL.Mutations
             
             if (student == null) throw ErrorFactory.NotFound();
 
-            student.AccountNumber = input.AccountNumber ?? student.AccountNumber;
-            student.Email = input.Email ?? student.Email;
-            student.FirstName = input.FirstName ?? student.FirstName;
-            student.LastName = input.LastName ?? student.LastName;
-
             if (input.GroupId != null) {
                 var type = resolverContext.GetUserType() ?? throw ErrorFactory.Unauthorized();
                 if (type != Constants.UserType.User) throw ErrorFactory.Unauthorized();
-                student.GroupId = input.GroupId ?? student.GroupId;
             }
 
-            if (input.Password != null) student.Password = input.Password;
+            _updateStudent(input, student);
 
             try {
-                context.Update(student);
                 await context.SaveChangesAsync();
             } catch (DbUpdateException e) {
                 throw ErrorFactory.QueryFailed(e.InnerException?.Message ?? e.Message);
@@ -176,6 +170,55 @@ namespace jahndigital.studentbank.server.GraphQL.Mutations
             }
 
             return context.Students.Where(x => x.Id == input.Id);
+        }
+
+        /// <summary>
+        /// Update a group of students at once.
+        /// </summary>
+        /// <param name="input"></param>
+        /// <param name="context"></param>
+        /// <returns></returns>
+        [UseSelection, Authorize(Policy = Constants.Privilege.PRIVILEGE_MANAGE_STUDENTS)]
+        public async Task<IQueryable<dal.Entities.Student>> UpdateBulkStudentAsync(
+            IEnumerable<UpdateStudentRequest> input,
+            [Service] AppDbContext context
+        ) {
+            var ids = input.Select(x => x.Id);
+            if (ids == null) throw ErrorFactory.NotFound();
+
+            var students = await context.Students.Where(x => ids.Contains(x.Id)).ToListAsync();
+            if (students.Count() != ids.Count()) throw ErrorFactory.NotFound();
+
+            foreach (var request in input) {
+                var student = students.Find(x => x.Id == request.Id);
+                if (student == null) throw ErrorFactory.NotFound();
+                _updateStudent(request, student);
+            }
+
+            try {
+                await context.SaveChangesAsync();
+            } catch (DbUpdateException e) {
+                throw ErrorFactory.QueryFailed(e.InnerException?.Message ?? e.Message);
+            } catch (Exception e) {
+                throw ErrorFactory.QueryFailed(e.Message);
+            }
+
+            return context.Students.Where(x => ids.Contains(x.Id));
+        }
+
+        /// <summary>
+        /// Update a student entity from the request parameters.
+        /// </summary>
+        /// <param name="request"></param>
+        /// <param name="student"></param>
+        private void _updateStudent(UpdateStudentRequest request, dal.Entities.Student student)
+        {
+            student.AccountNumber = request.AccountNumber ?? student.AccountNumber;
+            student.Email = request.Email ?? student.Email;
+            student.FirstName = request.FirstName ?? student.FirstName;
+            student.LastName = request.LastName ?? student.LastName;
+            student.GroupId = request.GroupId ?? student.GroupId;
+            if (request.Password != null) student.Password = request.Password;
         }
 
         /// <summary>
