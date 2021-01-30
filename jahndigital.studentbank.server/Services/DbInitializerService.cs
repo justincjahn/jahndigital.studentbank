@@ -43,6 +43,7 @@ namespace jahndigital.studentbank.server.Services
         {
             using var serviceScope = _scopeFactory.CreateScope();
             using var context = serviceScope.ServiceProvider.GetService<AppDbContext>();
+            if (context == null) throw new ArgumentNullException("Expected an AppDbContext.");
             context.Database.Migrate();
         }
 
@@ -53,6 +54,7 @@ namespace jahndigital.studentbank.server.Services
         {
             using var serviceScope = _scopeFactory.CreateScope();
             using var context = serviceScope.ServiceProvider.GetService<AppDbContext>();
+            if (context == null) throw new ArgumentNullException("Expected an AppDbContext.");
 
             SeedPrivileges(context);
             SeedRoles(context);

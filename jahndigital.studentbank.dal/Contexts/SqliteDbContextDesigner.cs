@@ -8,7 +8,7 @@ namespace jahndigital.studentbank.dal.Contexts
         SqliteDbContext IDesignTimeDbContextFactory<SqliteDbContext>.CreateDbContext(string[] args)
         {
             var builder = new DbContextOptionsBuilder();
-            builder.UseSqlServer("Data Source=studentbankdev.sqlite3");
+            builder.UseSqlite("Data Source=studentbankdev.sqlite3");
             return new SqliteDbContext(builder.Options);
         }
     }

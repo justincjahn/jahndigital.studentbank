@@ -1,7 +1,6 @@
 using System;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
-using System.Text.Json.Serialization;
 using jahndigital.studentbank.dal.Attributes;
 using Microsoft.EntityFrameworkCore;
 
@@ -22,6 +21,7 @@ namespace jahndigital.studentbank.dal.Entities
         /// <summary>
         /// 
         /// </summary>
+        [MaxLength(7168)]
         public string Token {get; set;} = null!;
 
         /// <summary>
@@ -63,6 +63,7 @@ namespace jahndigital.studentbank.dal.Entities
         /// <summary>
         /// The token that replaced this one.
         /// </summary>
+        [MaxLength(7168)]
         public string? ReplacedByToken {get; set;} = default!;
 
         /// <summary>

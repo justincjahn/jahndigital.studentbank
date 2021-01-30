@@ -2,7 +2,6 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
-using Microsoft.EntityFrameworkCore.Metadata;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using jahndigital.studentbank.dal.Contexts;
 
@@ -15,30 +14,27 @@ namespace jahndigital.studentbank.dal.Migrations.sqlite
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "3.1.8")
-                .HasAnnotation("Relational:MaxIdentifierLength", 128)
-                .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
+                .HasAnnotation("ProductVersion", "5.0.2");
 
             modelBuilder.Entity("jahndigital.studentbank.dal.Entities.Group", b =>
                 {
                     b.Property<long>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("bigint")
-                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
+                        .HasColumnType("INTEGER");
 
                     b.Property<DateTime>("DateCreated")
-                        .HasColumnType("datetime2");
+                        .HasColumnType("TEXT");
 
                     b.Property<DateTime?>("DateDeleted")
-                        .HasColumnType("datetime2");
+                        .HasColumnType("TEXT");
 
                     b.Property<long>("InstanceId")
-                        .HasColumnType("bigint");
+                        .HasColumnType("INTEGER");
 
                     b.Property<string>("Name")
                         .IsRequired()
-                        .HasColumnType("nvarchar(32)")
-                        .HasMaxLength(32);
+                        .HasMaxLength(32)
+                        .HasColumnType("TEXT");
 
                     b.HasKey("Id");
 
@@ -54,22 +50,21 @@ namespace jahndigital.studentbank.dal.Migrations.sqlite
                 {
                     b.Property<long>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("bigint")
-                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
+                        .HasColumnType("INTEGER");
 
                     b.Property<DateTime>("DateCreated")
-                        .HasColumnType("datetime2");
+                        .HasColumnType("TEXT");
 
                     b.Property<DateTime?>("DateDeleted")
-                        .HasColumnType("datetime2");
+                        .HasColumnType("TEXT");
 
                     b.Property<string>("Description")
                         .IsRequired()
-                        .HasColumnType("nvarchar(32)")
-                        .HasMaxLength(32);
+                        .HasMaxLength(32)
+                        .HasColumnType("TEXT");
 
                     b.Property<bool>("IsActive")
-                        .HasColumnType("bit");
+                        .HasColumnType("INTEGER");
 
                     b.HasKey("Id");
 
@@ -83,21 +78,20 @@ namespace jahndigital.studentbank.dal.Migrations.sqlite
                 {
                     b.Property<long>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("bigint")
-                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
+                        .HasColumnType("INTEGER");
 
                     b.Property<DateTime>("DateCreated")
-                        .HasColumnType("datetime2");
+                        .HasColumnType("TEXT");
 
                     b.Property<string>("Description")
                         .IsRequired()
-                        .HasColumnType("nvarchar(128)")
-                        .HasMaxLength(128);
+                        .HasMaxLength(128)
+                        .HasColumnType("TEXT");
 
                     b.Property<string>("Name")
                         .IsRequired()
-                        .HasColumnType("nvarchar(16)")
-                        .HasMaxLength(16);
+                        .HasMaxLength(16)
+                        .HasColumnType("TEXT");
 
                     b.HasKey("Id");
 
@@ -108,34 +102,33 @@ namespace jahndigital.studentbank.dal.Migrations.sqlite
                 {
                     b.Property<long>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("bigint")
-                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
+                        .HasColumnType("INTEGER");
 
                     b.Property<DateTime>("DateCreated")
-                        .HasColumnType("datetime2");
+                        .HasColumnType("TEXT");
 
                     b.Property<DateTime?>("DateDeleted")
-                        .HasColumnType("datetime2");
+                        .HasColumnType("TEXT");
 
                     b.Property<string>("Description")
                         .IsRequired()
-                        .HasColumnType("nvarchar(256)")
-                        .HasMaxLength(256);
+                        .HasMaxLength(256)
+                        .HasColumnType("TEXT");
 
                     b.Property<bool>("IsLimitedQuantity")
-                        .HasColumnType("bit");
+                        .HasColumnType("INTEGER");
 
                     b.Property<string>("Name")
                         .IsRequired()
-                        .HasColumnType("nvarchar(128)")
-                        .HasMaxLength(128);
+                        .HasMaxLength(128)
+                        .HasColumnType("TEXT");
 
                     b.Property<int>("Quantity")
-                        .HasColumnType("int");
+                        .HasColumnType("INTEGER");
 
                     b.Property<long>("RawCost")
-                        .HasColumnName("Cost")
-                        .HasColumnType("bigint");
+                        .HasColumnType("INTEGER")
+                        .HasColumnName("Cost");
 
                     b.HasKey("Id");
 
@@ -145,10 +138,10 @@ namespace jahndigital.studentbank.dal.Migrations.sqlite
             modelBuilder.Entity("jahndigital.studentbank.dal.Entities.ProductInstance", b =>
                 {
                     b.Property<long>("InstanceId")
-                        .HasColumnType("bigint");
+                        .HasColumnType("INTEGER");
 
                     b.Property<long>("ProductId")
-                        .HasColumnType("bigint");
+                        .HasColumnType("INTEGER");
 
                     b.HasKey("InstanceId", "ProductId");
 
@@ -161,23 +154,22 @@ namespace jahndigital.studentbank.dal.Migrations.sqlite
                 {
                     b.Property<long>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("bigint")
-                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
+                        .HasColumnType("INTEGER");
 
                     b.Property<DateTime>("DateCreated")
-                        .HasColumnType("datetime2");
+                        .HasColumnType("TEXT");
 
                     b.Property<string>("Description")
-                        .HasColumnType("nvarchar(128)")
-                        .HasMaxLength(128);
+                        .HasMaxLength(128)
+                        .HasColumnType("TEXT");
 
                     b.Property<bool>("IsBuiltIn")
-                        .HasColumnType("bit");
+                        .HasColumnType("INTEGER");
 
                     b.Property<string>("Name")
                         .IsRequired()
-                        .HasColumnType("nvarchar(32)")
-                        .HasMaxLength(32);
+                        .HasMaxLength(32)
+                        .HasColumnType("TEXT");
 
                     b.HasKey("Id");
 
@@ -187,10 +179,10 @@ namespace jahndigital.studentbank.dal.Migrations.sqlite
             modelBuilder.Entity("jahndigital.studentbank.dal.Entities.RolePrivilege", b =>
                 {
                     b.Property<long>("RoleId")
-                        .HasColumnType("bigint");
+                        .HasColumnType("INTEGER");
 
                     b.Property<long>("PrivilegeId")
-                        .HasColumnType("bigint");
+                        .HasColumnType("INTEGER");
 
                     b.HasKey("RoleId", "PrivilegeId");
 
@@ -203,35 +195,34 @@ namespace jahndigital.studentbank.dal.Migrations.sqlite
                 {
                     b.Property<long>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("bigint")
-                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
+                        .HasColumnType("INTEGER");
 
                     b.Property<DateTime>("DateCreated")
-                        .HasColumnType("datetime2");
+                        .HasColumnType("TEXT");
 
                     b.Property<DateTime?>("DateDeleted")
-                        .HasColumnType("datetime2");
+                        .HasColumnType("TEXT");
 
                     b.Property<DateTime>("DateLastActive")
-                        .HasColumnType("datetime2");
+                        .HasColumnType("TEXT");
 
                     b.Property<long>("RawBalance")
-                        .HasColumnName("Balance")
-                        .HasColumnType("bigint");
+                        .HasColumnType("INTEGER")
+                        .HasColumnName("Balance");
 
                     b.Property<long>("RawDividendLastAmount")
-                        .HasColumnName("DividendLastAmount")
-                        .HasColumnType("bigint");
+                        .HasColumnType("INTEGER")
+                        .HasColumnName("DividendLastAmount");
 
                     b.Property<long>("RawTotalDividends")
-                        .HasColumnName("TotalDividends")
-                        .HasColumnType("bigint");
+                        .HasColumnType("INTEGER")
+                        .HasColumnName("TotalDividends");
 
                     b.Property<long>("ShareTypeId")
-                        .HasColumnType("bigint");
+                        .HasColumnType("INTEGER");
 
                     b.Property<long>("StudentId")
-                        .HasColumnType("bigint");
+                        .HasColumnType("INTEGER");
 
                     b.HasKey("Id");
 
@@ -246,23 +237,22 @@ namespace jahndigital.studentbank.dal.Migrations.sqlite
                 {
                     b.Property<long>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("bigint")
-                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
+                        .HasColumnType("INTEGER");
 
                     b.Property<DateTime>("DateCreated")
-                        .HasColumnType("datetime2");
+                        .HasColumnType("TEXT");
 
                     b.Property<DateTime?>("DateDeleted")
-                        .HasColumnType("datetime2");
+                        .HasColumnType("TEXT");
 
                     b.Property<string>("Name")
                         .IsRequired()
-                        .HasColumnType("nvarchar(32)")
-                        .HasMaxLength(32);
+                        .HasMaxLength(32)
+                        .HasColumnType("TEXT");
 
                     b.Property<long>("RawDividendRate")
-                        .HasColumnName("DividendRate")
-                        .HasColumnType("bigint");
+                        .HasColumnType("INTEGER")
+                        .HasColumnName("DividendRate");
 
                     b.HasKey("Id");
 
@@ -272,10 +262,10 @@ namespace jahndigital.studentbank.dal.Migrations.sqlite
             modelBuilder.Entity("jahndigital.studentbank.dal.Entities.ShareTypeInstance", b =>
                 {
                     b.Property<long>("InstanceId")
-                        .HasColumnType("bigint");
+                        .HasColumnType("INTEGER");
 
                     b.Property<long>("ShareTypeId")
-                        .HasColumnType("bigint");
+                        .HasColumnType("INTEGER");
 
                     b.HasKey("InstanceId", "ShareTypeId");
 
@@ -288,34 +278,33 @@ namespace jahndigital.studentbank.dal.Migrations.sqlite
                 {
                     b.Property<long>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("bigint")
-                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
+                        .HasColumnType("INTEGER");
 
                     b.Property<long>("AvailableShares")
-                        .HasColumnType("bigint");
+                        .HasColumnType("INTEGER");
 
                     b.Property<DateTime>("DateCreated")
-                        .HasColumnType("datetime2");
+                        .HasColumnType("TEXT");
 
                     b.Property<DateTime?>("DateDeleted")
-                        .HasColumnType("datetime2");
+                        .HasColumnType("TEXT");
 
                     b.Property<string>("Name")
                         .IsRequired()
-                        .HasColumnType("nvarchar(32)")
-                        .HasMaxLength(32);
+                        .HasMaxLength(32)
+                        .HasColumnType("TEXT");
 
                     b.Property<long>("RawCurrentValue")
-                        .HasColumnName("CurrentValue")
-                        .HasColumnType("bigint");
+                        .HasColumnType("INTEGER")
+                        .HasColumnName("CurrentValue");
 
                     b.Property<string>("Symbol")
                         .IsRequired()
-                        .HasColumnType("nvarchar(10)")
-                        .HasMaxLength(10);
+                        .HasMaxLength(10)
+                        .HasColumnType("TEXT");
 
                     b.Property<long>("TotalShares")
-                        .HasColumnType("bigint");
+                        .HasColumnType("INTEGER");
 
                     b.HasKey("Id");
 
@@ -326,18 +315,17 @@ namespace jahndigital.studentbank.dal.Migrations.sqlite
                 {
                     b.Property<long>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("bigint")
-                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
+                        .HasColumnType("INTEGER");
 
                     b.Property<DateTime>("DateChanged")
-                        .HasColumnType("datetime2");
+                        .HasColumnType("TEXT");
 
                     b.Property<long>("RawValue")
-                        .HasColumnName("Value")
-                        .HasColumnType("bigint");
+                        .HasColumnType("INTEGER")
+                        .HasColumnName("Value");
 
                     b.Property<long>("StockId")
-                        .HasColumnType("bigint");
+                        .HasColumnType("INTEGER");
 
                     b.HasKey("Id");
 
@@ -349,10 +337,10 @@ namespace jahndigital.studentbank.dal.Migrations.sqlite
             modelBuilder.Entity("jahndigital.studentbank.dal.Entities.StockInstance", b =>
                 {
                     b.Property<long>("InstanceId")
-                        .HasColumnType("bigint");
+                        .HasColumnType("INTEGER");
 
                     b.Property<long>("StockId")
-                        .HasColumnType("bigint");
+                        .HasColumnType("INTEGER");
 
                     b.HasKey("InstanceId", "StockId");
 
@@ -365,42 +353,41 @@ namespace jahndigital.studentbank.dal.Migrations.sqlite
                 {
                     b.Property<long>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("bigint")
-                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
+                        .HasColumnType("INTEGER");
 
                     b.Property<string>("AccountNumber")
                         .IsRequired()
-                        .HasColumnType("nvarchar(10)")
-                        .HasMaxLength(10);
+                        .HasMaxLength(10)
+                        .HasColumnType("TEXT");
 
                     b.Property<DateTime>("DateCreated")
-                        .HasColumnType("datetime2");
+                        .HasColumnType("TEXT");
 
                     b.Property<DateTime?>("DateDeleted")
-                        .HasColumnType("datetime2");
+                        .HasColumnType("TEXT");
 
                     b.Property<string>("Email")
                         .IsRequired()
-                        .HasColumnType("nvarchar(64)")
-                        .HasMaxLength(64);
+                        .HasMaxLength(64)
+                        .HasColumnType("TEXT");
 
                     b.Property<string>("FirstName")
                         .IsRequired()
-                        .HasColumnType("nvarchar(64)")
-                        .HasMaxLength(64);
+                        .HasMaxLength(64)
+                        .HasColumnType("TEXT");
 
                     b.Property<long>("GroupId")
-                        .HasColumnType("bigint");
+                        .HasColumnType("INTEGER");
 
                     b.Property<string>("LastName")
                         .IsRequired()
-                        .HasColumnType("nvarchar(64)")
-                        .HasMaxLength(64);
+                        .HasMaxLength(64)
+                        .HasColumnType("TEXT");
 
                     b.Property<string>("Password")
                         .IsRequired()
-                        .HasColumnType("nvarchar(84)")
-                        .HasMaxLength(84);
+                        .HasMaxLength(84)
+                        .HasColumnType("TEXT");
 
                     b.HasKey("Id");
 
@@ -416,22 +403,20 @@ namespace jahndigital.studentbank.dal.Migrations.sqlite
                 {
                     b.Property<long>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("bigint")
-                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
+                        .HasColumnType("INTEGER");
 
                     b.Property<DateTime>("DateCreated")
-                        .HasColumnType("datetime2");
+                        .HasColumnType("TEXT");
 
                     b.Property<long>("RawTotalCost")
-                        .HasColumnName("TotalCost")
-                        .HasColumnType("bigint");
+                        .HasColumnType("INTEGER")
+                        .HasColumnName("TotalCost");
 
-                    b.Property<string>("Status")
-                        .IsRequired()
+                    b.Property<int>("Status")
                         .HasColumnType("nvarchar(32)");
 
                     b.Property<long>("StudentId")
-                        .HasColumnType("bigint");
+                        .HasColumnType("INTEGER");
 
                     b.HasKey("Id");
 
@@ -444,21 +429,20 @@ namespace jahndigital.studentbank.dal.Migrations.sqlite
                 {
                     b.Property<long>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("bigint")
-                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
+                        .HasColumnType("INTEGER");
 
                     b.Property<long>("ProductId")
-                        .HasColumnType("bigint");
+                        .HasColumnType("INTEGER");
 
                     b.Property<int>("Quantity")
-                        .HasColumnType("int");
+                        .HasColumnType("INTEGER");
 
                     b.Property<long>("RawPurchasePrice")
-                        .HasColumnName("PurchasePrice")
-                        .HasColumnType("bigint");
+                        .HasColumnType("INTEGER")
+                        .HasColumnName("PurchasePrice");
 
                     b.Property<long>("StudentPurchaseId")
-                        .HasColumnType("bigint");
+                        .HasColumnType("INTEGER");
 
                     b.HasKey("Id");
 
@@ -473,23 +457,22 @@ namespace jahndigital.studentbank.dal.Migrations.sqlite
                 {
                     b.Property<long>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("bigint")
-                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
+                        .HasColumnType("INTEGER");
 
                     b.Property<DateTime>("DateCreated")
-                        .HasColumnType("datetime2");
+                        .HasColumnType("TEXT");
 
                     b.Property<DateTime>("DateLastActive")
-                        .HasColumnType("datetime2");
+                        .HasColumnType("TEXT");
 
                     b.Property<long>("SharesOwned")
-                        .HasColumnType("bigint");
+                        .HasColumnType("INTEGER");
 
                     b.Property<long>("StockId")
-                        .HasColumnType("bigint");
+                        .HasColumnType("INTEGER");
 
                     b.Property<long>("StudentId")
-                        .HasColumnType("bigint");
+                        .HasColumnType("INTEGER");
 
                     b.HasKey("Id");
 
@@ -504,24 +487,23 @@ namespace jahndigital.studentbank.dal.Migrations.sqlite
                 {
                     b.Property<long>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("bigint")
-                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
+                        .HasColumnType("INTEGER");
 
                     b.Property<int>("Count")
-                        .HasColumnType("int");
+                        .HasColumnType("INTEGER");
 
                     b.Property<DateTime>("DatePosted")
-                        .HasColumnType("datetime2");
+                        .HasColumnType("TEXT");
 
                     b.Property<long>("RawAmount")
-                        .HasColumnName("Amount")
-                        .HasColumnType("bigint");
+                        .HasColumnType("INTEGER")
+                        .HasColumnName("Amount");
 
                     b.Property<long>("StudentStockId")
-                        .HasColumnType("bigint");
+                        .HasColumnType("INTEGER");
 
                     b.Property<long>("TransactionId")
-                        .HasColumnType("bigint");
+                        .HasColumnType("INTEGER");
 
                     b.HasKey("Id");
 
@@ -536,31 +518,30 @@ namespace jahndigital.studentbank.dal.Migrations.sqlite
                 {
                     b.Property<long>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("bigint")
-                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
+                        .HasColumnType("INTEGER");
 
                     b.Property<string>("Comment")
-                        .HasColumnType("nvarchar(255)")
-                        .HasMaxLength(255);
+                        .HasMaxLength(255)
+                        .HasColumnType("TEXT");
 
                     b.Property<DateTime>("EffectiveDate")
-                        .HasColumnType("datetime2");
+                        .HasColumnType("TEXT");
 
                     b.Property<long>("RawAmount")
-                        .HasColumnName("Amount")
-                        .HasColumnType("bigint");
+                        .HasColumnType("INTEGER")
+                        .HasColumnName("Amount");
 
                     b.Property<long>("RawNewBalance")
-                        .HasColumnName("NewBalance")
-                        .HasColumnType("bigint");
+                        .HasColumnType("INTEGER")
+                        .HasColumnName("NewBalance");
 
                     b.Property<long>("TargetShareId")
-                        .HasColumnType("bigint");
+                        .HasColumnType("INTEGER");
 
                     b.Property<string>("TransactionType")
                         .IsRequired()
-                        .HasColumnType("nvarchar(1)")
-                        .HasMaxLength(1);
+                        .HasMaxLength(1)
+                        .HasColumnType("TEXT");
 
                     b.HasKey("Id");
 
@@ -573,27 +554,26 @@ namespace jahndigital.studentbank.dal.Migrations.sqlite
                 {
                     b.Property<long>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("bigint")
-                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
+                        .HasColumnType("INTEGER");
 
                     b.Property<DateTime>("DateCreated")
-                        .HasColumnType("datetime2");
+                        .HasColumnType("TEXT");
 
                     b.Property<DateTime?>("DateDeleted")
-                        .HasColumnType("datetime2");
+                        .HasColumnType("TEXT");
 
                     b.Property<string>("Email")
                         .IsRequired()
-                        .HasColumnType("nvarchar(64)")
-                        .HasMaxLength(64);
+                        .HasMaxLength(64)
+                        .HasColumnType("TEXT");
 
                     b.Property<string>("Password")
                         .IsRequired()
-                        .HasColumnType("nvarchar(84)")
-                        .HasMaxLength(84);
+                        .HasMaxLength(84)
+                        .HasColumnType("TEXT");
 
                     b.Property<long>("RoleId")
-                        .HasColumnType("bigint");
+                        .HasColumnType("INTEGER");
 
                     b.HasKey("Id");
 
@@ -609,6 +589,8 @@ namespace jahndigital.studentbank.dal.Migrations.sqlite
                         .HasForeignKey("InstanceId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+
+                    b.Navigation("Instance");
                 });
 
             modelBuilder.Entity("jahndigital.studentbank.dal.Entities.Product", b =>
@@ -617,16 +599,15 @@ namespace jahndigital.studentbank.dal.Migrations.sqlite
                         {
                             b1.Property<long>("Id")
                                 .ValueGeneratedOnAdd()
-                                .HasColumnType("bigint")
-                                .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
+                                .HasColumnType("INTEGER");
 
                             b1.Property<long>("ProductId")
-                                .HasColumnType("bigint");
+                                .HasColumnType("INTEGER");
 
                             b1.Property<string>("Url")
                                 .IsRequired()
-                                .HasColumnType("nvarchar(256)")
-                                .HasMaxLength(256);
+                                .HasMaxLength(256)
+                                .HasColumnType("TEXT");
 
                             b1.HasKey("Id");
 
@@ -637,6 +618,8 @@ namespace jahndigital.studentbank.dal.Migrations.sqlite
                             b1.WithOwner()
                                 .HasForeignKey("ProductId");
                         });
+
+                    b.Navigation("Images");
                 });
 
             modelBuilder.Entity("jahndigital.studentbank.dal.Entities.ProductInstance", b =>
@@ -652,6 +635,10 @@ namespace jahndigital.studentbank.dal.Migrations.sqlite
                         .HasForeignKey("ProductId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+
+                    b.Navigation("Instance");
+
+                    b.Navigation("Product");
                 });
 
             modelBuilder.Entity("jahndigital.studentbank.dal.Entities.RolePrivilege", b =>
@@ -667,6 +654,10 @@ namespace jahndigital.studentbank.dal.Migrations.sqlite
                         .HasForeignKey("RoleId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+
+                    b.Navigation("Privilege");
+
+                    b.Navigation("Role");
                 });
 
             modelBuilder.Entity("jahndigital.studentbank.dal.Entities.Share", b =>
@@ -682,6 +673,10 @@ namespace jahndigital.studentbank.dal.Migrations.sqlite
                         .HasForeignKey("StudentId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+
+                    b.Navigation("ShareType");
+
+                    b.Navigation("Student");
                 });
 
             modelBuilder.Entity("jahndigital.studentbank.dal.Entities.ShareTypeInstance", b =>
@@ -697,6 +692,10 @@ namespace jahndigital.studentbank.dal.Migrations.sqlite
                         .HasForeignKey("ShareTypeId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+
+                    b.Navigation("Instance");
+
+                    b.Navigation("ShareType");
                 });
 
             modelBuilder.Entity("jahndigital.studentbank.dal.Entities.StockHistory", b =>
@@ -706,6 +705,8 @@ namespace jahndigital.studentbank.dal.Migrations.sqlite
                         .HasForeignKey("StockId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+
+                    b.Navigation("Stock");
                 });
 
             modelBuilder.Entity("jahndigital.studentbank.dal.Entities.StockInstance", b =>
@@ -721,6 +722,10 @@ namespace jahndigital.studentbank.dal.Migrations.sqlite
                         .HasForeignKey("StockId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+
+                    b.Navigation("Instance");
+
+                    b.Navigation("Stock");
                 });
 
             modelBuilder.Entity("jahndigital.studentbank.dal.Entities.Student", b =>
@@ -735,36 +740,37 @@ namespace jahndigital.studentbank.dal.Migrations.sqlite
                         {
                             b1.Property<long>("Id")
                                 .ValueGeneratedOnAdd()
-                                .HasColumnType("bigint")
-                                .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
+                                .HasColumnType("INTEGER");
 
                             b1.Property<DateTime>("Created")
-                                .HasColumnType("datetime2");
+                                .HasColumnType("TEXT");
 
                             b1.Property<string>("CreatedByIpAddress")
                                 .IsRequired()
-                                .HasColumnType("nvarchar(39)")
-                                .HasMaxLength(39);
+                                .HasMaxLength(39)
+                                .HasColumnType("TEXT");
 
                             b1.Property<DateTime>("Expires")
-                                .HasColumnType("datetime2");
+                                .HasColumnType("TEXT");
 
                             b1.Property<string>("ReplacedByToken")
-                                .HasColumnType("nvarchar(max)");
+                                .HasMaxLength(7168)
+                                .HasColumnType("TEXT");
 
                             b1.Property<DateTime?>("Revoked")
-                                .HasColumnType("datetime2");
+                                .HasColumnType("TEXT");
 
                             b1.Property<string>("RevokedByIpAddress")
-                                .HasColumnType("nvarchar(39)")
-                                .HasMaxLength(39);
+                                .HasMaxLength(39)
+                                .HasColumnType("TEXT");
 
                             b1.Property<long>("StudentId")
-                                .HasColumnType("bigint");
+                                .HasColumnType("INTEGER");
 
                             b1.Property<string>("Token")
                                 .IsRequired()
-                                .HasColumnType("nvarchar(max)");
+                                .HasMaxLength(7168)
+                                .HasColumnType("TEXT");
 
                             b1.HasKey("Id");
 
@@ -775,6 +781,10 @@ namespace jahndigital.studentbank.dal.Migrations.sqlite
                             b1.WithOwner()
                                 .HasForeignKey("StudentId");
                         });
+
+                    b.Navigation("Group");
+
+                    b.Navigation("RefreshTokens");
                 });
 
             modelBuilder.Entity("jahndigital.studentbank.dal.Entities.StudentPurchase", b =>
@@ -784,6 +794,8 @@ namespace jahndigital.studentbank.dal.Migrations.sqlite
                         .HasForeignKey("StudentId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+
+                    b.Navigation("Student");
                 });
 
             modelBuilder.Entity("jahndigital.studentbank.dal.Entities.StudentPurchaseItem", b =>
@@ -799,6 +811,10 @@ namespace jahndigital.studentbank.dal.Migrations.sqlite
                         .HasForeignKey("StudentPurchaseId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+
+                    b.Navigation("Product");
+
+                    b.Navigation("StudentPurchase");
                 });
 
             modelBuilder.Entity("jahndigital.studentbank.dal.Entities.StudentStock", b =>
@@ -814,6 +830,10 @@ namespace jahndigital.studentbank.dal.Migrations.sqlite
                         .HasForeignKey("StudentId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+
+                    b.Navigation("Stock");
+
+                    b.Navigation("Student");
                 });
 
             modelBuilder.Entity("jahndigital.studentbank.dal.Entities.StudentStockHistory", b =>
@@ -829,6 +849,10 @@ namespace jahndigital.studentbank.dal.Migrations.sqlite
                         .HasForeignKey("TransactionId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+
+                    b.Navigation("StudentStock");
+
+                    b.Navigation("Transaction");
                 });
 
             modelBuilder.Entity("jahndigital.studentbank.dal.Entities.Transaction", b =>
@@ -838,6 +862,8 @@ namespace jahndigital.studentbank.dal.Migrations.sqlite
                         .HasForeignKey("TargetShareId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+
+                    b.Navigation("TargetShare");
                 });
 
             modelBuilder.Entity("jahndigital.studentbank.dal.Entities.User", b =>
@@ -852,36 +878,37 @@ namespace jahndigital.studentbank.dal.Migrations.sqlite
                         {
                             b1.Property<long>("Id")
                                 .ValueGeneratedOnAdd()
-                                .HasColumnType("bigint")
-                                .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
+                                .HasColumnType("INTEGER");
 
                             b1.Property<DateTime>("Created")
-                                .HasColumnType("datetime2");
+                                .HasColumnType("TEXT");
 
                             b1.Property<string>("CreatedByIpAddress")
                                 .IsRequired()
-                                .HasColumnType("nvarchar(39)")
-                                .HasMaxLength(39);
+                                .HasMaxLength(39)
+                                .HasColumnType("TEXT");
 
                             b1.Property<DateTime>("Expires")
-                                .HasColumnType("datetime2");
+                                .HasColumnType("TEXT");
 
                             b1.Property<string>("ReplacedByToken")
-                                .HasColumnType("nvarchar(max)");
+                                .HasMaxLength(7168)
+                                .HasColumnType("TEXT");
 
                             b1.Property<DateTime?>("Revoked")
-                                .HasColumnType("datetime2");
+                                .HasColumnType("TEXT");
 
                             b1.Property<string>("RevokedByIpAddress")
-                                .HasColumnType("nvarchar(39)")
-                                .HasMaxLength(39);
+                                .HasMaxLength(39)
+                                .HasColumnType("TEXT");
 
                             b1.Property<string>("Token")
                                 .IsRequired()
-                                .HasColumnType("nvarchar(max)");
+                                .HasMaxLength(7168)
+                                .HasColumnType("TEXT");
 
                             b1.Property<long>("UserId")
-                                .HasColumnType("bigint");
+                                .HasColumnType("INTEGER");
 
                             b1.HasKey("Id");
 
@@ -892,6 +919,79 @@ namespace jahndigital.studentbank.dal.Migrations.sqlite
                             b1.WithOwner()
                                 .HasForeignKey("UserId");
                         });
+
+                    b.Navigation("RefreshTokens");
+
+                    b.Navigation("Role");
+                });
+
+            modelBuilder.Entity("jahndigital.studentbank.dal.Entities.Group", b =>
+                {
+                    b.Navigation("Students");
+                });
+
+            modelBuilder.Entity("jahndigital.studentbank.dal.Entities.Instance", b =>
+                {
+                    b.Navigation("Groups");
+
+                    b.Navigation("ProductInstances");
+
+                    b.Navigation("ShareTypeInstances");
+
+                    b.Navigation("StockInstances");
+                });
+
+            modelBuilder.Entity("jahndigital.studentbank.dal.Entities.Privilege", b =>
+                {
+                    b.Navigation("RolePrivileges");
+                });
+
+            modelBuilder.Entity("jahndigital.studentbank.dal.Entities.Product", b =>
+                {
+                    b.Navigation("ProductInstances");
+                });
+
+            modelBuilder.Entity("jahndigital.studentbank.dal.Entities.Role", b =>
+                {
+                    b.Navigation("RolePrivileges");
+                });
+
+            modelBuilder.Entity("jahndigital.studentbank.dal.Entities.Share", b =>
+                {
+                    b.Navigation("Transactions");
+                });
+
+            modelBuilder.Entity("jahndigital.studentbank.dal.Entities.ShareType", b =>
+                {
+                    b.Navigation("Shares");
+
+                    b.Navigation("ShareTypeInstances");
+                });
+
+            modelBuilder.Entity("jahndigital.studentbank.dal.Entities.Stock", b =>
+                {
+                    b.Navigation("History");
+
+                    b.Navigation("StockInstances");
+
+                    b.Navigation("StudentStock");
+                });
+
+            modelBuilder.Entity("jahndigital.studentbank.dal.Entities.Student", b =>
+                {
+                    b.Navigation("Purchases");
+
+                    b.Navigation("Shares");
+                });
+
+            modelBuilder.Entity("jahndigital.studentbank.dal.Entities.StudentPurchase", b =>
+                {
+                    b.Navigation("Items");
+                });
+
+            modelBuilder.Entity("jahndigital.studentbank.dal.Entities.StudentStock", b =>
+                {
+                    b.Navigation("History");
                 });
 #pragma warning restore 612, 618
         }
