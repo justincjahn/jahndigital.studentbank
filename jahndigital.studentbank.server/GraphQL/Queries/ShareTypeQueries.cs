@@ -20,7 +20,7 @@ namespace jahndigital.studentbank.server.GraphQL.Queries
         /// <param name="resolverContext"></param>
         /// <returns></returns>
         [UsePaging, UseSelection, UseSorting, UseFiltering, Authorize]
-        public async Task<IQueryable<dal.Entities.ShareType>> GetShareTypesAsync(
+        public async Task<IQueryable<dal.Entities.ShareType>> GetAvailableShareTypesAsync(
             [Service]AppDbContext context,
             [Service]IResolverContext resolverContext
         ) {
@@ -43,6 +43,25 @@ namespace jahndigital.studentbank.server.GraphQL.Queries
 
             var shareTypeIds = shares.Group.Instance.ShareTypeInstances.Select(x => x.ShareTypeId);
             return context.ShareTypes.Where(x => x.DateDeleted == null && shareTypeIds.Contains(x.Id));
+        }
+
+        /// <summary>
+        /// Get share types available for the given instance.
+        /// </summary>
+        /// <param name="instanceId"></param>
+        /// <param name="context"></param>
+        /// <returns></returns>
+        [UsePaging, UseSelection, UseSorting, UseFiltering]
+        [Authorize(Policy = Constants.Privilege.PRIVILEGE_MANAGE_SHARE_TYPES)]
+        public IQueryable<dal.Entities.ShareType> GetShareTypes(
+            long instanceId,
+            [Service]AppDbContext context
+        ) {
+            return context.ShareTypes
+                .Include(x => x.ShareTypeInstances)
+                .Where(x =>
+                    x.ShareTypeInstances.Any(x => x.InstanceId == instanceId)
+                    && x.DateDeleted == null);
         }
 
         /// <summary>

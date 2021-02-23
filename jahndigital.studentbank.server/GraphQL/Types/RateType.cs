@@ -119,6 +119,16 @@ namespace jahndigital.studentbank.server.GraphQL.Types
                 return true;
             }
 
+            if (serialized is long l) {
+                value = Rate.FromRate((decimal)l);
+                return true;
+            }
+
+            if (serialized is decimal d) {
+                value = Rate.FromRate(d);
+                return true;
+            }
+
             value = null;
             return false;
         }
