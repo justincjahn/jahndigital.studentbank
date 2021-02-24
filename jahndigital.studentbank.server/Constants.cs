@@ -297,7 +297,7 @@ namespace jahndigital.studentbank.server
 
             public override string ToString() => Name;
 
-            public static explicit operator UserType(string value) =>
+            public static explicit operator UserType?(string value) =>
                 UserTypes.FirstOrDefault(x => x.Name == value);
 
             /// <summary>

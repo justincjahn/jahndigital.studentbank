@@ -37,8 +37,9 @@ namespace jahndigital.studentbank.server.GraphQL.Mutations
                 );
 
                 return transaction;
-            } catch (Exception e) {
-                throw e;
+            } catch {
+                // TODO: Log this exception instead of just re-throwing it.
+                throw;
             }
         }
 
@@ -61,8 +62,9 @@ namespace jahndigital.studentbank.server.GraphQL.Mutations
             try {
                 var transactions = await transactionService.PostAsync(input, stopOnException: !skipBelowNegative);
                 return transactions;
-            } catch (Exception e) {
-                throw e;
+            } catch {
+                // TODO: Log this exception instead of just re-throwing it.
+                throw;
             }
         }
 
@@ -104,8 +106,9 @@ namespace jahndigital.studentbank.server.GraphQL.Mutations
                 );
 
                 return transactions.ToTuple();
-            } catch (Exception e) {
-                throw e;
+            } catch {
+                // TODO: Log this exception instead of just re-throwing it.
+                throw;
             }
         }
 

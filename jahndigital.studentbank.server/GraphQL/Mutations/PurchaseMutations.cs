@@ -50,8 +50,9 @@ namespace jahndigital.studentbank.server.GraphQL.Mutations
             dal.Entities.StudentPurchase? purchase;
             try {
                 purchase = await transactionService.PurchaseAsync(input);
-            } catch (Exception e) {
-                throw e;
+            } catch {
+                // TODO: Log this exception instead of just re-throwing it.
+                throw;
             }
 
             return context.StudentPurchases.Where(x => x.Id == purchase.Id);

@@ -46,19 +46,20 @@ namespace jahndigital.studentbank.server.Permissions
         /// <returns>true if the current user/student is a data owner.</returns>
         private bool IsDataOwner(AuthorizationHandlerContext context)
         {
-            var route = _httpContext.HttpContext.Request.RouteValues;
+            var route = _httpContext.HttpContext?.Request.RouteValues
+                ?? throw new Exception("Unable to get HttpContext when calling IsDataOwner.");
             
             string userId = string.Empty;
             UserType? userType = null;
 
             if (route.ContainsKey("userId")) {
                 userType = UserType.User;
-                userId = route["userId"].ToString()!;
+                userId = route["userId"]?.ToString()!;
             }
 
             if (route.ContainsKey("studentId")) {
                 userType = UserType.Student;
-                userId = route["studentId"].ToString()!;
+                userId = route["studentId"]?.ToString()!;
             }
 
             if (userType == null) return false;

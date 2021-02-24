@@ -48,7 +48,7 @@ namespace jahndigital.studentbank.server.GraphQL
                 .FirstOrDefault(x => x.Type == Constants.Auth.CLAIM_USER_TYPE);
             
             if (type != null) {
-                return (UserType)type.Value;
+                return (UserType?)type.Value;
             }
 
             return null;

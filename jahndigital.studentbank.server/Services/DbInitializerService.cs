@@ -125,8 +125,8 @@ namespace jahndigital.studentbank.server.Services
         /// <param name="context"></param>
         public void SeedUsers(AppDbContext context)
         {
-            Privilege all = context.Privileges.Where(x => x.Name == Constants.Privilege.All.Name).FirstOrDefault();
-            Role superuser = context.Roles.Where(x => x.Name == Constants.Role.Superuser.Name).FirstOrDefault();
+            Role superuser = context.Roles.Where(x => x.Name == Constants.Role.Superuser.Name).FirstOrDefault()
+                ?? throw new DbUpdateException("Unable to seed admin user- superuser role not found.");
 
             if (!context.Users.Any()) {
                 var admin = new User {

@@ -32,7 +32,7 @@ namespace jahndigital.studentbank.server.Permissions
         public Task<AuthorizationPolicy> GetDefaultPolicyAsync() =>
             FallbackPolicyProvider.GetDefaultPolicyAsync();
 
-        public Task<AuthorizationPolicy> GetFallbackPolicyAsync() =>
+        public Task<AuthorizationPolicy?> GetFallbackPolicyAsync() =>
             FallbackPolicyProvider.GetFallbackPolicyAsync();
 
         /// <summary>
@@ -40,7 +40,7 @@ namespace jahndigital.studentbank.server.Permissions
         /// </summary>
         /// <param name="policyName"></param>
         /// <returns></returns>
-        public Task<AuthorizationPolicy> GetPolicyAsync(string policyName) =>
+        public Task<AuthorizationPolicy?> GetPolicyAsync(string policyName) =>
             GetPolicyProvider(policyName).GetPolicyAsync(policyName);
 
         /// <summary>

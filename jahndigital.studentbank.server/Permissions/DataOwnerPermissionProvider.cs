@@ -18,21 +18,21 @@ namespace jahndigital.studentbank.server.Permissions
         public Task<AuthorizationPolicy> GetDefaultPolicyAsync() =>
             FallbackPolicyProvider.GetDefaultPolicyAsync();
 
-        public Task<AuthorizationPolicy> GetFallbackPolicyAsync() =>
+        public Task<AuthorizationPolicy?> GetFallbackPolicyAsync() =>
             FallbackPolicyProvider.GetFallbackPolicyAsync();
 
-        public Task<AuthorizationPolicy> GetPolicyAsync(string policyName)
+        public Task<AuthorizationPolicy?> GetPolicyAsync(string policyName)
         {
             if (!policyName.Contains(Constants.AuthPolicy.DataOwner)) {
                 return FallbackPolicyProvider.GetPolicyAsync(policyName);
             }
 
             if (policyName.Contains('<')) {
-                return GetPermissionPolicy(policyName);
+                return GetPermissionPolicy(policyName) as Task<AuthorizationPolicy?>;
             }
 
             var policy = new AuthorizationPolicyBuilder().AddRequirements(new DataOwnerRequirement());
-            return Task.FromResult(policy.Build());
+            return Task.FromResult(policy.Build()) as Task<AuthorizationPolicy?>;
         }
 
         /// <summary>

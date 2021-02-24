@@ -107,13 +107,17 @@ namespace jahndigital.studentbank.server.Services
                 } catch (NonsufficientFundsException e) {
                     if (stopOnException) {
                         await dbTransaction.RollbackAsync();
-                        throw e;
+
+                        // TODO: Log this exception instead of just re-throwing it.
+                        throw;
                     } else {
                         postedTransactions.Add(e.Transaction);
                     }
-                } catch (DatabaseException e) {
+                } catch (DatabaseException) {
                     await dbTransaction.RollbackAsync();
-                    throw e;
+
+                    // TODO: Log this exception instead of just re-throwing it.
+                    throw;
                 } catch (Exception e) {
                     await dbTransaction.RollbackAsync();
                     throw new DatabaseException(e.Message);
@@ -301,7 +305,8 @@ namespace jahndigital.studentbank.server.Services
                     throw new AggregateException(e, e2);
                 }
 
-                throw e;
+                // TODO: Log this exception instead of just re-throwing it.
+                throw;
             }
 
             return purchase;
@@ -375,8 +380,9 @@ namespace jahndigital.studentbank.server.Services
             dal.Entities.Transaction? transaction;
             try {
                 transaction = await PostAsync(share.Id, totalCost, $"Stock purchase: {input.Quantity} shares of {stock.Symbol}");
-            } catch (Exception e) {
-                throw e;
+            } catch {
+                // TODO: Log this exception instead of just re-throwing it.
+                throw;
             }
 
             studentStock.History.Add(new dal.Entities.StudentStockHistory {
@@ -397,7 +403,8 @@ namespace jahndigital.studentbank.server.Services
                     throw new AggregateException(e, e2);
                 }
 
-                throw e;
+                // TODO: Log this exception instead of just re-throwing it.
+                throw;
             }
 
             return studentStock;

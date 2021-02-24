@@ -36,7 +36,11 @@ namespace jahndigital.studentbank.server.GraphQL.Queries
         /// </summary>
         /// <param name="contextAccessor"></param>
         /// <returns></returns>
-        public bool IsAuthenticated([Service] IHttpContextAccessor contextAccessor)
-            => contextAccessor.HttpContext.User.Identity.IsAuthenticated;
+        public bool IsAuthenticated([Service] IHttpContextAccessor contextAccessor) {
+            var httpc = contextAccessor.HttpContext
+                ?? throw new System.Exception("Unable to fetch HTTP Context to determine if user is authenticated.");
+
+            return httpc.User.Identity?.IsAuthenticated ?? false;
+        }
     }
 }

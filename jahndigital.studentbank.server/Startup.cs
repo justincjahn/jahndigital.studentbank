@@ -40,7 +40,7 @@ namespace jahndigital.studentbank.server
         {
             var appConfig = Configuration.GetSection("AppConfig");
             if (string.IsNullOrEmpty(appConfig.Get<AppConfig>().Secret)) {
-                throw new ArgumentNullException("AppSetting__Secret must be provided as an environment variable.");
+                throw new ArgumentNullException("AppConfig__Secret must be provided as an environment variable.");
             }
 
             services.Configure<AppConfig>(appConfig);

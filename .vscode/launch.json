@@ -10,7 +10,7 @@
             "request": "launch",
             "preLaunchTask": "build",
             // If you have changed target frameworks, make sure to update the program path.
-            "program": "${workspaceFolder}/jahndigital.studentbank.server/bin/Debug/netcoreapp3.1/jahndigital.studentbank.server.dll",
+            "program": "${workspaceFolder}/jahndigital.studentbank.server/bin/Debug/net5.0/jahndigital.studentbank.server.dll",
             "args": [],
             "cwd": "${workspaceFolder}/jahndigital.studentbank.server",
             "stopAtEntry": false,
