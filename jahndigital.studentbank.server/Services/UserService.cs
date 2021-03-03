@@ -50,8 +50,8 @@ namespace jahndigital.studentbank.server.Services
                 Constants.UserType.User,
                 user.Id,
                 user.Email,
-                user.Email,
-                user.Role.Name
+                user.Role.Name,
+                email: user.Email
             );
 
             var refresh = JwtTokenService.GenerateRefreshToken(ipAddress);
@@ -92,8 +92,8 @@ namespace jahndigital.studentbank.server.Services
                 Constants.UserType.User,
                 user.Id,
                 user.Email,
-                user.Email,
-                user.Role.Name
+                user.Role.Name,
+                email: user.Email
             );
 
             return new AuthenticateResponse(user, jwtToken, newToken.Token);
