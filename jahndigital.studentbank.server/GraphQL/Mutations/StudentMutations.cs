@@ -227,7 +227,7 @@ namespace jahndigital.studentbank.server.GraphQL.Mutations
         /// <param name="input"></param>
         /// <param name="context"></param>
         /// <returns></returns>
-        [Authorize(Policy = Constants.Privilege.PRIVILEGE_MANAGE_STUDENTS)]
+        [UseSelection, Authorize(Policy = Constants.Privilege.PRIVILEGE_MANAGE_STUDENTS)]
         public async Task<IQueryable<dal.Entities.Student>> NewStudent(
             NewStudentRequest input,
             [Service] AppDbContext context
