@@ -10,7 +10,7 @@ using jahndigital.studentbank.dal.Contexts;
 namespace jahndigital.studentbank.dal.Migrations.mssql
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20210130061018_initial")]
+    [Migration("20210303041306_initial")]
     partial class initial
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -382,7 +382,6 @@ namespace jahndigital.studentbank.dal.Migrations.mssql
                         .HasColumnType("datetime2");
 
                     b.Property<string>("Email")
-                        .IsRequired()
                         .HasMaxLength(64)
                         .HasColumnType("nvarchar(64)");
 

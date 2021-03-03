@@ -380,7 +380,6 @@ namespace jahndigital.studentbank.dal.Migrations.mssql
                         .HasColumnType("datetime2");
 
                     b.Property<string>("Email")
-                        .IsRequired()
                         .HasMaxLength(64)
                         .HasColumnType("nvarchar(64)");
 

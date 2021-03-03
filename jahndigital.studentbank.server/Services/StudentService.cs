@@ -59,8 +59,8 @@ namespace jahndigital.studentbank.server.Services
                 Constants.UserType.Student,
                 student.Id,
                 student.AccountNumber,
-                student.Email,
                 Constants.Role.Student.Name,
+                email: student.Email ?? "",
                 firstName: student.FirstName,
                 lastName: student.LastName
             );
@@ -101,8 +101,8 @@ namespace jahndigital.studentbank.server.Services
                 Constants.UserType.User,
                 student.Id,
                 student.AccountNumber,
-                student.Email,
                 Constants.Role.Student.Name,
+                email: student.Email ?? "",
                 firstName: student.FirstName,
                 lastName: student.LastName
             );

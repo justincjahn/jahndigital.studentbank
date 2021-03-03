@@ -21,8 +21,8 @@ namespace jahndigital.studentbank.server.Services
         /// <param name="type">The type of user the token is issued to.</param>
         /// <param name="id">User or Student ID</param>
         /// <param name="username">Student account number or user email address.</param>
-        /// <param name="email">Primary email address</param>
         /// <param name="role">The user's role</param>
+        /// <param name="email">Primary email address</param>
         /// <param name="firstName">User's given name</param>
         /// <param name="lastName">User's surname</param>
         /// <param name="expires">Number of minutes before the token expires.</param>
@@ -32,8 +32,8 @@ namespace jahndigital.studentbank.server.Services
             Constants.UserType type,
             long id,
             string username,
-            string email,
             string role,
+            string email="",
             string firstName="",
             string lastName="",
             int? expires=null
@@ -44,18 +44,12 @@ namespace jahndigital.studentbank.server.Services
             var claims = new List<Claim> {
                 new Claim(ClaimTypes.NameIdentifier, id.ToString()),
                 new Claim(ClaimTypes.Name, username),
-                new Claim(ClaimTypes.Email, email),
                 new Claim(ClaimTypes.Role, role),
+                new Claim(ClaimTypes.Email, email),
+                new Claim(ClaimTypes.GivenName, firstName),
+                new Claim(ClaimTypes.Surname, lastName),
                 new Claim(Constants.Auth.CLAIM_USER_TYPE, type.Name)
             };
-
-            if (!string.IsNullOrWhiteSpace(firstName)) {
-                claims.Add(new Claim(ClaimTypes.GivenName, firstName));
-            }
-
-            if (!string.IsNullOrWhiteSpace(lastName)) {
-                claims.Add(new Claim(ClaimTypes.Surname, lastName));
-            }
 
             var descriptor = new SecurityTokenDescriptor {
                 Issuer = Constants.Auth.Issuer,

@@ -42,9 +42,8 @@ namespace jahndigital.studentbank.dal.Entities
         /// <summary>
         /// The email address of the student.
         /// </summary>
-        /// <value></value>
-        [MaxLength(64), Required]
-        public string Email {get; set;} = default!;
+        [MaxLength(64)]
+        public string? Email {get; set;} = null;
 
         /// <summary>
         /// The student's given name.

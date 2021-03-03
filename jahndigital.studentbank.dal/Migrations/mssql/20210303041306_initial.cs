@@ -1,7 +1,7 @@
 ﻿using System;
 using Microsoft.EntityFrameworkCore.Migrations;
 
-namespace jahndigital.studentbank.dal.Migrations.sqlite
+namespace jahndigital.studentbank.dal.Migrations.mssql
 {
     public partial class initial : Migration
     {
@@ -11,12 +11,12 @@ namespace jahndigital.studentbank.dal.Migrations.sqlite
                 name: "Instances",
                 columns: table => new
                 {
-                    Id = table.Column<long>(type: "INTEGER", nullable: false)
-                        .Annotation("Sqlite:Autoincrement", true),
-                    Description = table.Column<string>(type: "TEXT", maxLength: 32, nullable: false),
-                    IsActive = table.Column<bool>(type: "INTEGER", nullable: false),
-                    DateCreated = table.Column<DateTime>(type: "TEXT", nullable: false),
-                    DateDeleted = table.Column<DateTime>(type: "TEXT", nullable: true)
+                    Id = table.Column<long>(type: "bigint", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    Description = table.Column<string>(type: "nvarchar(32)", maxLength: 32, nullable: false),
+                    IsActive = table.Column<bool>(type: "bit", nullable: false),
+                    DateCreated = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    DateDeleted = table.Column<DateTime>(type: "datetime2", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -27,11 +27,11 @@ namespace jahndigital.studentbank.dal.Migrations.sqlite
                 name: "Privileges",
                 columns: table => new
                 {
-                    Id = table.Column<long>(type: "INTEGER", nullable: false)
-                        .Annotation("Sqlite:Autoincrement", true),
-                    Name = table.Column<string>(type: "TEXT", maxLength: 16, nullable: false),
-                    Description = table.Column<string>(type: "TEXT", maxLength: 128, nullable: false),
-                    DateCreated = table.Column<DateTime>(type: "TEXT", nullable: false)
+                    Id = table.Column<long>(type: "bigint", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    Name = table.Column<string>(type: "nvarchar(16)", maxLength: 16, nullable: false),
+                    Description = table.Column<string>(type: "nvarchar(128)", maxLength: 128, nullable: false),
+                    DateCreated = table.Column<DateTime>(type: "datetime2", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -42,15 +42,15 @@ namespace jahndigital.studentbank.dal.Migrations.sqlite
                 name: "Products",
                 columns: table => new
                 {
-                    Id = table.Column<long>(type: "INTEGER", nullable: false)
-                        .Annotation("Sqlite:Autoincrement", true),
-                    Cost = table.Column<long>(type: "INTEGER", nullable: false),
-                    IsLimitedQuantity = table.Column<bool>(type: "INTEGER", nullable: false),
-                    Quantity = table.Column<int>(type: "INTEGER", nullable: false),
-                    DateCreated = table.Column<DateTime>(type: "TEXT", nullable: false),
-                    DateDeleted = table.Column<DateTime>(type: "TEXT", nullable: true),
-                    Name = table.Column<string>(type: "TEXT", maxLength: 128, nullable: false),
-                    Description = table.Column<string>(type: "TEXT", maxLength: 256, nullable: false)
+                    Id = table.Column<long>(type: "bigint", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    Cost = table.Column<long>(type: "bigint", nullable: false),
+                    IsLimitedQuantity = table.Column<bool>(type: "bit", nullable: false),
+                    Quantity = table.Column<int>(type: "int", nullable: false),
+                    DateCreated = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    DateDeleted = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    Name = table.Column<string>(type: "nvarchar(128)", maxLength: 128, nullable: false),
+                    Description = table.Column<string>(type: "nvarchar(256)", maxLength: 256, nullable: false)
                 },
                 constraints: table =>
                 {
@@ -61,12 +61,12 @@ namespace jahndigital.studentbank.dal.Migrations.sqlite
                 name: "Roles",
                 columns: table => new
                 {
-                    Id = table.Column<long>(type: "INTEGER", nullable: false)
-                        .Annotation("Sqlite:Autoincrement", true),
-                    Name = table.Column<string>(type: "TEXT", maxLength: 32, nullable: false),
-                    Description = table.Column<string>(type: "TEXT", maxLength: 128, nullable: true),
-                    IsBuiltIn = table.Column<bool>(type: "INTEGER", nullable: false),
-                    DateCreated = table.Column<DateTime>(type: "TEXT", nullable: false)
+                    Id = table.Column<long>(type: "bigint", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    Name = table.Column<string>(type: "nvarchar(32)", maxLength: 32, nullable: false),
+                    Description = table.Column<string>(type: "nvarchar(128)", maxLength: 128, nullable: true),
+                    IsBuiltIn = table.Column<bool>(type: "bit", nullable: false),
+                    DateCreated = table.Column<DateTime>(type: "datetime2", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -77,12 +77,12 @@ namespace jahndigital.studentbank.dal.Migrations.sqlite
                 name: "ShareTypes",
                 columns: table => new
                 {
-                    Id = table.Column<long>(type: "INTEGER", nullable: false)
-                        .Annotation("Sqlite:Autoincrement", true),
-                    Name = table.Column<string>(type: "TEXT", maxLength: 32, nullable: false),
-                    DividendRate = table.Column<long>(type: "INTEGER", nullable: false),
-                    DateCreated = table.Column<DateTime>(type: "TEXT", nullable: false),
-                    DateDeleted = table.Column<DateTime>(type: "TEXT", nullable: true)
+                    Id = table.Column<long>(type: "bigint", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    Name = table.Column<string>(type: "nvarchar(32)", maxLength: 32, nullable: false),
+                    DividendRate = table.Column<long>(type: "bigint", nullable: false),
+                    DateCreated = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    DateDeleted = table.Column<DateTime>(type: "datetime2", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -93,15 +93,15 @@ namespace jahndigital.studentbank.dal.Migrations.sqlite
                 name: "Stocks",
                 columns: table => new
                 {
-                    Id = table.Column<long>(type: "INTEGER", nullable: false)
-                        .Annotation("Sqlite:Autoincrement", true),
-                    Symbol = table.Column<string>(type: "TEXT", maxLength: 10, nullable: false),
-                    Name = table.Column<string>(type: "TEXT", maxLength: 32, nullable: false),
-                    TotalShares = table.Column<long>(type: "INTEGER", nullable: false),
-                    AvailableShares = table.Column<long>(type: "INTEGER", nullable: false),
-                    CurrentValue = table.Column<long>(type: "INTEGER", nullable: false),
-                    DateCreated = table.Column<DateTime>(type: "TEXT", nullable: false),
-                    DateDeleted = table.Column<DateTime>(type: "TEXT", nullable: true)
+                    Id = table.Column<long>(type: "bigint", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    Symbol = table.Column<string>(type: "nvarchar(10)", maxLength: 10, nullable: false),
+                    Name = table.Column<string>(type: "nvarchar(32)", maxLength: 32, nullable: false),
+                    TotalShares = table.Column<long>(type: "bigint", nullable: false),
+                    AvailableShares = table.Column<long>(type: "bigint", nullable: false),
+                    CurrentValue = table.Column<long>(type: "bigint", nullable: false),
+                    DateCreated = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    DateDeleted = table.Column<DateTime>(type: "datetime2", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -112,12 +112,12 @@ namespace jahndigital.studentbank.dal.Migrations.sqlite
                 name: "Groups",
                 columns: table => new
                 {
-                    Id = table.Column<long>(type: "INTEGER", nullable: false)
-                        .Annotation("Sqlite:Autoincrement", true),
-                    InstanceId = table.Column<long>(type: "INTEGER", nullable: false),
-                    Name = table.Column<string>(type: "TEXT", maxLength: 32, nullable: false),
-                    DateCreated = table.Column<DateTime>(type: "TEXT", nullable: false),
-                    DateDeleted = table.Column<DateTime>(type: "TEXT", nullable: true)
+                    Id = table.Column<long>(type: "bigint", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    InstanceId = table.Column<long>(type: "bigint", nullable: false),
+                    Name = table.Column<string>(type: "nvarchar(32)", maxLength: 32, nullable: false),
+                    DateCreated = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    DateDeleted = table.Column<DateTime>(type: "datetime2", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -134,10 +134,10 @@ namespace jahndigital.studentbank.dal.Migrations.sqlite
                 name: "ProductImages",
                 columns: table => new
                 {
-                    Id = table.Column<long>(type: "INTEGER", nullable: false)
-                        .Annotation("Sqlite:Autoincrement", true),
-                    Url = table.Column<string>(type: "TEXT", maxLength: 256, nullable: false),
-                    ProductId = table.Column<long>(type: "INTEGER", nullable: false)
+                    Id = table.Column<long>(type: "bigint", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    Url = table.Column<string>(type: "nvarchar(256)", maxLength: 256, nullable: false),
+                    ProductId = table.Column<long>(type: "bigint", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -154,8 +154,8 @@ namespace jahndigital.studentbank.dal.Migrations.sqlite
                 name: "ProductInstances",
                 columns: table => new
                 {
-                    InstanceId = table.Column<long>(type: "INTEGER", nullable: false),
-                    ProductId = table.Column<long>(type: "INTEGER", nullable: false)
+                    InstanceId = table.Column<long>(type: "bigint", nullable: false),
+                    ProductId = table.Column<long>(type: "bigint", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -178,8 +178,8 @@ namespace jahndigital.studentbank.dal.Migrations.sqlite
                 name: "RolePrivileges",
                 columns: table => new
                 {
-                    RoleId = table.Column<long>(type: "INTEGER", nullable: false),
-                    PrivilegeId = table.Column<long>(type: "INTEGER", nullable: false)
+                    RoleId = table.Column<long>(type: "bigint", nullable: false),
+                    PrivilegeId = table.Column<long>(type: "bigint", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -202,13 +202,13 @@ namespace jahndigital.studentbank.dal.Migrations.sqlite
                 name: "Users",
                 columns: table => new
                 {
-                    Id = table.Column<long>(type: "INTEGER", nullable: false)
-                        .Annotation("Sqlite:Autoincrement", true),
-                    RoleId = table.Column<long>(type: "INTEGER", nullable: false),
-                    Email = table.Column<string>(type: "TEXT", maxLength: 64, nullable: false),
-                    Password = table.Column<string>(type: "TEXT", maxLength: 84, nullable: false),
-                    DateCreated = table.Column<DateTime>(type: "TEXT", nullable: false),
-                    DateDeleted = table.Column<DateTime>(type: "TEXT", nullable: true)
+                    Id = table.Column<long>(type: "bigint", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    RoleId = table.Column<long>(type: "bigint", nullable: false),
+                    Email = table.Column<string>(type: "nvarchar(64)", maxLength: 64, nullable: false),
+                    Password = table.Column<string>(type: "nvarchar(84)", maxLength: 84, nullable: false),
+                    DateCreated = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    DateDeleted = table.Column<DateTime>(type: "datetime2", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -225,8 +225,8 @@ namespace jahndigital.studentbank.dal.Migrations.sqlite
                 name: "ShareTypeInstances",
                 columns: table => new
                 {
-                    ShareTypeId = table.Column<long>(type: "INTEGER", nullable: false),
-                    InstanceId = table.Column<long>(type: "INTEGER", nullable: false)
+                    ShareTypeId = table.Column<long>(type: "bigint", nullable: false),
+                    InstanceId = table.Column<long>(type: "bigint", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -249,11 +249,11 @@ namespace jahndigital.studentbank.dal.Migrations.sqlite
                 name: "StockHistory",
                 columns: table => new
                 {
-                    Id = table.Column<long>(type: "INTEGER", nullable: false)
-                        .Annotation("Sqlite:Autoincrement", true),
-                    StockId = table.Column<long>(type: "INTEGER", nullable: false),
-                    Value = table.Column<long>(type: "INTEGER", nullable: false),
-                    DateChanged = table.Column<DateTime>(type: "TEXT", nullable: false)
+                    Id = table.Column<long>(type: "bigint", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    StockId = table.Column<long>(type: "bigint", nullable: false),
+                    Value = table.Column<long>(type: "bigint", nullable: false),
+                    DateChanged = table.Column<DateTime>(type: "datetime2", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -270,8 +270,8 @@ namespace jahndigital.studentbank.dal.Migrations.sqlite
                 name: "StockInstances",
                 columns: table => new
                 {
-                    InstanceId = table.Column<long>(type: "INTEGER", nullable: false),
-                    StockId = table.Column<long>(type: "INTEGER", nullable: false)
+                    InstanceId = table.Column<long>(type: "bigint", nullable: false),
+                    StockId = table.Column<long>(type: "bigint", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -294,16 +294,16 @@ namespace jahndigital.studentbank.dal.Migrations.sqlite
                 name: "Students",
                 columns: table => new
                 {
-                    Id = table.Column<long>(type: "INTEGER", nullable: false)
-                        .Annotation("Sqlite:Autoincrement", true),
-                    AccountNumber = table.Column<string>(type: "TEXT", maxLength: 10, nullable: false),
-                    Email = table.Column<string>(type: "TEXT", maxLength: 64, nullable: false),
-                    FirstName = table.Column<string>(type: "TEXT", maxLength: 64, nullable: false),
-                    LastName = table.Column<string>(type: "TEXT", maxLength: 64, nullable: false),
-                    Password = table.Column<string>(type: "TEXT", maxLength: 84, nullable: false),
-                    GroupId = table.Column<long>(type: "INTEGER", nullable: false),
-                    DateDeleted = table.Column<DateTime>(type: "TEXT", nullable: true),
-                    DateCreated = table.Column<DateTime>(type: "TEXT", nullable: false)
+                    Id = table.Column<long>(type: "bigint", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    AccountNumber = table.Column<string>(type: "nvarchar(10)", maxLength: 10, nullable: false),
+                    Email = table.Column<string>(type: "nvarchar(64)", maxLength: 64, nullable: true),
+                    FirstName = table.Column<string>(type: "nvarchar(64)", maxLength: 64, nullable: false),
+                    LastName = table.Column<string>(type: "nvarchar(64)", maxLength: 64, nullable: false),
+                    Password = table.Column<string>(type: "nvarchar(84)", maxLength: 84, nullable: false),
+                    GroupId = table.Column<long>(type: "bigint", nullable: false),
+                    DateDeleted = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    DateCreated = table.Column<DateTime>(type: "datetime2", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -320,16 +320,16 @@ namespace jahndigital.studentbank.dal.Migrations.sqlite
                 name: "Users_RefreshTokens",
                 columns: table => new
                 {
-                    Id = table.Column<long>(type: "INTEGER", nullable: false)
-                        .Annotation("Sqlite:Autoincrement", true),
-                    Token = table.Column<string>(type: "TEXT", maxLength: 7168, nullable: false),
-                    Created = table.Column<DateTime>(type: "TEXT", nullable: false),
-                    Expires = table.Column<DateTime>(type: "TEXT", nullable: false),
-                    Revoked = table.Column<DateTime>(type: "TEXT", nullable: true),
-                    CreatedByIpAddress = table.Column<string>(type: "TEXT", maxLength: 39, nullable: false),
-                    RevokedByIpAddress = table.Column<string>(type: "TEXT", maxLength: 39, nullable: true),
-                    ReplacedByToken = table.Column<string>(type: "TEXT", maxLength: 7168, nullable: true),
-                    UserId = table.Column<long>(type: "INTEGER", nullable: false)
+                    Id = table.Column<long>(type: "bigint", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    Token = table.Column<string>(type: "nvarchar(max)", maxLength: 7168, nullable: false),
+                    Created = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    Expires = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    Revoked = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    CreatedByIpAddress = table.Column<string>(type: "nvarchar(39)", maxLength: 39, nullable: false),
+                    RevokedByIpAddress = table.Column<string>(type: "nvarchar(39)", maxLength: 39, nullable: true),
+                    ReplacedByToken = table.Column<string>(type: "nvarchar(max)", maxLength: 7168, nullable: true),
+                    UserId = table.Column<long>(type: "bigint", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -346,16 +346,16 @@ namespace jahndigital.studentbank.dal.Migrations.sqlite
                 name: "Shares",
                 columns: table => new
                 {
-                    Id = table.Column<long>(type: "INTEGER", nullable: false)
-                        .Annotation("Sqlite:Autoincrement", true),
-                    ShareTypeId = table.Column<long>(type: "INTEGER", nullable: false),
-                    StudentId = table.Column<long>(type: "INTEGER", nullable: false),
-                    Balance = table.Column<long>(type: "INTEGER", nullable: false),
-                    DividendLastAmount = table.Column<long>(type: "INTEGER", nullable: false),
-                    TotalDividends = table.Column<long>(type: "INTEGER", nullable: false),
-                    DateLastActive = table.Column<DateTime>(type: "TEXT", nullable: false),
-                    DateCreated = table.Column<DateTime>(type: "TEXT", nullable: false),
-                    DateDeleted = table.Column<DateTime>(type: "TEXT", nullable: true)
+                    Id = table.Column<long>(type: "bigint", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    ShareTypeId = table.Column<long>(type: "bigint", nullable: false),
+                    StudentId = table.Column<long>(type: "bigint", nullable: false),
+                    Balance = table.Column<long>(type: "bigint", nullable: false),
+                    DividendLastAmount = table.Column<long>(type: "bigint", nullable: false),
+                    TotalDividends = table.Column<long>(type: "bigint", nullable: false),
+                    DateLastActive = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    DateCreated = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    DateDeleted = table.Column<DateTime>(type: "datetime2", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -378,12 +378,12 @@ namespace jahndigital.studentbank.dal.Migrations.sqlite
                 name: "StudentPurchases",
                 columns: table => new
                 {
-                    Id = table.Column<long>(type: "INTEGER", nullable: false)
-                        .Annotation("Sqlite:Autoincrement", true),
-                    StudentId = table.Column<long>(type: "INTEGER", nullable: false),
-                    TotalCost = table.Column<long>(type: "INTEGER", nullable: false),
-                    Status = table.Column<int>(type: "nvarchar(32)", nullable: false),
-                    DateCreated = table.Column<DateTime>(type: "TEXT", nullable: false)
+                    Id = table.Column<long>(type: "bigint", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    StudentId = table.Column<long>(type: "bigint", nullable: false),
+                    TotalCost = table.Column<long>(type: "bigint", nullable: false),
+                    Status = table.Column<string>(type: "nvarchar(32)", nullable: false),
+                    DateCreated = table.Column<DateTime>(type: "datetime2", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -400,16 +400,16 @@ namespace jahndigital.studentbank.dal.Migrations.sqlite
                 name: "Students_RefreshTokens",
                 columns: table => new
                 {
-                    Id = table.Column<long>(type: "INTEGER", nullable: false)
-                        .Annotation("Sqlite:Autoincrement", true),
-                    Token = table.Column<string>(type: "TEXT", maxLength: 7168, nullable: false),
-                    Created = table.Column<DateTime>(type: "TEXT", nullable: false),
-                    Expires = table.Column<DateTime>(type: "TEXT", nullable: false),
-                    Revoked = table.Column<DateTime>(type: "TEXT", nullable: true),
-                    CreatedByIpAddress = table.Column<string>(type: "TEXT", maxLength: 39, nullable: false),
-                    RevokedByIpAddress = table.Column<string>(type: "TEXT", maxLength: 39, nullable: true),
-                    ReplacedByToken = table.Column<string>(type: "TEXT", maxLength: 7168, nullable: true),
-                    StudentId = table.Column<long>(type: "INTEGER", nullable: false)
+                    Id = table.Column<long>(type: "bigint", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    Token = table.Column<string>(type: "nvarchar(max)", maxLength: 7168, nullable: false),
+                    Created = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    Expires = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    Revoked = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    CreatedByIpAddress = table.Column<string>(type: "nvarchar(39)", maxLength: 39, nullable: false),
+                    RevokedByIpAddress = table.Column<string>(type: "nvarchar(39)", maxLength: 39, nullable: true),
+                    ReplacedByToken = table.Column<string>(type: "nvarchar(max)", maxLength: 7168, nullable: true),
+                    StudentId = table.Column<long>(type: "bigint", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -426,13 +426,13 @@ namespace jahndigital.studentbank.dal.Migrations.sqlite
                 name: "StudentStocks",
                 columns: table => new
                 {
-                    Id = table.Column<long>(type: "INTEGER", nullable: false)
-                        .Annotation("Sqlite:Autoincrement", true),
-                    StudentId = table.Column<long>(type: "INTEGER", nullable: false),
-                    StockId = table.Column<long>(type: "INTEGER", nullable: false),
-                    SharesOwned = table.Column<long>(type: "INTEGER", nullable: false),
-                    DateLastActive = table.Column<DateTime>(type: "TEXT", nullable: false),
-                    DateCreated = table.Column<DateTime>(type: "TEXT", nullable: false)
+                    Id = table.Column<long>(type: "bigint", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    StudentId = table.Column<long>(type: "bigint", nullable: false),
+                    StockId = table.Column<long>(type: "bigint", nullable: false),
+                    SharesOwned = table.Column<long>(type: "bigint", nullable: false),
+                    DateLastActive = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    DateCreated = table.Column<DateTime>(type: "datetime2", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -455,14 +455,14 @@ namespace jahndigital.studentbank.dal.Migrations.sqlite
                 name: "Transactions",
                 columns: table => new
                 {
-                    Id = table.Column<long>(type: "INTEGER", nullable: false)
-                        .Annotation("Sqlite:Autoincrement", true),
-                    TargetShareId = table.Column<long>(type: "INTEGER", nullable: false),
-                    TransactionType = table.Column<string>(type: "TEXT", maxLength: 1, nullable: false),
-                    Comment = table.Column<string>(type: "TEXT", maxLength: 255, nullable: true),
-                    Amount = table.Column<long>(type: "INTEGER", nullable: false),
-                    NewBalance = table.Column<long>(type: "INTEGER", nullable: false),
-                    EffectiveDate = table.Column<DateTime>(type: "TEXT", nullable: false)
+                    Id = table.Column<long>(type: "bigint", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    TargetShareId = table.Column<long>(type: "bigint", nullable: false),
+                    TransactionType = table.Column<string>(type: "nvarchar(1)", maxLength: 1, nullable: false),
+                    Comment = table.Column<string>(type: "nvarchar(255)", maxLength: 255, nullable: true),
+                    Amount = table.Column<long>(type: "bigint", nullable: false),
+                    NewBalance = table.Column<long>(type: "bigint", nullable: false),
+                    EffectiveDate = table.Column<DateTime>(type: "datetime2", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -479,12 +479,12 @@ namespace jahndigital.studentbank.dal.Migrations.sqlite
                 name: "StudentPurchaseItems",
                 columns: table => new
                 {
-                    Id = table.Column<long>(type: "INTEGER", nullable: false)
-                        .Annotation("Sqlite:Autoincrement", true),
-                    StudentPurchaseId = table.Column<long>(type: "INTEGER", nullable: false),
-                    ProductId = table.Column<long>(type: "INTEGER", nullable: false),
-                    Quantity = table.Column<int>(type: "INTEGER", nullable: false),
-                    PurchasePrice = table.Column<long>(type: "INTEGER", nullable: false)
+                    Id = table.Column<long>(type: "bigint", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    StudentPurchaseId = table.Column<long>(type: "bigint", nullable: false),
+                    ProductId = table.Column<long>(type: "bigint", nullable: false),
+                    Quantity = table.Column<int>(type: "int", nullable: false),
+                    PurchasePrice = table.Column<long>(type: "bigint", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -507,13 +507,13 @@ namespace jahndigital.studentbank.dal.Migrations.sqlite
                 name: "StudentStockHistory",
                 columns: table => new
                 {
-                    Id = table.Column<long>(type: "INTEGER", nullable: false)
-                        .Annotation("Sqlite:Autoincrement", true),
-                    StudentStockId = table.Column<long>(type: "INTEGER", nullable: false),
-                    TransactionId = table.Column<long>(type: "INTEGER", nullable: false),
-                    Count = table.Column<int>(type: "INTEGER", nullable: false),
-                    Amount = table.Column<long>(type: "INTEGER", nullable: false),
-                    DatePosted = table.Column<DateTime>(type: "TEXT", nullable: false)
+                    Id = table.Column<long>(type: "bigint", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    StudentStockId = table.Column<long>(type: "bigint", nullable: false),
+                    TransactionId = table.Column<long>(type: "bigint", nullable: false),
+                    Count = table.Column<int>(type: "int", nullable: false),
+                    Amount = table.Column<long>(type: "bigint", nullable: false),
+                    DatePosted = table.Column<DateTime>(type: "datetime2", nullable: false)
                 },
                 constraints: table =>
                 {

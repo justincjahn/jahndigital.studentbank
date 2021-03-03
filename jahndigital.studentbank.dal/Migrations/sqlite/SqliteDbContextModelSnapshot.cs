@@ -367,7 +367,6 @@ namespace jahndigital.studentbank.dal.Migrations.sqlite
                         .HasColumnType("TEXT");
 
                     b.Property<string>("Email")
-                        .IsRequired()
                         .HasMaxLength(64)
                         .HasColumnType("TEXT");
 

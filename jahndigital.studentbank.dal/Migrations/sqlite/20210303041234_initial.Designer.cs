@@ -9,7 +9,7 @@ using jahndigital.studentbank.dal.Contexts;
 namespace jahndigital.studentbank.dal.Migrations.sqlite
 {
     [DbContext(typeof(SqliteDbContext))]
-    [Migration("20210130061006_initial")]
+    [Migration("20210303041234_initial")]
     partial class initial
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -369,7 +369,6 @@ namespace jahndigital.studentbank.dal.Migrations.sqlite
                         .HasColumnType("TEXT");
 
                     b.Property<string>("Email")
-                        .IsRequired()
                         .HasMaxLength(64)
                         .HasColumnType("TEXT");
 
