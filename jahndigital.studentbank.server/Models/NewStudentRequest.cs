@@ -1,3 +1,6 @@
+using System;
+using System.Text.RegularExpressions;
+
 namespace jahndigital.studentbank.server.Models
 {
     #nullable disable
@@ -7,10 +10,25 @@ namespace jahndigital.studentbank.server.Models
     /// </summary>
     public class NewStudentRequest
     {
+        private string _accountNumber;
+
         /// <summary>
         /// Get or set the student's account number.
         /// </summary>
-        public string AccountNumber { get; set; }
+        public string AccountNumber {
+            get => _accountNumber;
+
+            set {
+                if (!Regex.IsMatch(value, "^[0-9]{1,10}$")) {
+                    throw new ArgumentOutOfRangeException(
+                        "AccountNumber",
+                        "Can be a maximum of 10 digits."
+                    );
+                }
+
+                _accountNumber = value.PadLeft(10, '0');
+            }
+        }
 
         /// <summary>
         /// Get or set the student's first name.
