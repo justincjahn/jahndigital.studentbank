@@ -10,7 +10,7 @@ using jahndigital.studentbank.dal.Contexts;
 namespace jahndigital.studentbank.dal.Migrations.mssql
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20210303041306_initial")]
+    [Migration("20210409042222_initial")]
     partial class initial
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -70,12 +70,20 @@ namespace jahndigital.studentbank.dal.Migrations.mssql
                         .HasMaxLength(32)
                         .HasColumnType("nvarchar(32)");
 
+                    b.Property<string>("InviteCode")
+                        .IsRequired()
+                        .HasMaxLength(38)
+                        .HasColumnType("nvarchar(38)");
+
                     b.Property<bool>("IsActive")
                         .HasColumnType("bit");
 
                     b.HasKey("Id");
 
                     b.HasIndex("Description")
+                        .IsUnique();
+
+                    b.HasIndex("InviteCode")
                         .IsUnique();
 
                     b.ToTable("Instances");

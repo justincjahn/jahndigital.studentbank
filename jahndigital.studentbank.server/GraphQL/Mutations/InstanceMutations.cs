@@ -6,7 +6,9 @@ using HotChocolate.AspNetCore.Authorization;
 using HotChocolate.Types;
 using jahndigital.studentbank.dal.Contexts;
 using jahndigital.studentbank.server.Models;
+using jahndigital.studentbank.utils;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
 
 namespace jahndigital.studentbank.server.GraphQL.Mutations
 {
@@ -67,11 +69,13 @@ namespace jahndigital.studentbank.server.GraphQL.Mutations
         /// </summary>
         /// <param name="input"></param>
         /// <param name="context"></param>
+        /// <param name="configuration"></param>
         /// <returns></returns>
         [Authorize(Policy = Constants.Privilege.PRIVILEGE_MANAGE_INSTANCES)]
         public async Task<dal.Entities.Instance> NewInstanceAsync(
             NewInstanceRequest input,
-            [Service]AppDbContext context
+            [Service]AppDbContext context,
+            [Service]IConfiguration configuration
         ) {
             var hasInstance = await context.Instances.AnyAsync(x => x.Description == input.Description);
             if (hasInstance) {
@@ -80,8 +84,15 @@ namespace jahndigital.studentbank.server.GraphQL.Mutations
                 );
             }
 
+            // Generate a unique invite code for this new instance
+            string code;
+            do {
+                code = InviteCode.NewCode(configuration.Get<AppConfig>().InviteCodeLength);
+            } while (await context.Instances.AnyAsync(x => x.InviteCode == code));
+
             var instance = new dal.Entities.Instance {
-                Description = input.Description
+                Description = input.Description,
+                InviteCode = code
             };
 
             try {

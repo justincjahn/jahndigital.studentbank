@@ -15,6 +15,7 @@ namespace jahndigital.studentbank.dal.Migrations.sqlite
                         .Annotation("Sqlite:Autoincrement", true),
                     Description = table.Column<string>(type: "TEXT", maxLength: 32, nullable: false),
                     IsActive = table.Column<bool>(type: "INTEGER", nullable: false),
+                    InviteCode = table.Column<string>(type: "TEXT", maxLength: 38, nullable: false),
                     DateCreated = table.Column<DateTime>(type: "TEXT", nullable: false),
                     DateDeleted = table.Column<DateTime>(type: "TEXT", nullable: true)
                 },
@@ -547,6 +548,12 @@ namespace jahndigital.studentbank.dal.Migrations.sqlite
                 name: "IX_Instances_Description",
                 table: "Instances",
                 column: "Description",
+                unique: true);
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Instances_InviteCode",
+                table: "Instances",
+                column: "InviteCode",
                 unique: true);
 
             migrationBuilder.CreateIndex(

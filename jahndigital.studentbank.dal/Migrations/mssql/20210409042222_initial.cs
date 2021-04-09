@@ -15,6 +15,7 @@ namespace jahndigital.studentbank.dal.Migrations.mssql
                         .Annotation("SqlServer:Identity", "1, 1"),
                     Description = table.Column<string>(type: "nvarchar(32)", maxLength: 32, nullable: false),
                     IsActive = table.Column<bool>(type: "bit", nullable: false),
+                    InviteCode = table.Column<string>(type: "nvarchar(38)", maxLength: 38, nullable: false),
                     DateCreated = table.Column<DateTime>(type: "datetime2", nullable: false),
                     DateDeleted = table.Column<DateTime>(type: "datetime2", nullable: true)
                 },
@@ -547,6 +548,12 @@ namespace jahndigital.studentbank.dal.Migrations.mssql
                 name: "IX_Instances_Description",
                 table: "Instances",
                 column: "Description",
+                unique: true);
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Instances_InviteCode",
+                table: "Instances",
+                column: "InviteCode",
                 unique: true);
 
             migrationBuilder.CreateIndex(

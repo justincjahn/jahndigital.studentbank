@@ -9,7 +9,7 @@ using jahndigital.studentbank.dal.Contexts;
 namespace jahndigital.studentbank.dal.Migrations.sqlite
 {
     [DbContext(typeof(SqliteDbContext))]
-    [Migration("20210303041234_initial")]
+    [Migration("20210409042201_initial")]
     partial class initial
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -65,12 +65,20 @@ namespace jahndigital.studentbank.dal.Migrations.sqlite
                         .HasMaxLength(32)
                         .HasColumnType("TEXT");
 
+                    b.Property<string>("InviteCode")
+                        .IsRequired()
+                        .HasMaxLength(38)
+                        .HasColumnType("TEXT");
+
                     b.Property<bool>("IsActive")
                         .HasColumnType("INTEGER");
 
                     b.HasKey("Id");
 
                     b.HasIndex("Description")
+                        .IsUnique();
+
+                    b.HasIndex("InviteCode")
                         .IsUnique();
 
                     b.ToTable("Instances");

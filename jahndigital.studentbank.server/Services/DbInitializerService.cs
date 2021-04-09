@@ -54,16 +54,19 @@ namespace jahndigital.studentbank.server.Services
         {
             using var serviceScope = _scopeFactory.CreateScope();
             using var context = serviceScope.ServiceProvider.GetService<AppDbContext>();
-            if (context == null) throw new ArgumentNullException("Expected an AppDbContext.");
+
+            if (context == null) {
+                throw new ArgumentNullException("Expected an AppDbContext.");
+            }
 
             SeedPrivileges(context);
             SeedRoles(context);
             SeedUsers(context);
-            SeedShareTypes(context);
-            SeedProducts(context);
 
             #if DEBUG
                 // Generates semi-random data for development and testing.
+                SeedShareTypes(context);
+                SeedProducts(context);
                 SeedGroups(context, SeedInstances(context));
             #endif
         }
@@ -206,7 +209,17 @@ namespace jahndigital.studentbank.server.Services
 
             if (!context.Instances.Any()) {
                 for (var i = 0; i < 3; i++) {
-                    var instance = new Instance { Description = $"Instance {i}" };
+                    // Generate a unique invite code
+                    string code;
+
+                    do {
+                        code = InviteCode.NewCode(); // Using default length for seeding
+                    } while (instances.Any(x => x.InviteCode == code));
+
+                    var instance = new Instance {
+                        Description = $"Instance {i}",
+                        InviteCode = code
+                    };
 
                     shareTypes.ForEach(x => instance.ShareTypeInstances.Add(
                         new ShareTypeInstance {

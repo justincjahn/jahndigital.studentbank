@@ -68,12 +68,20 @@ namespace jahndigital.studentbank.dal.Migrations.mssql
                         .HasMaxLength(32)
                         .HasColumnType("nvarchar(32)");
 
+                    b.Property<string>("InviteCode")
+                        .IsRequired()
+                        .HasMaxLength(38)
+                        .HasColumnType("nvarchar(38)");
+
                     b.Property<bool>("IsActive")
                         .HasColumnType("bit");
 
                     b.HasKey("Id");
 
                     b.HasIndex("Description")
+                        .IsUnique();
+
+                    b.HasIndex("InviteCode")
                         .IsUnique();
 
                     b.ToTable("Instances");

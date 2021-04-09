@@ -29,6 +29,12 @@ namespace jahndigital.studentbank.dal.Entities
         public bool IsActive {get; set;} = false;
 
         /// <summary>
+        /// An invite code that is distributed to students for first-time registration.
+        /// </summary>
+        [MaxLength(38), Required]
+        public string InviteCode { get; set; } = default!;
+
+        /// <summary>
         /// Gets or sets the collection of groups associated with this instance.
         /// </summary>
         public ICollection<Group> Groups {get; set;} = new HashSet<Group>();
