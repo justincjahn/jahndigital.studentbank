@@ -40,5 +40,27 @@ namespace jahndigital.studentbank.server
                 _inviteCodeLength = value;
             }
         }
+
+        /// <summary>
+        /// Backing field for <see cref="TokenLifetime"/>
+        /// </summary>
+        private int _tokenLifetime = 60;
+
+        /// <summary>
+        /// AppConfig__TokenLifetime is the length of time, in minutes, that JWT tokens are valid.
+        /// </summary>
+        public int TokenLifetime {
+            get => _tokenLifetime;
+            set {
+                if (value < 1) {
+                    throw new ArgumentOutOfRangeException(
+                        "AppConfig__TokenLifetime",
+                        "Token lifetimes must be at least 1 minute."
+                    );
+                }
+
+                _tokenLifetime = value;
+            }
+        }
     }
 }

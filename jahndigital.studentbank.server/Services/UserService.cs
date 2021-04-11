@@ -51,7 +51,8 @@ namespace jahndigital.studentbank.server.Services
                 user.Id,
                 user.Email,
                 user.Role.Name,
-                email: user.Email
+                email: user.Email,
+                expires: _config.TokenLifetime
             );
 
             var refresh = JwtTokenService.GenerateRefreshToken(ipAddress);
@@ -93,7 +94,8 @@ namespace jahndigital.studentbank.server.Services
                 user.Id,
                 user.Email,
                 user.Role.Name,
-                email: user.Email
+                email: user.Email,
+                expires: _config.TokenLifetime
             );
 
             return new AuthenticateResponse(user, jwtToken, newToken.Token);
