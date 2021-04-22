@@ -185,7 +185,7 @@ namespace jahndigital.studentbank.server.GraphQL.Mutations
             var shareType = await context.ShareTypes.FindAsync(id)
                 ?? throw ErrorFactory.NotFound();
 
-            var hasShares = await context.Shares.AnyAsync(x => x.ShareTypeId == id && x.DateDeleted != null);
+            var hasShares = await context.Shares.AnyAsync(x => x.ShareTypeId == id && x.DateDeleted == null);
             if (hasShares) throw ErrorFactory.QueryFailed("Cannot delete a share type with active shares.");
 
             shareType.DateDeleted = DateTime.UtcNow;
