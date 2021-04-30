@@ -65,7 +65,7 @@ namespace jahndigital.studentbank.server.GraphQL.Mutations
             
             shareType.DividendRate = input.DividendRate ?? shareType.DividendRate;
 
-            if (input.Name != null) {
+            if (input.Name != null && input.Name != shareType.Name) {
                 if (await context.ShareTypes.Where(x => x.Name == input.Name).AnyAsync()) {
                     throw new ArgumentOutOfRangeException(
                         "Name",
