@@ -295,8 +295,8 @@ namespace jahndigital.studentbank.server.GraphQL.Mutations
         /// <param name="id"></param>
         /// <param name="context"></param>
         /// <returns></returns>
-        [Authorize(Policy = Constants.Privilege.PRIVILEGE_MANAGE_STUDENTS)]
-        public async Task<bool> RestoreStudent(long id, [Service]AppDbContext context)
+        [UseSelection, Authorize(Policy = Constants.Privilege.PRIVILEGE_MANAGE_STUDENTS)]
+        public async Task<IQueryable<dal.Entities.Student>> RestoreStudent(long id, [Service]AppDbContext context)
         {
             var student = await context.Students
                 .Where(x => x.Id == id && x.DateDeleted != null)
@@ -311,7 +311,7 @@ namespace jahndigital.studentbank.server.GraphQL.Mutations
                 throw ErrorFactory.QueryFailed(e.Message);
             }
 
-            return true;
+            return context.Students.Where(x => x.Id == id);
         }
     }
 }

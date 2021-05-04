@@ -138,8 +138,8 @@ namespace jahndigital.studentbank.server.GraphQL.Mutations
         /// <param name="id"></param>
         /// <param name="context"></param>
         /// <returns></returns>
-        [Authorize(Policy = Constants.Privilege.PRIVILEGE_MANAGE_INSTANCES)]
-        public async Task<bool> RestoreInstanceAsync(long id, [Service]AppDbContext context)
+        [UseSelection, Authorize(Policy = Constants.Privilege.PRIVILEGE_MANAGE_INSTANCES)]
+        public async Task<IQueryable<dal.Entities.Instance>> RestoreInstanceAsync(long id, [Service]AppDbContext context)
         {
             var instance = await context.Instances
                 .Where(x => x.Id == id && x.DateDeleted != null)
@@ -154,7 +154,7 @@ namespace jahndigital.studentbank.server.GraphQL.Mutations
                 throw ErrorFactory.QueryFailed(e.Message);
             }
 
-            return true;
+            return context.Instances.Where(x => x.Id == id);
         }
     }
 }

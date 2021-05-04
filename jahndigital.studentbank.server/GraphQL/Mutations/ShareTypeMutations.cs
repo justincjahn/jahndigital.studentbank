@@ -206,7 +206,7 @@ namespace jahndigital.studentbank.server.GraphQL.Mutations
         /// <param name="context"></param>
         /// <returns></returns>
         [Authorize(Policy = Constants.Privilege.PRIVILEGE_MANAGE_SHARE_TYPES)]
-        public async Task<bool> RestoreShareTypeAsync(long id, [Service]AppDbContext context)
+        public async Task<IQueryable<dal.Entities.ShareType>> RestoreShareTypeAsync(long id, [Service]AppDbContext context)
         {
             var shareType = await context.ShareTypes
                 .Where(x => x.Id == id && x.DateDeleted != null)
@@ -221,7 +221,7 @@ namespace jahndigital.studentbank.server.GraphQL.Mutations
                 throw ErrorFactory.QueryFailed(e.Message);
             }
 
-            return true;
+            return context.ShareTypes.Where(x => x.Id == id);
         }
     }
 }

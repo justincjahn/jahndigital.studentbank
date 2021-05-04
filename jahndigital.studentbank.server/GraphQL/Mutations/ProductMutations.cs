@@ -101,8 +101,8 @@ namespace jahndigital.studentbank.server.GraphQL.Mutations
         /// <param name="input"></param>
         /// <param name="context"></param>
         /// <returns></returns>
-        [Authorize(Policy = Constants.Privilege.PRIVILEGE_MANAGE_PRODUCTS)]
-        public async Task<bool> LinkProductAsync(
+        [UseSelection, Authorize(Policy = Constants.Privilege.PRIVILEGE_MANAGE_PRODUCTS)]
+        public async Task<IQueryable<dal.Entities.Product>> LinkProductAsync(
             LinkProductRequest input,
             [Service] AppDbContext context
         ) {
@@ -123,7 +123,7 @@ namespace jahndigital.studentbank.server.GraphQL.Mutations
                 throw ErrorFactory.QueryFailed(e.Message);
             }
 
-            return true;
+            return context.Products.Where(x => x.Id == input.ProductId);
         }
 
         /// <summary>
@@ -132,8 +132,8 @@ namespace jahndigital.studentbank.server.GraphQL.Mutations
         /// <param name="input"></param>
         /// <param name="context"></param>
         /// <returns></returns>
-        [Authorize(Policy = Constants.Privilege.PRIVILEGE_MANAGE_PRODUCTS)]
-        public async Task<bool> UnlinkProductAsync(
+        [UseSelection, Authorize(Policy = Constants.Privilege.PRIVILEGE_MANAGE_PRODUCTS)]
+        public async Task<IQueryable<dal.Entities.Product>> UnlinkProductAsync(
             LinkProductRequest input,
             [Service] AppDbContext context
         ) {
@@ -149,7 +149,7 @@ namespace jahndigital.studentbank.server.GraphQL.Mutations
                 throw ErrorFactory.QueryFailed(e.Message);
             }
 
-            return true;
+            return context.Products.Where(x => x.Id == input.ProductId);
         }
 
         /// <summary>
@@ -181,8 +181,8 @@ namespace jahndigital.studentbank.server.GraphQL.Mutations
         /// <param name="id"></param>
         /// <param name="context"></param>
         /// <returns></returns>
-        [Authorize(Policy = Constants.Privilege.PRIVILEGE_MANAGE_PRODUCTS)]
-        public async Task<bool> RestoreProductAsync(long id, [Service]AppDbContext context)
+        [UseSelection, Authorize(Policy = Constants.Privilege.PRIVILEGE_MANAGE_PRODUCTS)]
+        public async Task<IQueryable<dal.Entities.Product>> RestoreProductAsync(long id, [Service]AppDbContext context)
         {
             var product = await context.Products
                 .Where(x => x.Id == id && x.DateDeleted != null)
@@ -197,7 +197,7 @@ namespace jahndigital.studentbank.server.GraphQL.Mutations
                 throw ErrorFactory.QueryFailed(e.Message);
             }
 
-            return true;
+            return context.Products.Where(x => x.Id == id);
         }
     }
 }

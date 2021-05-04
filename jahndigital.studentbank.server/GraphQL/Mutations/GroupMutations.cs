@@ -140,8 +140,8 @@ namespace jahndigital.studentbank.server.GraphQL.Mutations
         /// <param name="id"></param>
         /// <param name="context"></param>
         /// <returns></returns>
-        [Authorize(Policy = Constants.Privilege.PRIVILEGE_MANAGE_GROUPS)]
-        public async Task<bool> RestoreGroupAsync(long id, [Service]AppDbContext context)
+        [UseSelection, Authorize(Policy = Constants.Privilege.PRIVILEGE_MANAGE_GROUPS)]
+        public async Task<IQueryable<dal.Entities.Group>> RestoreGroupAsync(long id, [Service]AppDbContext context)
         {
             var group = await context.Groups
                 .Where(x => x.Id == id && x.DateDeleted != null)
@@ -156,7 +156,7 @@ namespace jahndigital.studentbank.server.GraphQL.Mutations
                 throw ErrorFactory.QueryFailed(e.Message);
             }
 
-            return true;
+            return context.Groups.Where(x => x.Id == id);
         }
     }
 }

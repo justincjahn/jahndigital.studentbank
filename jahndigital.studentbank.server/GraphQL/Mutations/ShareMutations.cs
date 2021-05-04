@@ -134,8 +134,8 @@ namespace jahndigital.studentbank.server.GraphQL.Mutations
         /// <param name="id"></param>
         /// <param name="context"></param>
         /// <returns></returns>
-        [Authorize(Policy = Constants.Privilege.PRIVILEGE_MANAGE_SHARES)]
-        public async Task<bool> RestoreShareAsync(long id, [Service]AppDbContext context)
+        [UseSelection, Authorize(Policy = Constants.Privilege.PRIVILEGE_MANAGE_SHARES)]
+        public async Task<IQueryable<dal.Entities.Share>> RestoreShareAsync(long id, [Service] AppDbContext context)
         {
             var share = await context.Shares
                 .Where(x => x.Id == id && x.DateDeleted != null)
@@ -150,7 +150,7 @@ namespace jahndigital.studentbank.server.GraphQL.Mutations
                 throw ErrorFactory.QueryFailed(e.Message);
             }
 
-            return true;
+            return context.Shares.Where(x => x.Id == id);
         }
     }
 }
