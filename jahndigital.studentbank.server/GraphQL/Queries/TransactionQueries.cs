@@ -26,7 +26,7 @@ namespace jahndigital.studentbank.server.GraphQL.Queries
         [UsePaging, UseSorting, UseFiltering,Authorize]
         public async Task<IQueryable<dal.Entities.Transaction>> GetTransactionsAsync(
             long shareId,
-            [Service]AppDbContext context,
+            [Service] AppDbContext context,
             [Service] IResolverContext resolverContext
         ) {
             var id = resolverContext.GetUserId() ?? throw ErrorFactory.NotFound();

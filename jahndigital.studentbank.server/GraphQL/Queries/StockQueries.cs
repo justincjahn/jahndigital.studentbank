@@ -35,7 +35,7 @@ namespace jahndigital.studentbank.server.GraphQL.Queries
             }
 
             // Fetch the stock IDs the user has access to
-            var shares = await context.Students
+            var availableStocks = await context.Students
                 .Include(x => x.Group)
                     .ThenInclude(x => x.Instance)
                         .ThenInclude(x => x.StockInstances)
@@ -43,8 +43,48 @@ namespace jahndigital.studentbank.server.GraphQL.Queries
                 .FirstOrDefaultAsync()
             ?? throw ErrorFactory.NotFound();
 
-            var stockIds = shares.Group.Instance.StockInstances.Select(x => x.StockId);
+            var stockIds = availableStocks.Group.Instance.StockInstances.Select(x => x.StockId);
             return context.Stocks.Where(x => x.DateDeleted == null && stockIds.Contains(x.Id));
+        }
+
+        /// <summary>
+        /// Get a list of history for a given stock.
+        /// </summary>
+        /// <param name="stockId"></param>
+        /// <param name="context"></param>
+        /// <param name="resolverContext"></param>
+        /// <returns></returns>
+        [UsePaging, UseSorting, UseFiltering, Authorize]
+        public async Task<IQueryable<dal.Entities.StockHistory>> GetStockHistoryAsync(
+            long stockId,
+            [Service] AppDbContext context,
+            [Service] IResolverContext resolverContext
+        ) {
+            var userId = resolverContext.GetUserId() ?? throw ErrorFactory.NotFound();
+            var userType = resolverContext.GetUserType() ?? throw ErrorFactory.NotFound();
+            resolverContext.SetUser(userId, userType);
+
+            if (userType == Constants.UserType.User) {
+                var auth = await resolverContext.AuthorizeAsync(Constants.Privilege.ManageStocks.Name);
+                if (!auth.Succeeded) throw ErrorFactory.Unauthorized();
+                return context.StockHistory.Where(x => x.StockId == stockId);
+            }
+
+            // Fetch the stock IDs the user has access to
+            var availableStocks = await context.Students
+                .Include(x => x.Group)
+                    .ThenInclude(x => x.Instance)
+                        .ThenInclude(x => x.StockInstances)
+                .Where(x => x.Id == userId)
+                .FirstOrDefaultAsync()
+            ?? throw ErrorFactory.NotFound();
+
+            var hasAccess = availableStocks.Group.Instance.StockInstances.Any(x => x.StockId == stockId);
+            if (!hasAccess) {
+                throw ErrorFactory.NotFound();
+            }
+
+            return context.StockHistory.Where(x => x.StockId == stockId);
         }
 
         /// <summary>

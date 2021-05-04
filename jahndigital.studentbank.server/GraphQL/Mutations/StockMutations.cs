@@ -59,6 +59,76 @@ namespace jahndigital.studentbank.server.GraphQL.Mutations
         }
 
         /// <summary>
+        /// Update a <see cref="dal.Entities.Stock"/>.
+        /// </summary>
+        /// <param name="input"></param>
+        /// <param name="context"></param>
+        /// <returns></returns>
+        [UseSelection, Authorize(Policy = Constants.Privilege.PRIVILEGE_MANAGE_STOCKS)]
+        public async Task<IQueryable<dal.Entities.Stock>> UpdateStockAsync(
+            UpdateStockRequest input,
+            [Service] AppDbContext context
+        ) {
+            var stock = await context.Stocks.FindAsync(input.Id)
+                ?? throw ErrorFactory.NotFound();
+
+            if (input.Name != null && stock.Name != input.Name) {
+                var stockExists = await context.Stocks
+                    .Where(x => x.Name == input.Name && x.Id != input.Id)
+                .AnyAsync();
+
+                if (stockExists) {
+                    throw ErrorFactory.QueryFailed($"A stock named {input.Name} already exists.");
+                }
+
+                stock.Name = input.Name;
+            }
+
+            if (input.Symbol != null && input.Symbol.ToUpper() != stock.Symbol) {
+                var symbol = input.Symbol.ToUpper();
+                var symbolExists = await context.Stocks
+                    .Where(x => x.Symbol == symbol && x.Id != input.Id)
+                .AnyAsync();
+
+                if (symbolExists) {
+                    throw ErrorFactory.QueryFailed($"A stock with the symbol {symbol} already exists.");
+                }
+
+                stock.Symbol = symbol;
+            }
+
+            if (input.TotalShares != null && stock.TotalShares != input.TotalShares) {
+                // TODO Check for sold shares, force a buyback instead of hard-stopping reducing shares.
+                if (input.TotalShares < stock.TotalShares) {
+                    throw ErrorFactory.QueryFailed(
+                        $"Total shares for {stock.Name} cannot be less than the current amount of {stock.TotalShares}."
+                    );
+                }
+
+                stock.TotalShares = input.TotalShares.Value;
+            }
+
+            if (input.CurrentValue != null && stock.CurrentValue != input.CurrentValue) {
+                context.StockHistory.Add(new dal.Entities.StockHistory {
+                    Stock = stock,
+                    Value = input.CurrentValue
+                });
+
+                stock.CurrentValue = input.CurrentValue;
+            }
+
+            try {
+                await context.SaveChangesAsync();
+            } catch (DbUpdateException e) {
+                throw ErrorFactory.QueryFailed(e.InnerException?.Message ?? e.Message);
+            } catch (Exception e) {
+                throw ErrorFactory.QueryFailed(e.Message);
+            }
+
+            return context.Stocks.Where(x => x.Id == stock.Id);
+        }
+
+        /// <summary>
         /// Link a <see cref="dal.Entities.Stock"/> to an <see cref="dal.Entities.Instance"/>.
         /// </summary>
         /// <param name="input"></param>
