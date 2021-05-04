@@ -197,6 +197,7 @@ namespace jahndigital.studentbank.utils
         /// <returns></returns>
         public int CompareTo(Money other)
         {
+            if (other is null) return -1;
             if (Amount > other.Amount) return 1;
             if (Amount < other.Amount) return -1;
             return 0;
