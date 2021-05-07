@@ -58,7 +58,7 @@ namespace jahndigital.studentbank.server
 
             services.AddGraphQL(
                 SchemaBuilder.New()
-                    .AddQueryType(x => x.Name("Query"))
+                    .AddQueryType<GraphQL.ObjectTypes.QueryType>()
                         .AddType<GraphQL.Queries.GroupQueries>()
                         .AddType<GraphQL.Queries.InstanceQueries>()
                         .AddType<GraphQL.Queries.ProductQueries>()
@@ -67,11 +67,12 @@ namespace jahndigital.studentbank.server
                         .AddType<GraphQL.Queries.ShareTypeQueries>()
                         .AddType<GraphQL.Queries.StockHistoryQueries>()
                         .AddType<GraphQL.Queries.StockQueries>()
+                        .AddType<GraphQL.ObjectTypes.StockQueriesType>()
                         .AddType<GraphQL.Queries.StudentQueries>()
                         .AddType<GraphQL.Queries.StudentStockQueries>()
                         .AddType<GraphQL.Queries.TransactionQueries>()
                         .AddType<GraphQL.Queries.UserQueries>()
-                    .AddMutationType(x => x.Name("Mutation"))
+                    .AddMutationType<GraphQL.ObjectTypes.MutationType>()
                         .AddType<GraphQL.Mutations.GroupMutations>()
                         .AddType<GraphQL.Mutations.InstanceMutations>()
                         .AddType<GraphQL.Mutations.ProductMutations>()

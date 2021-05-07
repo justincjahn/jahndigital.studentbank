@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using HotChocolate;
@@ -10,17 +11,19 @@ using Microsoft.EntityFrameworkCore;
 
 namespace jahndigital.studentbank.server.GraphQL.Queries
 {
-    [ExtendObjectType(Name = "Query")]
+    //[ExtendObjectType(Name = "Query")]
     public class StockQueries
     {
         /// <summary>
         /// Get a list of stocks available to the user.
         /// </summary>
+        /// <param name="instances">One or more instances to use when filtering.</param>
         /// <param name="context"></param>
         /// <param name="resolverContext"></param>
         /// <returns></returns>
         [UsePaging, UseSelection, UseSorting, UseFiltering, Authorize]
         public async Task<IQueryable<dal.Entities.Stock>> GetStocksAsync(
+            IEnumerable<long>? instances,
             [Service]AppDbContext context,
             [Service]IResolverContext resolverContext
         ) {
@@ -31,7 +34,13 @@ namespace jahndigital.studentbank.server.GraphQL.Queries
             if (userType == Constants.UserType.User) {
                 var auth = await resolverContext.AuthorizeAsync(Constants.Privilege.ManageStocks.Name);
                 if (!auth.Succeeded) throw ErrorFactory.Unauthorized();
-                return context.Stocks.Where(x => x.DateDeleted == null);
+
+                var stocks = context.Stocks.Where(x => x.DateDeleted == null);
+                if (instances != null) {
+                    stocks = stocks.Where(x => x.StockInstances.Any(x => instances.Contains(x.InstanceId)));
+                }
+
+                return stocks;
             }
 
             // Fetch the stock IDs the user has access to

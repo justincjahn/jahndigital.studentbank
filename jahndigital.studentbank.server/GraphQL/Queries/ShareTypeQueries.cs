@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using HotChocolate;
@@ -16,11 +17,13 @@ namespace jahndigital.studentbank.server.GraphQL.Queries
         /// <summary>
         /// Get share type information available to the student or user.
         /// </summary>
+        /// <param name="instances">A list of instances to filter the list of share types to.</param>
         /// <param name="context"></param>
         /// <param name="resolverContext"></param>
         /// <returns></returns>
         [UsePaging, UseSelection, UseSorting, UseFiltering, Authorize]
-        public async Task<IQueryable<dal.Entities.ShareType>> GetAvailableShareTypesAsync(
+        public async Task<IQueryable<dal.Entities.ShareType>> GetShareTypesAsync(
+            IEnumerable<long>? instances,
             [Service]AppDbContext context,
             [Service]IResolverContext resolverContext
         ) {
@@ -29,10 +32,18 @@ namespace jahndigital.studentbank.server.GraphQL.Queries
             resolverContext.SetUser(userId, userType);
 
             if (userType == Constants.UserType.User) {
-                return context.ShareTypes.Where(x => x.DateDeleted == null);
+                var auth = await resolverContext.AuthorizeAsync(Constants.Privilege.ManageShareTypes.Name);
+                if (!auth.Succeeded) throw ErrorFactory.Unauthorized();
+
+                var shareTypes = context.ShareTypes.Where(x => x.DateDeleted == null);
+                if (instances != null) {
+                    shareTypes = shareTypes.Where(x => x.ShareTypeInstances.Any(x => instances.Contains(x.InstanceId)));
+                }
+
+                return shareTypes;
             }
 
-            // Fetch the share type IDs the user has access to
+            // Fetch the share type IDs the student has access to
             var shares = await context.Students
                 .Include(x => x.Group)
                     .ThenInclude(x => x.Instance)
@@ -43,25 +54,6 @@ namespace jahndigital.studentbank.server.GraphQL.Queries
 
             var shareTypeIds = shares.Group.Instance.ShareTypeInstances.Select(x => x.ShareTypeId);
             return context.ShareTypes.Where(x => x.DateDeleted == null && shareTypeIds.Contains(x.Id));
-        }
-
-        /// <summary>
-        /// Get share types available for the given instance.
-        /// </summary>
-        /// <param name="instanceId"></param>
-        /// <param name="context"></param>
-        /// <returns></returns>
-        [UsePaging, UseSelection, UseSorting, UseFiltering]
-        [Authorize(Policy = Constants.Privilege.PRIVILEGE_MANAGE_SHARE_TYPES)]
-        public IQueryable<dal.Entities.ShareType> GetShareTypes(
-            long instanceId,
-            [Service]AppDbContext context
-        ) {
-            return context.ShareTypes
-                .Include(x => x.ShareTypeInstances)
-                .Where(x =>
-                    x.ShareTypeInstances.Any(x => x.InstanceId == instanceId)
-                    && x.DateDeleted == null);
         }
 
         /// <summary>
