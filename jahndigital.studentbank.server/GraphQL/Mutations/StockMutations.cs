@@ -134,9 +134,11 @@ namespace jahndigital.studentbank.server.GraphQL.Mutations
         /// <param name="input"></param>
         /// <param name="context"></param>
         /// <returns></returns>
-        [Authorize(Policy = Constants.Privilege.PRIVILEGE_MANAGE_STOCKS)]
-        public async Task<IQueryable<dal.Entities.Stock>> LinkStockAsync(LinkStockRequest input, [Service]AppDbContext context)
-        {
+        [UseSelection, Authorize(Policy = Constants.Privilege.PRIVILEGE_MANAGE_STOCKS)]
+        public async Task<IQueryable<dal.Entities.Stock>> LinkStockAsync(
+            LinkStockRequest input,
+            [Service] AppDbContext context
+        ) {
             var hasInstance = await context.Instances.AnyAsync(x => x.Id == input.InstanceId);
             if (!hasInstance) throw ErrorFactory.NotFound();
 
@@ -170,9 +172,11 @@ namespace jahndigital.studentbank.server.GraphQL.Mutations
         /// <param name="input"></param>
         /// <param name="context"></param>
         /// <returns></returns>
-        [Authorize(Policy = Constants.Privilege.PRIVILEGE_MANAGE_STOCKS)]
-        public async Task<IQueryable<dal.Entities.Stock>> UnlinkStockAsync(LinkStockRequest input, [Service]AppDbContext context)
-        {
+        [UseSelection, Authorize(Policy = Constants.Privilege.PRIVILEGE_MANAGE_STOCKS)]
+        public async Task<IQueryable<dal.Entities.Stock>> UnlinkStockAsync(
+            LinkStockRequest input,
+            [Service] AppDbContext context
+        ) {
             var hasInstance = await context.Instances.AnyAsync(x => x.Id == input.InstanceId);
             if (!hasInstance) throw ErrorFactory.NotFound();
 
