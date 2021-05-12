@@ -19,6 +19,9 @@ namespace jahndigital.studentbank.dal.Entities
         /// </summary>
         public long Id {get; set;}
 
+        /// <summary>
+        /// Backing field for <see cref="AccountNumber"/>.
+        /// </summary>
         private string _accountNumber = null!;
 
         /// <summary>
@@ -79,7 +82,6 @@ namespace jahndigital.studentbank.dal.Entities
         /// Validate the provided password.
         /// </summary>
         /// <param name="password"></param>
-        /// <returns></returns>
         public PasswordVerificationResult ValidatePassword(string password)
         {
             var passwordHasher = new PasswordHasher<Student>();
@@ -102,7 +104,6 @@ namespace jahndigital.studentbank.dal.Entities
         /// Student's shares.
         /// </summary>
         /// <typeparam name="Share"></typeparam>
-        /// <returns></returns>
         public ICollection<Share> Shares {get; set;} = new HashSet<Share>();
 
         /// <summary>
@@ -114,19 +115,30 @@ namespace jahndigital.studentbank.dal.Entities
         /// <summary>
         /// Get a list of purchases this student has made.
         /// </summary>
-        /// <returns></returns>
         public ICollection<StudentPurchase> Purchases {get; set;} = new HashSet<StudentPurchase>();
 
         /// <summary>
-        /// Get or set the date the student was deleted.
+        /// Get or set the date the student last logged in.
         /// </summary>
         [DateTimeKind(DateTimeKind.Utc)]
-        public DateTime? DateDeleted {get; set;} = null;
+        public DateTime? DateLastLogin { get; set; } = null;
 
         /// <summary>
         /// Get or set the date the student was created.
         /// </summary>
         [DateTimeKind(DateTimeKind.Utc)]
         public DateTime DateCreated {get; set;} = DateTime.UtcNow;
+
+        /// <summary>
+        /// Get or set the date the student was registered.
+        /// </summary>
+        [DateTimeKind(DateTimeKind.Utc)]
+        public DateTime? DateRegistered { get; set; } = null;
+
+        /// <summary>
+        /// Get or set the date the student was deleted.
+        /// </summary>
+        [DateTimeKind(DateTimeKind.Utc)]
+        public DateTime? DateDeleted {get; set;} = null;
     }
 }

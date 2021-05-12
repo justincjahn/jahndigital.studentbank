@@ -387,6 +387,12 @@ namespace jahndigital.studentbank.dal.Migrations.mssql
                     b.Property<DateTime?>("DateDeleted")
                         .HasColumnType("datetime2");
 
+                    b.Property<DateTime?>("DateLastLogin")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime?>("DateRegistered")
+                        .HasColumnType("datetime2");
+
                     b.Property<string>("Email")
                         .HasMaxLength(64)
                         .HasColumnType("nvarchar(64)");
@@ -587,6 +593,12 @@ namespace jahndigital.studentbank.dal.Migrations.mssql
                         .HasColumnType("datetime2");
 
                     b.Property<DateTime?>("DateDeleted")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime?>("DateLastLogin")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime?>("DateRegistered")
                         .HasColumnType("datetime2");
 
                     b.Property<string>("Email")

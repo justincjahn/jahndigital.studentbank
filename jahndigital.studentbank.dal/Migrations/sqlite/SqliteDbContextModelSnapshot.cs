@@ -374,6 +374,12 @@ namespace jahndigital.studentbank.dal.Migrations.sqlite
                     b.Property<DateTime?>("DateDeleted")
                         .HasColumnType("TEXT");
 
+                    b.Property<DateTime?>("DateLastLogin")
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTime?>("DateRegistered")
+                        .HasColumnType("TEXT");
+
                     b.Property<string>("Email")
                         .HasMaxLength(64)
                         .HasColumnType("TEXT");
@@ -567,6 +573,12 @@ namespace jahndigital.studentbank.dal.Migrations.sqlite
                         .HasColumnType("TEXT");
 
                     b.Property<DateTime?>("DateDeleted")
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTime?>("DateLastLogin")
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTime?>("DateRegistered")
                         .HasColumnType("TEXT");
 
                     b.Property<string>("Email")

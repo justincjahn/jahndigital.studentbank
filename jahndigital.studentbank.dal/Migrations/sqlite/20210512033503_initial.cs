@@ -208,7 +208,9 @@ namespace jahndigital.studentbank.dal.Migrations.sqlite
                     RoleId = table.Column<long>(type: "INTEGER", nullable: false),
                     Email = table.Column<string>(type: "TEXT", maxLength: 64, nullable: false),
                     Password = table.Column<string>(type: "TEXT", maxLength: 84, nullable: false),
+                    DateLastLogin = table.Column<DateTime>(type: "TEXT", nullable: true),
                     DateCreated = table.Column<DateTime>(type: "TEXT", nullable: false),
+                    DateRegistered = table.Column<DateTime>(type: "TEXT", nullable: true),
                     DateDeleted = table.Column<DateTime>(type: "TEXT", nullable: true)
                 },
                 constraints: table =>
@@ -303,8 +305,10 @@ namespace jahndigital.studentbank.dal.Migrations.sqlite
                     LastName = table.Column<string>(type: "TEXT", maxLength: 64, nullable: false),
                     Password = table.Column<string>(type: "TEXT", maxLength: 84, nullable: false),
                     GroupId = table.Column<long>(type: "INTEGER", nullable: false),
-                    DateDeleted = table.Column<DateTime>(type: "TEXT", nullable: true),
-                    DateCreated = table.Column<DateTime>(type: "TEXT", nullable: false)
+                    DateLastLogin = table.Column<DateTime>(type: "TEXT", nullable: true),
+                    DateCreated = table.Column<DateTime>(type: "TEXT", nullable: false),
+                    DateRegistered = table.Column<DateTime>(type: "TEXT", nullable: true),
+                    DateDeleted = table.Column<DateTime>(type: "TEXT", nullable: true)
                 },
                 constraints: table =>
                 {
