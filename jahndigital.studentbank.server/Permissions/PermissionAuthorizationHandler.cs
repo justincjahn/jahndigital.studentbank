@@ -27,6 +27,9 @@ namespace jahndigital.studentbank.server.Permissions
         /// <returns></returns>
         protected override async Task HandleRequirementAsync(AuthorizationHandlerContext context, PermissionRequirement requirement)
         {
+            // Make sure the user isn't preauthenticated
+            if (PreauthorizationHandler.AssertPreauthenticated(context)) return;
+
             var role = context.User.Claims.FirstOrDefault(x => x.Type == ClaimTypes.Role);
             if (role == null) return;
 

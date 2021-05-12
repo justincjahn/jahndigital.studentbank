@@ -26,6 +26,7 @@ namespace jahndigital.studentbank.server.Services
         /// <param name="firstName">User's given name</param>
         /// <param name="lastName">User's surname</param>
         /// <param name="expires">Number of minutes before the token expires.</param>
+        /// <param name="preauthorization">If the preauthorization claim should be set on the token.</param>
         /// <returns>A valid JWT token signed with the provided key.</returns>
         public static string GenerateToken(
             string jwtSecret,
@@ -36,7 +37,8 @@ namespace jahndigital.studentbank.server.Services
             string email="",
             string firstName="",
             string lastName="",
-            int? expires=null
+            int? expires=null,
+            bool preauthorization=false
         ) {
             var handler = new JwtSecurityTokenHandler();
             var key = Encoding.ASCII.GetBytes(jwtSecret);
@@ -50,6 +52,12 @@ namespace jahndigital.studentbank.server.Services
                 new Claim(ClaimTypes.Surname, lastName),
                 new Claim(Constants.Auth.CLAIM_USER_TYPE, type.Name)
             };
+
+            if (preauthorization) {
+                claims.Add(
+                    new Claim(Constants.Auth.CLAIM_PREAUTH_TYPE, Constants.Auth.CLAIM_PREAUTH_YES)
+                );
+            }
 
             var descriptor = new SecurityTokenDescriptor {
                 Issuer = Constants.Auth.Issuer,

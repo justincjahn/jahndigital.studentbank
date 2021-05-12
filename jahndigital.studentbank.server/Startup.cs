@@ -125,15 +125,21 @@ namespace jahndigital.studentbank.server
             // Dynamically register policies for built-in permissions.
             services.AddSingleton<IAuthorizationPolicyProvider, AggregatePolicyProvider>();
 
-            // Add an authz handler that validates the authenticated user has a permission.
-            services.AddScoped<IAuthorizationHandler, PermissionAuthorizationHandler>();
-
             // Add an authz handler that ensures users can only access their own data.
             services
+                .AddScoped<IAuthorizationHandler, PreauthorizationHandler>()
+                .AddScoped<IAuthorizationHandler, PermissionAuthorizationHandler>()
                 .AddScoped<IAuthorizationHandler, DataOwnerAuthorizationHandler>()
                 .AddScoped<IAuthorizationHandler, DataOwnerAuthorizationHandlerGraphQL>();
 
-            services.AddAuthorization();
+            // By default, don't allow preauthenticated users access to protected resources
+            services.AddAuthorization(options => {
+                options.DefaultPolicy = new AuthorizationPolicyBuilder()
+                    .RequireAssertion(
+                        context => !PreauthorizationHandler.AssertPreauthenticated(context)
+                    )
+                    .Build();
+            });
 
             services
                 .AddScoped<IUserService, UserService>()

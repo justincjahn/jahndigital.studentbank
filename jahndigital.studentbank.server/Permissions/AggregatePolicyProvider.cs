@@ -19,6 +19,8 @@ namespace jahndigital.studentbank.server.Permissions
 
         private readonly PermissionPolicyProvider _permissionProvider;
 
+        private readonly PreauthorizationProvider _preauthorizationProvider;
+
         public AggregatePolicyProvider(
             IHttpContextAccessor httpContextAccessor,
             IOptions<AuthorizationOptions> options
@@ -27,6 +29,7 @@ namespace jahndigital.studentbank.server.Permissions
             _httpContext = httpContextAccessor;
             _doPermissionProvider = new DataOwnerPermissionProvider(options);
             _permissionProvider = new PermissionPolicyProvider(options);
+            _preauthorizationProvider = new PreauthorizationProvider(options);
         }
 
         public Task<AuthorizationPolicy> GetDefaultPolicyAsync() =>
@@ -51,6 +54,10 @@ namespace jahndigital.studentbank.server.Permissions
         /// <returns></returns>
         private IAuthorizationPolicyProvider GetPolicyProvider(string name)
         {
+            if (name == Constants.AuthPolicy.Preauthorization) {
+                return _preauthorizationProvider;
+            }
+
             if (name.StartsWith(Constants.AuthPolicy.DataOwner)) {
                 return _doPermissionProvider;
             }

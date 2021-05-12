@@ -24,9 +24,18 @@ namespace jahndigital.studentbank.server
             public const int DefaultExpirationMinutes = 60;
 
             /// <summary>
-            /// 
+            /// Denotes the user type
             /// </summary>
             public const string CLAIM_USER_TYPE = "utyp";
+
+            /// <summary>
+            /// Denotes a preauthorization token.
+            /// </summary>
+            public const string CLAIM_PREAUTH_TYPE = "pre";
+
+            public const string CLAIM_PREAUTH_YES = "Y";
+
+            public const string CLAIM_PREAUTH_NO = "N";
         }
 
         /// <summary>
@@ -266,6 +275,11 @@ namespace jahndigital.studentbank.server
             /// Requires that the user's token claim matches the userId URL parameter.
             /// </summary>
             public const string DataOwner = "DataOwner";
+
+            /// <summary>
+            /// Requires that the user's token have a preauthorization claim.
+            /// </summary>
+            public const string Preauthorization = "Preauthorization";
         }
 
         /// <summary>

@@ -33,6 +33,9 @@ namespace jahndigital.studentbank.server.Permissions
 
         protected override async Task HandleRequirementAsync(AuthorizationHandlerContext context, DataOwnerRequirement requirement, IResolverContext resource)
         {
+            // Make sure the user isn't preauthenticated
+            if (PreauthorizationHandler.AssertPreauthenticated(context)) return;
+
             if (IsDataOwner(context, resource)) {
                 context.Succeed(requirement);
                 return;

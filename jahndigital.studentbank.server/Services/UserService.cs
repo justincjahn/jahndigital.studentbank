@@ -1,5 +1,6 @@
 using System;
 using System.Linq;
+using System.Threading.Tasks;
 using jahndigital.studentbank.dal.Contexts;
 using jahndigital.studentbank.server.Models;
 using Microsoft.AspNetCore.Identity;
@@ -30,11 +31,15 @@ namespace jahndigital.studentbank.server.Services
         }
 
         /// <inheritdoc />
-        public AuthenticateResponse? Authenticate(AuthenticateRequest model, string ipAddress)
+        public async Task<AuthenticateResponse?> AuthenticateAsync(AuthenticateRequest model, string ipAddress)
         {
-            var user = _context.Users
+            var user = await _context.Users
                 .Include(x => x.Role)
-                .SingleOrDefault(x => x.Email == model.Username && x.DateDeleted == null);
+                .SingleOrDefaultAsync(
+                    x => x.Email == model.Username
+                    && x.DateDeleted == null
+                    && x.DateRegistered != null
+                );
 
             if (user == null) return null;
 
@@ -44,6 +49,8 @@ namespace jahndigital.studentbank.server.Services
             if (valid == PasswordVerificationResult.SuccessRehashNeeded) {
                 user.Password = model.Password;
             }
+
+            user.DateLastLogin = DateTime.UtcNow;
 
             var token = JwtTokenService.GenerateToken(
                 _config.Secret,
@@ -56,25 +63,24 @@ namespace jahndigital.studentbank.server.Services
             );
 
             var refresh = JwtTokenService.GenerateRefreshToken(ipAddress);
-
             user.RefreshTokens.Add(refresh);
-            _context.Update(user);
-            _context.SaveChanges();
+
+            await _context.SaveChangesAsync();
 
             return new AuthenticateResponse(user, token, refresh.Token);
         }
 
         /// <inheritdoc />
-        public AuthenticateResponse? RefreshToken(string token, string ipAddress)
+        public async Task<AuthenticateResponse?> RefreshTokenAsync(string token, string ipAddress)
         {
-            var user = _context.Users
+            var user = await _context.Users
                 .Include(x => x.Role)
-                .SingleOrDefault(u =>
+                .SingleOrDefaultAsync(u =>
                     u.RefreshTokens.Any(t => t.Token == token)
-                    && u.DateDeleted == null
-            );
+                    && u.DateDeleted == null);
 
             if (user == null) return null;
+            user.DateLastLogin = DateTime.UtcNow;
 
             var refreshToken = user.RefreshTokens.Single(x => x.Token == token);
             if (refreshToken == null) return null;
@@ -83,10 +89,7 @@ namespace jahndigital.studentbank.server.Services
             refreshToken.Revoked = DateTime.UtcNow;
             refreshToken.RevokedByIpAddress = ipAddress;
             refreshToken.ReplacedByToken = newToken.Token;
-
             user.RefreshTokens.Add(newToken);
-            _context.Update(user);
-            _context.SaveChanges();
 
             var jwtToken = JwtTokenService.GenerateToken(
                 _config.Secret,
@@ -98,13 +101,18 @@ namespace jahndigital.studentbank.server.Services
                 expires: _config.TokenLifetime
             );
 
+            await _context.SaveChangesAsync();
+
             return new AuthenticateResponse(user, jwtToken, newToken.Token);
         }
 
         /// <inheritdoc />
-        public bool RevokeToken(string token, string ipAddress)
+        public async Task<bool> RevokeTokenAsync(string token, string ipAddress)
         {
-            var user = _context.Users.SingleOrDefault(u => u.RefreshTokens.Any(t => t.Token == token));
+            var user = await _context.Users.SingleOrDefaultAsync(
+                u => u.RefreshTokens.Any(t => t.Token == token)
+            );
+
             if (user == null) return false;
 
             var refreshToken = user.RefreshTokens.SingleOrDefault(x => x.Token == token);
@@ -113,8 +121,7 @@ namespace jahndigital.studentbank.server.Services
 
             refreshToken.Revoked = DateTime.UtcNow;
             refreshToken.RevokedByIpAddress = ipAddress;
-            _context.Update(user);
-            _context.SaveChanges();
+            await _context.SaveChangesAsync();
 
             return true;
         }

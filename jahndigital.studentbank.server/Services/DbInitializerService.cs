@@ -135,7 +135,8 @@ namespace jahndigital.studentbank.server.Services
                 var admin = new User {
                     Email = "admin@domain.tld",
                     Password = "admin",
-                    Role = superuser
+                    Role = superuser,
+                    DateRegistered = DateTime.UtcNow
                 };
 
                 context.Add(admin);
@@ -294,7 +295,8 @@ namespace jahndigital.studentbank.server.Services
                         Password = "student",
                         Email = $"student{i}@group{group.Id}.domain.tld",
                         FirstName = "Student",
-                        LastName = $"{i}"
+                        LastName = $"{i}",
+                        DateRegistered = DateTime.UtcNow
                     };
 
                     context.Students.Add(student);

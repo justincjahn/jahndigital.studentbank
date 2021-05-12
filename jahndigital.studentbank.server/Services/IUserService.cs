@@ -1,3 +1,4 @@
+using System.Threading.Tasks;
 using jahndigital.studentbank.server.Models;
 
 namespace jahndigital.studentbank.server.Services
@@ -13,7 +14,7 @@ namespace jahndigital.studentbank.server.Services
         /// <param name="model"></param>
         /// <param name="ipAddress"></param>
         /// <returns></returns>
-         AuthenticateResponse? Authenticate(AuthenticateRequest model, string ipAddress);
+        Task<AuthenticateResponse?> AuthenticateAsync(AuthenticateRequest model, string ipAddress);
 
         /// <summary>
         /// Refresh a JWT token.
@@ -21,7 +22,7 @@ namespace jahndigital.studentbank.server.Services
         /// <param name="token"></param>
         /// <param name="ipAddress"></param>
         /// <returns></returns>
-         AuthenticateResponse? RefreshToken(string token, string ipAddress);
+        Task<AuthenticateResponse?> RefreshTokenAsync(string token, string ipAddress);
 
         /// <summary>
         /// Revoke a valid JWT token.
@@ -29,6 +30,6 @@ namespace jahndigital.studentbank.server.Services
         /// <param name="token"></param>
         /// <param name="ipAddress"></param>
         /// <returns></returns>
-         bool RevokeToken(string token, string ipAddress);
+         Task<bool> RevokeTokenAsync(string token, string ipAddress);
     }
 }

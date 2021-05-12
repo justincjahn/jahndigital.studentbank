@@ -28,7 +28,7 @@ namespace jahndigital.studentbank.server.GraphQL.Mutations
         /// <param name="userService"></param>
         /// <param name="contextAccessor"></param>
         /// <returns></returns>
-        public AuthenticateResponse UserLogin(
+        public async Task<AuthenticateResponse> UserLoginAsync(
             AuthenticateRequest input,
             [Service] IUserService userService,
             [Service] IHttpContextAccessor contextAccessor
@@ -36,7 +36,7 @@ namespace jahndigital.studentbank.server.GraphQL.Mutations
             if (string.IsNullOrEmpty(input.Username)) throw ErrorFactory.Unauthorized();
             if (string.IsNullOrEmpty(input.Password)) throw ErrorFactory.Unauthorized();
 
-            var response = userService.Authenticate(input, GetIp(contextAccessor))
+            var response = await userService.AuthenticateAsync(input, GetIp(contextAccessor))
                 ?? throw new QueryException(
                     ErrorBuilder.New()
                         .SetMessage("Bad username or password.")
@@ -54,7 +54,7 @@ namespace jahndigital.studentbank.server.GraphQL.Mutations
         /// <param name="userService"></param>
         /// <param name="contextAccessor"></param>
         /// <returns></returns>
-        public AuthenticateResponse UserRefreshToken(
+        public async Task<AuthenticateResponse> UserRefreshTokenAsync(
             string? token,
             [Service] IUserService userService,
             [Service] IHttpContextAccessor contextAccessor
@@ -67,7 +67,7 @@ namespace jahndigital.studentbank.server.GraphQL.Mutations
                         .SetCode(Constants.ErrorStrings.INVALID_REFRESH_TOKEN)
                         .Build());
 
-            var response = userService.RefreshToken(token, GetIp(contextAccessor))
+            var response = await userService.RefreshTokenAsync(token, GetIp(contextAccessor))
                 ?? throw new QueryException(
                     ErrorBuilder.New()
                         .SetMessage("Invalid refresh token.")
@@ -86,7 +86,7 @@ namespace jahndigital.studentbank.server.GraphQL.Mutations
         /// <param name="contextAccessor"></param>
         /// <returns></returns>
         [Authorize]
-        public bool UserRevokeRefreshToken(
+        public async Task<bool> UserRevokeRefreshTokenAsync(
             string? token,
             [Service] IUserService userService,
             [Service] IHttpContextAccessor contextAccessor
@@ -99,7 +99,7 @@ namespace jahndigital.studentbank.server.GraphQL.Mutations
                         .SetCode(Constants.ErrorStrings.INVALID_REFRESH_TOKEN)
                         .Build());
 
-            var response = userService.RevokeToken(token, GetIp(contextAccessor));
+            var response = await userService.RevokeTokenAsync(token, GetIp(contextAccessor));
 
             if (!response) {
                 throw new QueryException(
