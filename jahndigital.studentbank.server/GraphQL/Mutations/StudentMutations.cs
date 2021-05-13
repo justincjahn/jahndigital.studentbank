@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Security.Claims;
 using System.Threading.Tasks;
 using HotChocolate;
 using HotChocolate.AspNetCore.Authorization;
@@ -148,11 +149,11 @@ namespace jahndigital.studentbank.server.GraphQL.Mutations
         }
 
         /// <summary>
-        /// 
+        /// Attempt to generate a preauthorization token from the provided input.
         /// </summary>
         /// <param name="input"></param>
         /// <param name="studentService"></param>
-        /// <returns></returns>
+        /// <returns>A temporary JWT token if preauthorization is successful.</returns>
         public async Task<string> StudentPreregistrationAsync(
             StudentPreauthenticationRequest input,
             [Service] IStudentService studentService
@@ -165,6 +166,70 @@ namespace jahndigital.studentbank.server.GraphQL.Mutations
             } catch (Exception e) {
                 throw ErrorFactory.QueryFailed(e.Message);
             }
+        }
+
+        /// <summary>
+        /// Register a student using the preauthorization token and provided input.
+        /// </summary>
+        /// <param name="input"></param>
+        /// <param name="context"></param>
+        /// <param name="httpContext"></param>
+        /// <returns>True if registration is successful, otherwise an error message.</returns>
+        [Authorize(Policy = Constants.AuthPolicy.Preauthorization)]
+        public async Task<bool> StudentRegistrationAsync(
+            StudentRegisterRequest input,
+            [Service] AppDbContext context,
+            [Service] IHttpContextAccessor httpContext
+        ) {
+            if (httpContext.HttpContext is null) {
+                throw ErrorFactory.QueryFailed("Unable to obtain HttpContext.");
+            }
+
+            var userIdClaim = httpContext.HttpContext.User.Claims
+                .FirstOrDefault(x => x.Type == ClaimTypes.NameIdentifier)
+            ?? throw ErrorFactory.Unauthorized();
+
+            int userId;
+            if (!int.TryParse(userIdClaim.Value, out userId)) {
+                throw ErrorFactory.Unauthorized();
+            }
+
+            var userTypeClaim = httpContext.HttpContext.User.Claims
+                .FirstOrDefault(x => x.Type == Constants.Auth.CLAIM_USER_TYPE)
+            ?? throw ErrorFactory.Unauthorized();
+
+            if (userTypeClaim.Value != Constants.UserType.Student.Name) {
+                throw ErrorFactory.Unauthorized();
+            }
+
+            var student = await context.Students
+                .FirstOrDefaultAsync(x => x.Id == userId)
+            ?? throw ErrorFactory.NotFound();
+
+            if (student.DateRegistered is not null) {
+                throw ErrorFactory.Unauthorized(); 
+            }
+
+            var emailExists = await context.Instances
+                .Where(x => x.IsActive == true)
+                .Where(x => x.Groups.Any(g => g.Students.Any(s => s.Email == input.Email)))
+                .AnyAsync();
+
+            if (emailExists) {
+                throw ErrorFactory.QueryFailed("A student with that email address already exists.");
+            }
+
+            student.Password = input.Password;
+            student.DateRegistered = DateTime.UtcNow;
+            student.Email = input.Email;
+
+            try {
+                await context.SaveChangesAsync();
+            } catch (Exception e) {
+                throw ErrorFactory.QueryFailed(e.Message);
+            }
+
+            return true;
         }
 
         /// <summary>
