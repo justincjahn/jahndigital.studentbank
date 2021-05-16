@@ -212,7 +212,7 @@ namespace jahndigital.studentbank.server.GraphQL.Mutations
 
             var emailExists = await context.Instances
                 .Where(x => x.IsActive == true)
-                .Where(x => x.Groups.Any(g => g.Students.Any(s => s.Email == input.Email)))
+                .Where(x => x.Groups.Any(g => g.Students.Any(s => s.Email == input.Email && s.Id != userId)))
                 .AnyAsync();
 
             if (emailExists) {
