@@ -157,7 +157,7 @@ namespace jahndigital.studentbank.server.Services
 
             var jwtToken = JwtTokenService.GenerateToken(
                 _config.Secret,
-                Constants.UserType.User,
+                Constants.UserType.Student,
                 student.Id,
                 student.AccountNumber,
                 Constants.Role.Student.Name,
