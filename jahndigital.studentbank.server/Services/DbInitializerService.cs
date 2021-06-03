@@ -67,6 +67,7 @@ namespace jahndigital.studentbank.server.Services
                 // Generates semi-random data for development and testing.
                 SeedShareTypes(context);
                 SeedProducts(context);
+                SeedStocks(context);
                 SeedGroups(context, SeedInstances(context));
             #endif
         }
@@ -74,7 +75,7 @@ namespace jahndigital.studentbank.server.Services
         /// <summary>
         /// Add privileges to the system if they don't already exist.
         /// </summary>
-        public void SeedPrivileges(AppDbContext context)
+        private void SeedPrivileges(AppDbContext context)
         {
             List<Privilege> dbPrivileges = context.Privileges.ToList();
 
@@ -94,7 +95,7 @@ namespace jahndigital.studentbank.server.Services
         /// Add roles to the system if they don't already exist.
         /// </summary>
         /// <param name="context"></param>
-        public void SeedRoles(AppDbContext context)
+        private void SeedRoles(AppDbContext context)
         {
             List<Privilege> dbPrivileges = context.Privileges.ToList();
             List<Role> dbRoles = context.Roles.Where(x => x.IsBuiltIn == true).ToList();
@@ -126,7 +127,7 @@ namespace jahndigital.studentbank.server.Services
         /// Insert an admin user in the database if no users exist.
         /// </summary>
         /// <param name="context"></param>
-        public void SeedUsers(AppDbContext context)
+        private void SeedUsers(AppDbContext context)
         {
             Role superuser = context.Roles.Where(x => x.Name == Constants.Role.Superuser.Name).FirstOrDefault()
                 ?? throw new DbUpdateException("Unable to seed admin user- superuser role not found.");
@@ -148,7 +149,7 @@ namespace jahndigital.studentbank.server.Services
         /// Add a savings and checking account type to the database.
         /// </summary>
         /// <param name="context"></param>
-        public void SeedShareTypes(AppDbContext context)
+        private void SeedShareTypes(AppDbContext context)
         {
             if (!context.ShareTypes.Any()) {
                 _shareType = new ShareType {
@@ -175,7 +176,7 @@ namespace jahndigital.studentbank.server.Services
         /// Add some fake products to the database as examples.
         /// </summary>
         /// <param name="context"></param>
-        public void SeedProducts(AppDbContext context)
+        private void SeedProducts(AppDbContext context)
         {
             if (context.Products.Any()) return;
 
@@ -198,6 +199,68 @@ namespace jahndigital.studentbank.server.Services
         }
 
         /// <summary>
+        /// Add some fake stocks to the database.
+        /// </summary>
+        /// <param name="context"></param>
+        private void SeedStocks(AppDbContext context)
+        {
+            if (context.Stocks.Any()) {
+                return;
+            }
+
+            var stocks = new List<Stock>();
+            for (int i = 0; i < 5; i++)
+            {
+                int amount = new Random().Next(30, 250);
+                var stock = new Stock
+                {
+                    Name = $"Stock {i + 1}",
+                    Symbol = $"STK{i + 1}",
+                    TotalShares = 10000,
+                    AvailableShares = 10000,
+                    CurrentValue = Money.FromCurrency(amount),
+                };
+
+                stocks.Add(stock);
+                context.Add(stock);
+            }
+
+            context.SaveChanges();
+            SeedStockHistory(context, stocks);
+        }
+
+        /// <summary>
+        /// Generate random stock history for a random number of days.
+        /// </summary>
+        /// <param name="context"></param>
+        /// <param name="stocks"></param>
+        private void SeedStockHistory(AppDbContext context, IEnumerable<Stock> stocks)
+        {
+            foreach (var stock in stocks) {
+                var days = new Random().Next(5, 45);
+
+                for (var i = days; i >= 0; i--) {
+                    decimal percent = new Random().Next(1, 80);
+                    percent *= new Random().Next(0, 2) == 1 ? 1 : -1;
+                    percent = (percent / 100) + 1;
+
+                    var newAmount = stock.CurrentValue * Rate.FromRate(percent);
+                    newAmount = newAmount.Amount > 0 ? newAmount : Money.FromCurrency(0.1M);
+
+                    context.Add(new StockHistory {
+                        DateChanged = DateTime.UtcNow.AddDays(i * -1),
+                        Stock = stock,
+                        Value = newAmount
+                    });
+
+                    stock.CurrentValue = newAmount;
+                }
+            }
+
+            context.SaveChanges();
+        }
+
+        /// <summary>
         /// Seed instances.
         /// </summary>
         /// <param name="context"></param>
@@ -206,6 +269,7 @@ namespace jahndigital.studentbank.server.Services
         {
             var shareTypes = context.ShareTypes.ToList();
             var products = context.Products.ToList();
+            var stocks = context.Stocks.ToList();
             var instances = new List<Instance>();
 
             if (!context.Instances.Any()) {
@@ -233,6 +297,13 @@ namespace jahndigital.studentbank.server.Services
                         new ProductInstance {
                             Instance = instance,
                             Product = x
+                        }
+                    ));
+
+                    stocks.ForEach(x => instance.StockInstances.Add(
+                        new StockInstance {
+                            Instance = instance,
+                            Stock = x
                         }
                     ));
 
