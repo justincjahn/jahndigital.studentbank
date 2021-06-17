@@ -370,16 +370,23 @@ namespace jahndigital.studentbank.server.Services
                 _context.Add(studentStock);
             }
 
-            var totalCost = stock.CurrentValue * input.Quantity;
-
             // If the student is selling stock, make sure they have enough shares
-            if (input.Quantity < 0 && studentStock.SharesOwned >= -input.Quantity) {
+            if (input.Quantity < 0 && studentStock.SharesOwned < -input.Quantity) {
                 throw new InvalidShareQuantityException(stock, input.Quantity);
             }
 
+            studentStock.SharesOwned += input.Quantity;
+            studentStock.DateLastActive = DateTime.UtcNow;
+
+            var totalCost = stock.CurrentValue * input.Quantity * -1;
             dal.Entities.Transaction? transaction;
             try {
-                transaction = await PostAsync(share.Id, totalCost, $"Stock purchase: {input.Quantity} shares of {stock.Symbol}");
+                var buySell = totalCost.Amount > 0.0M ? "sale" : "purchase";
+                transaction = await PostAsync(
+                    share.Id,
+                    totalCost,
+                    $"Stock {buySell}: {input.Quantity} shares of {stock.Symbol}"
+                );
             } catch {
                 // TODO: Log this exception instead of just re-throwing it.
                 throw;
