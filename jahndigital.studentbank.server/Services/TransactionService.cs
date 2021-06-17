@@ -144,6 +144,7 @@ namespace jahndigital.studentbank.server.Services
         }
 
         /// <inheritdoc />
+        /// <exception cref="WithdrawalLimitExceededException"></exception>
         /// <exception cref="ShareNotFoundException">If either share isn't found.</exception>
         /// <exception cref="NonsufficientFundsException">If the source doesn't have the funds needed to transfer.</exception>
         /// <exception cref="DatabaseException">If a database error occurs.</exception>
@@ -233,6 +234,7 @@ namespace jahndigital.studentbank.server.Services
         }
 
         /// <inheritdoc />
+        /// <exception cref="WithdrawalLimitExceededException"></exception>
         /// <exception cref="InvalidQuantityException">If the requested quantity exceeds inventory.</exception>
         /// <exception cref="NonsufficientFundsException">If the share does not have sufficient funds to make the purchase.</exception>
         /// <exception cref="UnauthorizedPurchaseException">If an item being purchased is not assigned to the student's group.</exception>
@@ -329,6 +331,7 @@ namespace jahndigital.studentbank.server.Services
         }
 
         /// <inheritdoc />
+        /// <exception cref="WithdrawalLimitExceededException"></exception>
         /// <exception cref="InvalidShareQuantityException">If the requested shares exceed available shares.</exception>
         /// <exception cref="NonsufficientFundsException">If the share does not have sufficient funds to make the purchase.</exception>
         /// <exception cref="UnauthorizedPurchaseException">If the shares being purchased belong to a stock the student doesn't have access to.</exception>
