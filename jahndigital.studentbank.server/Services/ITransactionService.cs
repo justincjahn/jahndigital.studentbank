@@ -24,8 +24,12 @@ namespace jahndigital.studentbank.server.Services
         /// <param name="effectiveDate"></param>
         /// <param name="takeNegative"></param>
         /// <returns>The resulting transaction object.</returns>
+        /// <param name="withdrawalLimit">If the withdrawal limit should be assessed on this transaction.</param>
         /// <exception cref="NonsufficientFundsException">
         /// If the share doesn't have enough funds. NSF transactions are posted before being thrown.
+        /// </exception>
+        /// <exception cref="WithdrawalLimitExceededException">
+        /// If the Share has exceeded its withdrawal limit for the period and the Share Type isn't configured to fee.
         /// </exception>
         Task<dal.Entities.Transaction> PostAsync(
             long shareId,
@@ -33,7 +37,8 @@ namespace jahndigital.studentbank.server.Services
             string? comment = null,
             string? type = null,
             DateTime? effectiveDate = null,
-            bool takeNegative = false
+            bool takeNegative = false,
+            bool withdrawalLimit = true
         );
 
         /// <summary>
@@ -44,12 +49,17 @@ namespace jahndigital.studentbank.server.Services
         /// </summary>
         /// <param name="transactions"></param>
         /// <param name="stopOnException">If the post should stop and revert if a <see cref="NonsufficientFundsException"/> occurs.</param>
+        /// <param name="withdrawalLimit">If the withdrawal limit should be assessed on this transaction.</param>
         /// <returns>The resulting transaction objects.</returns>
         /// <exception cref="NonsufficientFundsException">If the share doesn't have enough funds.</exception>
         /// <exception cref="DatabaseException">If a database error occurs.</exception>
+        /// <exception cref="WithdrawalLimitExceededException">
+        /// If the Share has exceeded its withdrawal limit for the period and the Share Type isn't configured to fee.
+        /// </exception>
         Task<IQueryable<dal.Entities.Transaction>> PostAsync(
             IEnumerable<NewTransactionRequest> transactions,
-            bool stopOnException = true
+            bool stopOnException = true,
+            bool withdrawalLimit = true
         );
 
         /// <summary>
@@ -61,6 +71,7 @@ namespace jahndigital.studentbank.server.Services
         /// <param name="comment">An optional transaction comment.</param>
         /// <param name="effectiveDate">The date the transaction was effective.</param>
         /// <param name="takeNegative">If the source share can be taken negative as a result of this transaction.</param>
+        /// <param name="withdrawalLimit">If the withdrawal limit should be assessed on this transaction.</param>
         /// <returns>A tuple with the source and destination transactions respectively.</returns>
         Task<(dal.Entities.Transaction, dal.Entities.Transaction)> TransferAsync(
             long sourceShareId,
@@ -68,7 +79,8 @@ namespace jahndigital.studentbank.server.Services
             Money amount,
             string? comment = null,
             DateTime? effectiveDate = null,
-            bool takeNegative = false
+            bool takeNegative = false,
+            bool withdrawalLimit = true
         );
 
         /// <summary>

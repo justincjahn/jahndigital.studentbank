@@ -330,6 +330,8 @@ namespace jahndigital.studentbank.server
         /// </summary>
         public static class ErrorStrings
         {
+            public const string ERROR_UNKNOWN = "ERROR_UNKNOWN";
+
             public const string ERROR_NOT_AUTHENTICATED = "AUTH_NOT_AUTHENTICATED";
 
             public const string ERROR_UNAUTHORIZED = "AUTH_NOT_AUTHORIZED";
@@ -339,6 +341,12 @@ namespace jahndigital.studentbank.server
             public const string ERROR_QUERY_FAILED = "ERROR_QUERY_FAILED";
 
             public const string INVALID_REFRESH_TOKEN = "INVALID_REFRESH_TOKEN";
+
+            public const string TRANSACTION_NSF = "TRANSACTION_NSF";
+
+            public const string TRANSACTION_WITHDRAWAL_LIMIT = "TRANSACTION_WITHDRAWAL_LIMIT";
+
+            public const string TRANSACTION_STOCK_QUANTITY = "TRANSACTION_STOCK_QUANTITY";
         }
     }
 }

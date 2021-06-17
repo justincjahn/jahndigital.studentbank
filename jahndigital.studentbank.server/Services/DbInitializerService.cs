@@ -154,6 +154,8 @@ namespace jahndigital.studentbank.server.Services
             if (!context.ShareTypes.Any()) {
                 _shareType = new ShareType {
                     DividendRate = Rate.FromRate(0.05m), // 0.05%
+                    WithdrawalLimitCount = 6,
+                    WithdrawalLimitPeriod = dal.Enums.Period.Weekly,
                     Name = "Savings"
                 };
 

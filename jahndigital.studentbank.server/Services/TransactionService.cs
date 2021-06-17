@@ -28,6 +28,7 @@ namespace jahndigital.studentbank.server.Services
         public TransactionService(AppDbContext context) => _context = context;
 
         /// <inheritdoc />
+        /// <exception cref="WithdrawalLimitExceededException"></exception>
         /// <exception cref="NonsufficientFundsException"></exception>
         /// <exception cref="DatabaseException"></exception>
         public async Task<dal.Entities.Transaction> PostAsync(
@@ -36,7 +37,8 @@ namespace jahndigital.studentbank.server.Services
             string? comment = null,
             string? type = null,
             DateTime? effectiveDate = null,
-            bool takeNegative = false
+            bool takeNegative = false,
+            bool withdrawalLimit = true
         ) {
             if (type == null) {
                 if (amount == Money.FromCurrency(0.0m)) {
@@ -48,9 +50,14 @@ namespace jahndigital.studentbank.server.Services
 
             var share = await _context.Shares
                 .Include(x => x.Student)
+                .Include(x => x.ShareType)
                 .Where(x => x.Id == shareId && x.Student.DateDeleted == null)
                 .FirstOrDefaultAsync()
             ?? throw ErrorFactory.NotFound();
+
+            if (withdrawalLimit && type == "W") {
+                await _assessWithdrawalLimit(share);
+            }
 
             if (amount < Money.FromCurrency(0.0m) && share.Balance < amount && !takeNegative) {
                 var exception = new NonsufficientFundsException(share, amount);
@@ -87,11 +94,13 @@ namespace jahndigital.studentbank.server.Services
         }
 
         /// <inheritdoc />
+        /// <exception cref="WithdrawalLimitExceededException"></exception>
         /// <exception cref="NonsufficientFundsException"></exception>
         /// <exception cref="DatabaseException"></exception>
         public async Task<IQueryable<dal.Entities.Transaction>> PostAsync(
             IEnumerable<NewTransactionRequest> transactions,
-            bool stopOnException = true
+            bool stopOnException = true,
+            bool withdrawalLimit = true
         ) {
             var postedTransactions = new List<dal.Entities.Transaction>();
             var dbTransaction = await _context.Database.BeginTransactionAsync();
@@ -102,7 +111,8 @@ namespace jahndigital.studentbank.server.Services
                         transaction.ShareId,
                         transaction.Amount,
                         transaction.Comment,
-                        takeNegative: transaction.TakeNegative ?? false
+                        takeNegative: transaction.TakeNegative ?? false,
+                        withdrawalLimit: withdrawalLimit
                     ));
                 } catch (NonsufficientFundsException e) {
                     if (stopOnException) {
@@ -144,7 +154,8 @@ namespace jahndigital.studentbank.server.Services
             Money amount,
             string? comment = null,
             DateTime? effectiveDate = null,
-            bool takeNegative = false
+            bool takeNegative = false,
+            bool withdrawalLimit = true
         ) {
             if (amount < Money.FromCurrency(0.0m)) {
                 throw new ArgumentOutOfRangeException(
@@ -156,6 +167,7 @@ namespace jahndigital.studentbank.server.Services
             var sourceShare = await _context.Shares
                 .Include(x => x.Student)
                     .ThenInclude(x => x.Group)
+                .Include(x => x.ShareType)
                 .Where(x => x.Id == sourceShareId && x.Student.DateDeleted == null)
                 .FirstOrDefaultAsync()
             ?? throw new ShareNotFoundException(sourceShareId);
@@ -171,6 +183,10 @@ namespace jahndigital.studentbank.server.Services
                 throw new ArgumentOutOfRangeException(
                     "destinationShare", "Source and destination share must be in the same instance."
                 );
+            }
+
+            if (withdrawalLimit) {
+                await _assessWithdrawalLimit(sourceShare);
             }
 
             if (sourceShare.Balance < amount && !takeNegative) {
@@ -489,6 +505,38 @@ namespace jahndigital.studentbank.server.Services
             }
 
             return true;
+        }
+
+        /// <summary>
+        /// Assess the withdrawal limit for the transaction.
+        /// </summary>
+        /// <param name="share"></param>
+        /// <returns></returns>
+        protected async Task _assessWithdrawalLimit(dal.Entities.Share share) {
+            dal.Entities.ShareType shareType = share.ShareType
+                ?? await _context.ShareTypes.Where(x => x.Id == share.ShareTypeId).FirstOrDefaultAsync()
+                ?? throw new ShareNotFoundException(share.Id);
+
+            if (shareType.WithdrawalLimitCount > 0) {
+                if (share.LimitedWithdrawalCount >= shareType.WithdrawalLimitCount && !shareType.WithdrawalLimitShouldFee) {
+                    throw new WithdrawalLimitExceededException(shareType, share);
+                } else if (shareType.WithdrawalLimitShouldFee) {
+                    // Charge a fee for the withdrawal instead of denying it
+                    share.Balance -= shareType.WithdrawalLimitFee;
+
+                    _context.Add(new dal.Entities.Transaction
+                    {
+                        Amount = shareType.WithdrawalLimitFee,
+                        NewBalance = share.Balance,
+                        TargetShare = share,
+                        TransactionType = "F",
+                        EffectiveDate = DateTime.UtcNow,
+                        Comment = "Withdrawal Limit Fee"
+                    });
+                }
+
+                share.LimitedWithdrawalCount += 1;
+            }
         }
     }
 }

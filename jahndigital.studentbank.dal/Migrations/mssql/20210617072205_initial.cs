@@ -82,6 +82,11 @@ namespace jahndigital.studentbank.dal.Migrations.mssql
                         .Annotation("SqlServer:Identity", "1, 1"),
                     Name = table.Column<string>(type: "nvarchar(32)", maxLength: 32, nullable: false),
                     DividendRate = table.Column<long>(type: "bigint", nullable: false),
+                    WithdrawalLimitCount = table.Column<int>(type: "int", nullable: false),
+                    WithdrawalLimitPeriod = table.Column<int>(type: "int", nullable: false),
+                    WithdrawalLimitShouldFee = table.Column<bool>(type: "bit", nullable: false),
+                    WithdrawalLimitFee = table.Column<long>(type: "bigint", nullable: false),
+                    WithdrawalLimitLastReset = table.Column<DateTime>(type: "datetime2", nullable: false),
                     DateCreated = table.Column<DateTime>(type: "datetime2", nullable: false),
                     DateDeleted = table.Column<DateTime>(type: "datetime2", nullable: true)
                 },
@@ -358,6 +363,7 @@ namespace jahndigital.studentbank.dal.Migrations.mssql
                     Balance = table.Column<long>(type: "bigint", nullable: false),
                     DividendLastAmount = table.Column<long>(type: "bigint", nullable: false),
                     TotalDividends = table.Column<long>(type: "bigint", nullable: false),
+                    LimitedWithdrawalCount = table.Column<int>(type: "int", nullable: false),
                     DateLastActive = table.Column<DateTime>(type: "datetime2", nullable: false),
                     DateCreated = table.Column<DateTime>(type: "datetime2", nullable: false),
                     DateDeleted = table.Column<DateTime>(type: "datetime2", nullable: true)

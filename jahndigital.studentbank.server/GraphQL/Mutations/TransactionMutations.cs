@@ -33,7 +33,8 @@ namespace jahndigital.studentbank.server.GraphQL.Mutations
                     shareId: input.ShareId,
                     amount: input.Amount,
                     comment: input.Comment,
-                    takeNegative: input.TakeNegative ?? false
+                    takeNegative: input.TakeNegative ?? false,
+                    withdrawalLimit: false
                 );
 
                 return transaction;
@@ -60,7 +61,12 @@ namespace jahndigital.studentbank.server.GraphQL.Mutations
             bool skipBelowNegative = false
         ) {
             try {
-                var transactions = await transactionService.PostAsync(input, stopOnException: !skipBelowNegative);
+                var transactions = await transactionService.PostAsync(
+                    input,
+                    stopOnException: !skipBelowNegative,
+                    withdrawalLimit: false
+                );
+
                 return transactions;
             } catch {
                 // TODO: Log this exception instead of just re-throwing it.
@@ -102,7 +108,8 @@ namespace jahndigital.studentbank.server.GraphQL.Mutations
                     sourceShareId: input.SourceShareId,
                     destinationShareId: input.DestinationShareId,
                     amount: input.Amount,
-                    comment: input.Comment
+                    comment: input.Comment,
+                    withdrawalLimit: resolverContext.GetUserType() != Constants.UserType.User
                 );
 
                 return transactions.ToTuple();

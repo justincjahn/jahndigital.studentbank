@@ -82,6 +82,11 @@ namespace jahndigital.studentbank.dal.Migrations.sqlite
                         .Annotation("Sqlite:Autoincrement", true),
                     Name = table.Column<string>(type: "TEXT", maxLength: 32, nullable: false),
                     DividendRate = table.Column<long>(type: "INTEGER", nullable: false),
+                    WithdrawalLimitCount = table.Column<int>(type: "INTEGER", nullable: false),
+                    WithdrawalLimitPeriod = table.Column<int>(type: "INTEGER", nullable: false),
+                    WithdrawalLimitShouldFee = table.Column<bool>(type: "INTEGER", nullable: false),
+                    WithdrawalLimitFee = table.Column<long>(type: "INTEGER", nullable: false),
+                    WithdrawalLimitLastReset = table.Column<DateTime>(type: "TEXT", nullable: false),
                     DateCreated = table.Column<DateTime>(type: "TEXT", nullable: false),
                     DateDeleted = table.Column<DateTime>(type: "TEXT", nullable: true)
                 },
@@ -358,6 +363,7 @@ namespace jahndigital.studentbank.dal.Migrations.sqlite
                     Balance = table.Column<long>(type: "INTEGER", nullable: false),
                     DividendLastAmount = table.Column<long>(type: "INTEGER", nullable: false),
                     TotalDividends = table.Column<long>(type: "INTEGER", nullable: false),
+                    LimitedWithdrawalCount = table.Column<int>(type: "INTEGER", nullable: false),
                     DateLastActive = table.Column<DateTime>(type: "TEXT", nullable: false),
                     DateCreated = table.Column<DateTime>(type: "TEXT", nullable: false),
                     DateDeleted = table.Column<DateTime>(type: "TEXT", nullable: true)

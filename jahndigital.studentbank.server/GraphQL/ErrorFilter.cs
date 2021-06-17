@@ -2,6 +2,7 @@ using System;
 using HotChocolate;
 using HotChocolate.Resolvers;
 using Microsoft.AspNetCore.Http;
+using jahndigital.studentbank.server.Exceptions;
 
 namespace jahndigital.studentbank.server.GraphQL
 {
@@ -29,6 +30,30 @@ namespace jahndigital.studentbank.server.GraphQL
                         .WithCode(Constants.ErrorStrings.ERROR_NOT_AUTHENTICATED)
                         .WithMessage("User not authenticated.");
                 }
+            }
+
+            if (error.Exception is NonsufficientFundsException) {
+                return error
+                    .WithCode(Constants.ErrorStrings.TRANSACTION_NSF)
+                    .WithMessage(error.Exception.Message);
+            }
+
+            if (error.Exception is WithdrawalLimitExceededException) {
+                return error
+                    .WithCode(Constants.ErrorStrings.TRANSACTION_WITHDRAWAL_LIMIT)
+                    .WithMessage(error.Exception.Message);
+            }
+
+            if (error.Exception is InvalidShareQuantityException) {
+                return error
+                    .WithCode(Constants.ErrorStrings.TRANSACTION_STOCK_QUANTITY)
+                    .WithMessage(error.Exception.Message);
+            }
+            
+            if (error.Exception is BaseException) {
+                return error
+                    .WithCode(Constants.ErrorStrings.ERROR_UNKNOWN)
+                    .WithMessage(error.Exception.Message);
             }
 
             return error;

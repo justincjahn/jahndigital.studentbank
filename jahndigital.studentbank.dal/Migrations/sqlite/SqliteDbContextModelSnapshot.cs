@@ -214,6 +214,9 @@ namespace jahndigital.studentbank.dal.Migrations.sqlite
                     b.Property<DateTime>("DateLastActive")
                         .HasColumnType("TEXT");
 
+                    b.Property<int>("LimitedWithdrawalCount")
+                        .HasColumnType("INTEGER");
+
                     b.Property<long>("RawBalance")
                         .HasColumnType("INTEGER")
                         .HasColumnName("Balance");
@@ -261,6 +264,22 @@ namespace jahndigital.studentbank.dal.Migrations.sqlite
                     b.Property<long>("RawDividendRate")
                         .HasColumnType("INTEGER")
                         .HasColumnName("DividendRate");
+
+                    b.Property<long>("RawWithdrawalLimitFee")
+                        .HasColumnType("INTEGER")
+                        .HasColumnName("WithdrawalLimitFee");
+
+                    b.Property<int>("WithdrawalLimitCount")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<DateTime>("WithdrawalLimitLastReset")
+                        .HasColumnType("TEXT");
+
+                    b.Property<int>("WithdrawalLimitPeriod")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<bool>("WithdrawalLimitShouldFee")
+                        .HasColumnType("INTEGER");
 
                     b.HasKey("Id");
 

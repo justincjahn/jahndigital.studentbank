@@ -94,6 +94,12 @@ namespace jahndigital.studentbank.dal.Entities
         public ICollection<Transaction> Transactions {get; set;} = new HashSet<Transaction>();
 
         /// <summary>
+        /// The number of limited withdrawals.
+        /// </summary>
+        [Required]
+        public int LimitedWithdrawalCount { get; set; } = 0;
+
+        /// <summary>
         /// The last activity date of the share.
         /// </summary>
         [Required, DateTimeKind(DateTimeKind.Utc)]
