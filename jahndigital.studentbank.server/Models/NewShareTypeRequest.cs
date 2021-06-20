@@ -1,3 +1,4 @@
+using jahndigital.studentbank.dal.Enums;
 using jahndigital.studentbank.utils;
 
 #nullable disable
@@ -18,5 +19,25 @@ namespace jahndigital.studentbank.server.Models
         /// Get or set the dividend rate.
         /// </summary>
         public Rate DividendRate {get; set;} = Rate.FromRate(0.0m);
+
+        /// <summary>
+        /// Get or set the number of withdrawals allowed per period.  Use zero to disable.
+        /// </summary>
+        public int WithdrawalLimitCount { get; set; } = 0;
+
+        /// <summary>
+        /// Get or set the withdrawal limit period to use when resetting the withdrawal limit counters.
+        /// </summary>
+        public Period WithdrawalLimitPeriod { get; set; } = Period.Monthly;
+
+        /// <summary>
+        /// Get or set if withdrawals over the <see cref="WithdrawalLimitCount"/> should fee instead of being declined.
+        /// </summary>
+        public bool WithdrawalLimitShouldFee { get; set; } = false;
+
+        /// <summary>
+        /// Get or set the amount to fee if <see cref="WithdrawalLimitShouldFee"/> is true.
+        /// </summary>
+        public Money WithdrawalLimitFee { get; set; } = Money.FromCurrency(0);
     }
 }

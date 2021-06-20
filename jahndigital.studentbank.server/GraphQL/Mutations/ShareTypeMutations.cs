@@ -37,6 +37,10 @@ namespace jahndigital.studentbank.server.GraphQL.Mutations
             var shareType = new dal.Entities.ShareType {
                 Name = input.Name,
                 DividendRate = input.DividendRate,
+                WithdrawalLimitCount = input.WithdrawalLimitCount,
+                WithdrawalLimitPeriod = input.WithdrawalLimitPeriod,
+                WithdrawalLimitShouldFee = input.WithdrawalLimitShouldFee,
+                WithdrawalLimitFee = input.WithdrawalLimitFee
             };
 
             try {
@@ -62,8 +66,12 @@ namespace jahndigital.studentbank.server.GraphQL.Mutations
         ) {
             var shareType = await context.ShareTypes.FindAsync(input.Id)
                 ?? throw ErrorFactory.NotFound();
-            
+
             shareType.DividendRate = input.DividendRate ?? shareType.DividendRate;
+            shareType.WithdrawalLimitCount = input.WithdrawalLimitCount ?? shareType.WithdrawalLimitCount;
+            shareType.WithdrawalLimitPeriod = input.WithdrawalLimitPeriod ?? shareType.WithdrawalLimitPeriod;
+            shareType.WithdrawalLimitShouldFee = input.WithdrawalLimitShouldFee ?? shareType.WithdrawalLimitShouldFee;
+            shareType.WithdrawalLimitFee = input.WithdrawalLimitFee ?? shareType.WithdrawalLimitFee;
 
             if (input.Name != null && input.Name != shareType.Name) {
                 if (await context.ShareTypes.Where(x => x.Name == input.Name).AnyAsync()) {
