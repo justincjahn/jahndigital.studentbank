@@ -6,6 +6,7 @@ using HotChocolate.AspNetCore.Authorization;
 using HotChocolate.Types;
 using jahndigital.studentbank.dal.Contexts;
 using jahndigital.studentbank.server.Models;
+using jahndigital.studentbank.utils;
 using Microsoft.EntityFrameworkCore;
 
 namespace jahndigital.studentbank.server.GraphQL.Mutations
@@ -34,13 +35,14 @@ namespace jahndigital.studentbank.server.GraphQL.Mutations
                 );
             }
 
-            var shareType = new dal.Entities.ShareType {
+            var shareType = new dal.Entities.ShareType
+            {
                 Name = input.Name,
                 DividendRate = input.DividendRate,
-                WithdrawalLimitCount = input.WithdrawalLimitCount,
-                WithdrawalLimitPeriod = input.WithdrawalLimitPeriod,
-                WithdrawalLimitShouldFee = input.WithdrawalLimitShouldFee,
-                WithdrawalLimitFee = input.WithdrawalLimitFee
+                WithdrawalLimitCount = input.WithdrawalLimitCount ?? 0,
+                WithdrawalLimitPeriod = input.WithdrawalLimitPeriod ?? dal.Enums.Period.Monthly,
+                WithdrawalLimitShouldFee = input.WithdrawalLimitShouldFee ?? false,
+                WithdrawalLimitFee = input.WithdrawalLimitFee ?? Money.FromCurrency(0)
             };
 
             try {
