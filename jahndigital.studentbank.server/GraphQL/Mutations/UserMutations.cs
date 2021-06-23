@@ -99,18 +99,26 @@ namespace jahndigital.studentbank.server.GraphQL.Mutations
                         .SetCode(Constants.ErrorStrings.INVALID_REFRESH_TOKEN)
                         .Build());
 
-            var response = await userService.RevokeTokenAsync(token, GetIp(contextAccessor));
+            try {
+                var response = await userService.RevokeTokenAsync(token, GetIp(contextAccessor));
 
-            if (!response) {
-                throw new QueryException(
-                    ErrorBuilder.New()
-                        .SetMessage("Token not found.")
-                        .SetCode(ErrorStrings.ERROR_NOT_FOUND)
-                        .Build()
-                );
+                if (!response) {
+                    throw new QueryException(
+                        ErrorBuilder.New()
+                            .SetMessage("Token not found.")
+                            .SetCode(ErrorStrings.ERROR_NOT_FOUND)
+                            .Build()
+                    );
+                }
+
+                ClearTokenCookie(contextAccessor);
+
+                return response;
+            } catch (QueryException) {
+                throw;
+            } catch (Exception e) {
+                throw new QueryException(e.Message);
             }
-
-            return response;
         }
     
         /// <summary>

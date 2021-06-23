@@ -114,7 +114,7 @@ namespace jahndigital.studentbank.server.GraphQL.Mutations
         /// <returns></returns>
         [Authorize]
         public async Task<bool> StudentRevokeRefreshTokenAsync(
-            string token,
+            string? token,
             [Service] AppDbContext context,
             [Service] IStudentService studentService,
             [Service] IHttpContextAccessor contextAccessor
@@ -135,10 +135,12 @@ namespace jahndigital.studentbank.server.GraphQL.Mutations
                     throw new QueryException(
                         ErrorBuilder.New()
                             .SetMessage("Token not found.")
-                            .SetCode("TOKEN_NOT_FOUND")
+                            .SetCode(ErrorStrings.ERROR_NOT_FOUND)
                             .Build()
                     );
                 }
+
+                ClearTokenCookie(contextAccessor);
 
                 return response;
             } catch (QueryException) {
