@@ -22,6 +22,8 @@ using jahndigital.studentbank.server.GraphQL.Types;
 using HotChocolate.Types;
 using Microsoft.Extensions.Logging.Console;
 using Microsoft.Extensions.Logging;
+using Quartz;
+using jahndigital.studentbank.server.Jobs;
 
 namespace jahndigital.studentbank.server
 {
@@ -103,6 +105,27 @@ namespace jahndigital.studentbank.server
                     .Create(),
                 new QueryExecutionOptions { ForceSerialExecution = true }
             );
+
+            services.AddQuartz(q =>
+            {
+                q.SchedulerId = "jahndigital.studentbank.server";
+                q.UseMicrosoftDependencyInjectionJobFactory();
+
+                var jobKey = new JobKey("HelloWorldJob");
+                q.AddJob<HelloWorldJob>(opts => opts.WithIdentity(jobKey));
+
+                q.AddTrigger(opts =>
+                {
+                    opts.ForJob(jobKey)
+                    .WithIdentity("HelloWorldJob-trigger")
+                    .WithCronSchedule("0 12 * * * ?");
+                });
+            });
+
+            services.AddQuartzServer(options =>
+            {
+                options.WaitForJobsToComplete = true;
+            });
 
             services.AddControllers();
 
