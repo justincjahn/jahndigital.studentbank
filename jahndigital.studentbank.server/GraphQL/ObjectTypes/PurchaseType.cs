@@ -1,5 +1,6 @@
 using HotChocolate.Types;
 using jahndigital.studentbank.dal.Entities;
+using jahndigital.studentbank.utils;
 
 namespace jahndigital.studentbank.server.GraphQL.ObjectTypes
 {

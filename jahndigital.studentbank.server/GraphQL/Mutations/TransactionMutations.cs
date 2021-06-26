@@ -8,7 +8,9 @@ using HotChocolate.Resolvers;
 using HotChocolate.Types;
 using jahndigital.studentbank.dal.Contexts;
 using jahndigital.studentbank.server.Models;
-using jahndigital.studentbank.server.Services;
+using jahndigital.studentbank.services.DTOs;
+using jahndigital.studentbank.services.Interfaces;
+using jahndigital.studentbank.utils;
 using Microsoft.EntityFrameworkCore;
 
 namespace jahndigital.studentbank.server.GraphQL.Mutations

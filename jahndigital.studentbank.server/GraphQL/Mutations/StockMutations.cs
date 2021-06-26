@@ -6,6 +6,7 @@ using HotChocolate.AspNetCore.Authorization;
 using HotChocolate.Types;
 using jahndigital.studentbank.dal.Contexts;
 using jahndigital.studentbank.server.Models;
+using jahndigital.studentbank.utils;
 using Microsoft.EntityFrameworkCore;
 
 namespace jahndigital.studentbank.server.GraphQL.Mutations
@@ -108,7 +109,7 @@ namespace jahndigital.studentbank.server.GraphQL.Mutations
                 stock.TotalShares = input.TotalShares.Value;
             }
 
-            if (input.CurrentValue != null && stock.CurrentValue != input.CurrentValue) {
+            if (input.CurrentValue is not null && stock.CurrentValue != input.CurrentValue) {
                 context.StockHistory.Add(new dal.Entities.StockHistory {
                     Stock = stock,
                     Value = input.CurrentValue
@@ -196,7 +197,7 @@ namespace jahndigital.studentbank.server.GraphQL.Mutations
                 .Where(x =>
                     x.StockId == input.StockId
                     && x.InstanceId == input.InstanceId
-                    && x.Stock.StudentStock.Any(x => x.SharesOwned > 0))
+                    && x.Stock.StudentStock.Any(xx => xx.SharesOwned > 0))
                 .AnyAsync();
 
             if (hasIssuedShares) {

@@ -1,12 +1,13 @@
 using System.Reflection;
 using System;
+using System.Collections.Generic;
+using System.Linq;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.EntityFrameworkCore;
-using jahndigital.studentbank.server.Services;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
@@ -20,10 +21,11 @@ using HotChocolate.AspNetCore;
 using jahndigital.studentbank.utils;
 using jahndigital.studentbank.server.GraphQL.Types;
 using HotChocolate.Types;
-using Microsoft.Extensions.Logging.Console;
 using Microsoft.Extensions.Logging;
 using Quartz;
 using jahndigital.studentbank.server.Jobs;
+using jahndigital.studentbank.services;
+using jahndigital.studentbank.services.Interfaces;
 
 namespace jahndigital.studentbank.server
 {
@@ -165,8 +167,8 @@ namespace jahndigital.studentbank.server
             });
 
             services
-                .AddScoped<IUserService, UserService>()
-                .AddScoped<IStudentService, StudentService>()
+                .AddScoped<IUserService>(provider => new UserService(provider.GetService<AppDbContext>(), appConfig.Get<AppConfig>().Secret, appConfig.Get<AppConfig>().TokenLifetime))
+                .AddScoped<IStudentService>(provider => new StudentService(provider.GetService<AppDbContext>(), appConfig.Get<AppConfig>().Secret, appConfig.Get<AppConfig>().TokenLifetime))
                 .AddScoped<IRoleService, RoleService>()
                 .AddScoped<ITransactionService, TransactionService>();
 
@@ -222,10 +224,17 @@ namespace jahndigital.studentbank.server
                 app.UseDeveloperExceptionPage();
             }
 
+            var config = Configuration
+                .GetSection("AllowedOrigins")
+                .GetChildren()
+                .Select(x => x.Value)
+                .ToArray();
+
             app.UseCors(o => o
-                .AllowAnyHeader()
-                .AllowAnyMethod()
-                .AllowAnyOrigin());
+                .WithHeaders(new []{ "X-Requested-With", "X-HTTP-Method-Override", "Content-Type", "Accepts", "Authorization", "User-Agent" })
+                .WithOrigins(config)
+                .WithMethods(new []{ "GET", "POST", "OPTIONS" })
+                .AllowCredentials());
 
             app.UseHttpsRedirection();
 

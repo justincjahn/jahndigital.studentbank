@@ -22,9 +22,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="Converters\" />
+    <Folder Include="Services" />
     <Folder Include="Services\" />
-    <Folder Include="Models\Configuration\" />
   </ItemGroup>
   <ItemGroup>
     <None Remove="db.sqlite3-shm" />
@@ -33,6 +32,7 @@
     <None Remove="db.sqlite3-wal" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\jahndigital.studentbank.services\jahndigital.studentbank.services.csproj" />
     <ProjectReference Include="..\jahndigital.studentbank.utils\jahndigital.studentbank.utils.csproj" />
     <ProjectReference Include="..\jahndigital.studentbank.dal\jahndigital.studentbank.dal.csproj" />
   </ItemGroup>

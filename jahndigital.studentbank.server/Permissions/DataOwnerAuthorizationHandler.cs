@@ -2,12 +2,11 @@ using System;
 using System.Linq;
 using System.Security.Claims;
 using System.Threading.Tasks;
-using HotChocolate.Resolvers;
-using jahndigital.studentbank.server.Services;
+using jahndigital.studentbank.services.Interfaces;
+using jahndigital.studentbank.utils;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc.Filters;
-using static jahndigital.studentbank.server.Constants;
+using static jahndigital.studentbank.utils.Constants;
 
 namespace jahndigital.studentbank.server.Permissions
 {

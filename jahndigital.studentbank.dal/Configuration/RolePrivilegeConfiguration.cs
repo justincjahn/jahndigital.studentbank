@@ -1,5 +1,4 @@
-﻿using System;
-using jahndigital.studentbank.dal.Entities;
+﻿using jahndigital.studentbank.dal.Entities;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 

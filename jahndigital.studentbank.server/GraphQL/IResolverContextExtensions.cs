@@ -4,9 +4,10 @@ using System.Security.Claims;
 using System.Threading.Tasks;
 using HotChocolate.Resolvers;
 using jahndigital.studentbank.server.Permissions;
+using jahndigital.studentbank.utils;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
-using static jahndigital.studentbank.server.Constants;
+using static jahndigital.studentbank.utils.Constants;
 
 namespace jahndigital.studentbank.server.GraphQL
 {

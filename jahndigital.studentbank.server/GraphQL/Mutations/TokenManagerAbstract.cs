@@ -28,21 +28,16 @@ namespace jahndigital.studentbank.server.GraphQL.Mutations
         /// <param name="token"></param>
         protected void SetTokenCookie(IHttpContextAccessor context, string token)
         {
-            var secure = true;
-
-            #if DEBUG
-                // Don't require secure cookie if we're debugging
-                secure = false;
-            #endif
+            var httpc = context.HttpContext
+                        ?? throw new ArgumentNullException("Unable to fetch HTTP Context object to set token cookie.");
 
             var cookieOptions = new CookieOptions{
                 HttpOnly = true,
                 Expires = DateTime.UtcNow.AddDays(7),
-                Secure = secure
+                Secure = true,
+                SameSite = SameSiteMode.None,
+                Path = "/"
             };
-
-            var httpc = context.HttpContext
-                ?? throw new ArgumentNullException("Unable to fetch HTTP Context object to set token cookie.");
 
             httpc.Response.Cookies.Append(TOKEN_COOKIE, token, cookieOptions);
         }

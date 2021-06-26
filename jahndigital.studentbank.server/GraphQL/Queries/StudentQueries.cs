@@ -6,6 +6,7 @@ using HotChocolate.Types;
 using HotChocolate.Types.Relay;
 using jahndigital.studentbank.dal.Contexts;
 using jahndigital.studentbank.server.Permissions;
+using jahndigital.studentbank.utils;
 
 namespace jahndigital.studentbank.server.GraphQL.Queries
 {

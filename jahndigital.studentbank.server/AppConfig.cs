@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 
 namespace jahndigital.studentbank.server
 {
@@ -16,7 +17,7 @@ namespace jahndigital.studentbank.server
         /// generator and slam two of them together.  Instead of placing the secret in a file,
         /// consider using OS Environment Variables.
         /// </remarks>
-        public string Secret {get; set;} = default!;
+        public string Secret { get; set; } = default!;
 
         /// <summary>
         /// Backing field for <see cref="InviteCodeLength"/>

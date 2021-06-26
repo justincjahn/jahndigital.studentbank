@@ -4,6 +4,7 @@ using HotChocolate.AspNetCore.Authorization;
 using HotChocolate.Resolvers;
 using HotChocolate.Types;
 using jahndigital.studentbank.dal.Contexts;
+using jahndigital.studentbank.utils;
 using Microsoft.AspNetCore.Http;
 
 namespace jahndigital.studentbank.server.GraphQL.Queries
