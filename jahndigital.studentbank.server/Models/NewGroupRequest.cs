@@ -1,20 +1,20 @@
 namespace jahndigital.studentbank.server.Models
 {
-    #nullable disable
+#nullable disable
 
     /// <summary>
-    /// Request data to create a group.
+    ///     Request data to create a group.
     /// </summary>
     public class NewGroupRequest
     {
         /// <summary>
-        /// Get or set the name of the group.
+        ///     Get or set the name of the group.
         /// </summary>
-        public string Name {get; set;}
+        public string Name { get; set; }
 
         /// <summary>
-        /// Get or set the Instance ID of the group.
+        ///     Get or set the Instance ID of the group.
         /// </summary>
-        public long InstanceId {get; set;}
+        public long InstanceId { get; set; }
     }
 }

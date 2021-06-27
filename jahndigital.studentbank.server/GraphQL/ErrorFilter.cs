@@ -1,19 +1,22 @@
 using System;
 using HotChocolate;
 using jahndigital.studentbank.services.Exceptions;
-using Microsoft.AspNetCore.Http;
 using jahndigital.studentbank.utils;
+using Microsoft.AspNetCore.Http;
 
 namespace jahndigital.studentbank.server.GraphQL
 {
     /// <summary>
-    /// Filters errors and translates them into more user-friendly messages.
+    ///     Filters errors and translates them into more user-friendly messages.
     /// </summary>
     public class ErrorFilter : IErrorFilter
     {
         private readonly IHttpContextAccessor _context;
 
-        public ErrorFilter(IHttpContextAccessor context) => this._context = context;
+        public ErrorFilter(IHttpContextAccessor context)
+        {
+            _context = context;
+        }
 
         public IError OnError(IError error)
         {
@@ -49,7 +52,7 @@ namespace jahndigital.studentbank.server.GraphQL
                     .WithCode(Constants.ErrorStrings.TRANSACTION_STOCK_QUANTITY)
                     .WithMessage(error.Exception.Message);
             }
-            
+
             if (error.Exception is BaseException) {
                 return error
                     .WithCode(Constants.ErrorStrings.ERROR_UNKNOWN)

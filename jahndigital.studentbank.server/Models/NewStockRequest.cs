@@ -5,23 +5,23 @@ namespace jahndigital.studentbank.server.Models
     public class NewStockRequest
     {
         /// <summary>
-        /// Unique symbol of the stock.
+        ///     Unique symbol of the stock.
         /// </summary>
-        public string Symbol {get; set;} = default!;
+        public string Symbol { get; set; } = default!;
 
         /// <summary>
-        /// Name of the company
+        ///     Name of the company
         /// </summary>
-        public string Name {get; set;} = default!;
+        public string Name { get; set; } = default!;
 
         /// <summary>
-        /// Total number of shares for the stock.
+        ///     Total number of shares for the stock.
         /// </summary>
-        public long TotalShares {get; set;} = 0;
+        public long TotalShares { get; set; } = 0;
 
         /// <summary>
-        /// The current value of the stock.
+        ///     The current value of the stock.
         /// </summary>
-        public Money CurrentValue {get; set;} = default!;
+        public Money CurrentValue { get; set; } = default!;
     }
 }

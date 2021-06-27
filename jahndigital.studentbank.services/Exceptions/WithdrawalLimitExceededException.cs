@@ -1,45 +1,47 @@
 using System;
+using jahndigital.studentbank.dal.Entities;
 using jahndigital.studentbank.utils;
 
 namespace jahndigital.studentbank.services.Exceptions
 {
-    public class WithdrawalLimitExceededException : BaseException {
-        public dal.Entities.Share? Share {get; private set;}
+    public class WithdrawalLimitExceededException : BaseException
+    {
+        private Transaction? _transaction;
 
-        public dal.Entities.ShareType? ShareType { get; private set; }
+        public WithdrawalLimitExceededException(ShareType shareType, Share share) : base(
+            $"Withdrawal limit exceeded on Share {share.Student?.AccountNumber ?? ""}#{share.Id}: Only {shareType.WithdrawalLimitCount} withdrawals are allowed per period."
+        )
+        {
+            ShareType = shareType;
+            Share = share;
+        }
 
-        private dal.Entities.Transaction? _transaction;
+        public Share? Share { get; }
+
+        public ShareType? ShareType { get; }
 
         /// <summary>
-        /// Get or set the transaction object representing the exception.
+        ///     Get or set the transaction object representing the exception.
         /// </summary>
-        public dal.Entities.Transaction Transaction {
+        public Transaction Transaction
+        {
             get {
                 if (_transaction == null) {
-                    _transaction = new dal.Entities.Transaction {
+                    _transaction = new Transaction {
                         Amount = Money.FromCurrency(0.0m),
-                        NewBalance = this.Share?.Balance ?? Money.FromCurrency(0.0m),
-                        TargetShare = this.Share ?? new dal.Entities.Share() { Id = -1},
-                        TargetShareId = this.Share?.Id ?? -1,
+                        NewBalance = Share?.Balance ?? Money.FromCurrency(0.0m),
+                        TargetShare = Share ?? new Share {Id = -1},
+                        TargetShareId = Share?.Id ?? -1,
                         TransactionType = "EX",
                         EffectiveDate = DateTime.UtcNow,
-                        Comment = this.Message
+                        Comment = Message
                     };
                 }
 
                 return _transaction;
             }
 
-            set {
-                _transaction = value;
-            }
-        }
-
-        public WithdrawalLimitExceededException(dal.Entities.ShareType shareType, dal.Entities.Share share) : base (
-            $"Withdrawal limit exceeded on Share {share.Student?.AccountNumber ?? ""}#{share.Id}: Only {shareType.WithdrawalLimitCount} withdrawals are allowed per period."
-        ) {
-            ShareType = shareType;
-            Share = share;
+            set => _transaction = value;
         }
     }
 }

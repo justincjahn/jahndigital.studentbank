@@ -9,6 +9,7 @@ namespace jahndigital.studentbank.dal.Contexts
         {
             var builder = new DbContextOptionsBuilder();
             builder.UseSqlite("Data Source=studentbankdev.sqlite3");
+
             return new SqliteDbContext(builder.Options);
         }
     }

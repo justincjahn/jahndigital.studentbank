@@ -1,7 +1,7 @@
 namespace jahndigital.studentbank.dal.Enums
 {
     /// <summary>
-    /// The purchase status of a <see cref="StudentPurchase"/>.
+    ///     The purchase status of a <see cref="StudentPurchase" />.
     /// </summary>
     public enum PurchaseStatus
     {

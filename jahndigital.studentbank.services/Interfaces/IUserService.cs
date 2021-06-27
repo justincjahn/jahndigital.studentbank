@@ -4,12 +4,12 @@ using jahndigital.studentbank.services.DTOs;
 namespace jahndigital.studentbank.services.Interfaces
 {
     /// <summary>
-    /// Contract to describe methods that authenticate users.
+    ///     Contract to describe methods that authenticate users.
     /// </summary>
     public interface IUserService
     {
         /// <summary>
-        /// Authenticate a user or student's request.
+        ///     Authenticate a user or student's request.
         /// </summary>
         /// <param name="model"></param>
         /// <param name="ipAddress"></param>
@@ -17,7 +17,7 @@ namespace jahndigital.studentbank.services.Interfaces
         Task<AuthenticateResponse?> AuthenticateAsync(AuthenticateRequest model, string ipAddress);
 
         /// <summary>
-        /// Refresh a JWT token.
+        ///     Refresh a JWT token.
         /// </summary>
         /// <param name="token"></param>
         /// <param name="ipAddress"></param>
@@ -25,11 +25,11 @@ namespace jahndigital.studentbank.services.Interfaces
         Task<AuthenticateResponse?> RefreshTokenAsync(string token, string ipAddress);
 
         /// <summary>
-        /// Revoke a valid JWT token.
+        ///     Revoke a valid JWT token.
         /// </summary>
         /// <param name="token"></param>
         /// <param name="ipAddress"></param>
         /// <returns></returns>
-         Task<bool> RevokeTokenAsync(string token, string ipAddress);
+        Task<bool> RevokeTokenAsync(string token, string ipAddress);
     }
 }

@@ -11,8 +11,8 @@ namespace jahndigital.studentbank.dal.Configuration
             builder.Property(x => x.Password)
                 .HasField("_password")
                 .UsePropertyAccessMode(PropertyAccessMode.Field);
-            
-            builder.HasIndex(new string[] {"AccountNumber", "GroupId"}).IsUnique();
+
+            builder.HasIndex("AccountNumber", "GroupId").IsUnique();
         }
     }
 }

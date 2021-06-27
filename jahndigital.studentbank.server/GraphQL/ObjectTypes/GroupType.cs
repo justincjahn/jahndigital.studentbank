@@ -4,7 +4,7 @@ using jahndigital.studentbank.utils;
 
 namespace jahndigital.studentbank.server.GraphQL.ObjectTypes
 {
-    public class GroupType : ObjectType<dal.Entities.Group>
+    public class GroupType : ObjectType<Group>
     {
         protected override void Configure(IObjectTypeDescriptor<Group> descriptor)
         {

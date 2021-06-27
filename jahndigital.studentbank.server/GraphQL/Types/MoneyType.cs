@@ -6,12 +6,14 @@ using jahndigital.studentbank.utils;
 namespace jahndigital.studentbank.server.GraphQL.Types
 {
     /// <summary>
-    /// US Currency as a float or string without the dollar symbol.
+    ///     US Currency as a float or string without the dollar symbol.
     /// </summary>
-    public sealed class MoneyType: ScalarType
+    public sealed class MoneyType : ScalarType
     {
-        public MoneyType(): base("Money") {
-            this.Description = "US Currency as a float (preferred) or string without the dollar symbol. E.g 10.33 is $10.33.";
+        public MoneyType() : base("Money")
+        {
+            Description =
+                "US Currency as a float (preferred) or string without the dollar symbol. E.g 10.33 is $10.33.";
         }
 
         // define which .NET type represents your type
@@ -37,7 +39,8 @@ namespace jahndigital.studentbank.server.GraphQL.Types
             }
 
             if (literal is StringValueNode stringLiteral) {
-                decimal dec = 0m;
+                var dec = 0m;
+
                 if (decimal.TryParse(stringLiteral.Value, out dec)) {
                     return Money.FromCurrency(dec);
                 }
@@ -46,7 +49,8 @@ namespace jahndigital.studentbank.server.GraphQL.Types
             }
 
             if (literal is FloatValueNode floatLiteral) {
-                decimal dec = 0m;
+                var dec = 0m;
+
                 if (decimal.TryParse(floatLiteral.Value, out dec)) {
                     return Money.FromCurrency(dec);
                 }
@@ -100,36 +104,44 @@ namespace jahndigital.studentbank.server.GraphQL.Types
         {
             if (serialized is null) {
                 value = null;
+
                 return true;
             }
 
             if (serialized is string s) {
-                decimal dec = 0m;
+                var dec = 0m;
+
                 if (!decimal.TryParse(s, out dec)) {
                     value = null;
+
                     return false;
                 }
 
                 value = Money.FromCurrency(dec);
+
                 return true;
             }
 
             if (serialized is float f) {
-                value = Money.FromCurrency((decimal)f);
+                value = Money.FromCurrency((decimal) f);
+
                 return true;
             }
 
             if (serialized is long l) {
                 value = Money.FromCurrency(l);
+
                 return true;
             }
 
             if (serialized is decimal d) {
                 value = Money.FromCurrency(d);
+
                 return true;
             }
 
             value = null;
+
             return false;
         }
     }

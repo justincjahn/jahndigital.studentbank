@@ -11,12 +11,12 @@ using Microsoft.IdentityModel.Tokens;
 namespace jahndigital.studentbank.services
 {
     /// <summary>
-    /// Methods to generate a JWT token or refresh token.
+    ///     Methods to generate a JWT token or refresh token.
     /// </summary>
     public static class JwtTokenService
     {
         /// <summary>
-        /// Generates a JWT token using the provided information.
+        ///     Generates a JWT token using the provided information.
         /// </summary>
         /// <param name="jwtSecret">The secret used to sign the JWT token.</param>
         /// <param name="type">The type of user the token is issued to.</param>
@@ -35,23 +35,24 @@ namespace jahndigital.studentbank.services
             long id,
             string username,
             string role,
-            string email="",
-            string firstName="",
-            string lastName="",
-            int? expires=null,
-            bool preauthorization=false
-        ) {
+            string email = "",
+            string firstName = "",
+            string lastName = "",
+            int? expires = null,
+            bool preauthorization = false
+        )
+        {
             var handler = new JwtSecurityTokenHandler();
             var key = Encoding.ASCII.GetBytes(jwtSecret);
 
             var claims = new List<Claim> {
-                new Claim(ClaimTypes.NameIdentifier, id.ToString()),
-                new Claim(ClaimTypes.Name, username),
-                new Claim(ClaimTypes.Role, role),
-                new Claim(ClaimTypes.Email, email),
-                new Claim(ClaimTypes.GivenName, firstName),
-                new Claim(ClaimTypes.Surname, lastName),
-                new Claim(Constants.Auth.CLAIM_USER_TYPE, type.Name)
+                new(ClaimTypes.NameIdentifier, id.ToString()),
+                new(ClaimTypes.Name, username),
+                new(ClaimTypes.Role, role),
+                new(ClaimTypes.Email, email),
+                new(ClaimTypes.GivenName, firstName),
+                new(ClaimTypes.Surname, lastName),
+                new(Constants.Auth.CLAIM_USER_TYPE, type.Name)
             };
 
             if (preauthorization) {
@@ -74,7 +75,7 @@ namespace jahndigital.studentbank.services
         }
 
         /// <summary>
-        /// Generate a refresh token from random bytes.
+        ///     Generate a refresh token from random bytes.
         /// </summary>
         /// <param name="ipAddress"></param>
         /// <returns>A <see cname="RefreshToken" /> instance with refresh token info.</returns>
@@ -83,6 +84,7 @@ namespace jahndigital.studentbank.services
             using var rng = new RNGCryptoServiceProvider();
             var randomBytes = new byte[64];
             rng.GetBytes(randomBytes);
+
             return new RefreshToken {
                 Token = Convert.ToBase64String(randomBytes),
                 Expires = DateTime.UtcNow.AddDays(7),

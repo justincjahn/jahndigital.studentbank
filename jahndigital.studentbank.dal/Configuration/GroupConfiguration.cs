@@ -8,7 +8,7 @@ namespace jahndigital.studentbank.dal.Configuration
     {
         public void Configure(EntityTypeBuilder<Group> builder)
         {
-            builder.HasIndex(new string[] {"Name", "InstanceId"}).IsUnique();
+            builder.HasIndex("Name", "InstanceId").IsUnique();
         }
     }
 }

@@ -5,28 +5,28 @@ namespace jahndigital.studentbank.server.Models
     public class UpdateStockRequest
     {
         /// <summary>
-        /// The ID number of the stock
+        ///     The ID number of the stock
         /// </summary>
-        public long Id {get; set;} = default!;
+        public long Id { get; set; } = default!;
 
         /// <summary>
-        /// Unique symbol of the stock.
+        ///     Unique symbol of the stock.
         /// </summary>
-        public string? Symbol {get; set;} = null;
+        public string? Symbol { get; set; } = null;
 
         /// <summary>
-        /// Name of the company
+        ///     Name of the company
         /// </summary>
-        public string? Name {get; set;} = null;
+        public string? Name { get; set; } = null;
 
         /// <summary>
-        /// Total number of shares for the stock.
+        ///     Total number of shares for the stock.
         /// </summary>
-        public long? TotalShares {get; set;} = null;
+        public long? TotalShares { get; set; } = null;
 
         /// <summary>
-        /// The current value of the stock.
+        ///     The current value of the stock.
         /// </summary>
-        public Money? CurrentValue {get; set;} = null;
+        public Money? CurrentValue { get; set; } = null;
     }
 }

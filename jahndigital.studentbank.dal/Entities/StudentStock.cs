@@ -7,60 +7,60 @@ using jahndigital.studentbank.dal.Attributes;
 namespace jahndigital.studentbank.dal.Entities
 {
     /// <summary>
-    /// Represents the Shares of a Stock owned by a specific student.
+    ///     Represents the Shares of a Stock owned by a specific student.
     /// </summary>
     public class StudentStock
     {
         /// <summary>
-        /// The unique ID of this entry.
+        ///     The unique ID of this entry.
         /// </summary>
-        public long Id {get; set;}
+        public long Id { get; set; }
 
         /// <summary>
-        /// Get the student ID
+        ///     Get the student ID
         /// </summary>
         [ForeignKey("Student")]
-        public long StudentId {get;set;}
+        public long StudentId { get; set; }
 
         /// <summary>
-        /// Get the ID number of the stock.
+        ///     Get the ID number of the stock.
         /// </summary>
         [ForeignKey("Stock")]
-        public long StockId {get; set;}
+        public long StockId { get; set; }
 
         /// <summary>
-        /// The student who owns the stock.
+        ///     The student who owns the stock.
         /// </summary>
         [Required]
-        public Student Student {get; set;} = default!;
+        public Student Student { get; set; } = default!;
 
         /// <summary>
-        /// The stock the student owns.
+        ///     The stock the student owns.
         /// </summary>
         [Required]
-        public Stock Stock {get; set;} = default!;
+        public Stock Stock { get; set; } = default!;
 
         /// <summary>
-        /// The number of shares this student currently owns.
+        ///     The number of shares this student currently owns.
         /// </summary>
         [Required]
-        public long SharesOwned {get; set;} = 0;
+        public long SharesOwned { get; set; } = 0;
 
         /// <summary>
-        /// The history of buy/sells for this stock.
+        ///     The history of buy/sells for this stock.
         /// </summary>
-        public ICollection<StudentStockHistory> History {get; set;} = new HashSet<StudentStockHistory>();
+        public ICollection<StudentStockHistory> History { get; set; } = new HashSet<StudentStockHistory>();
 
         /// <summary>
-        /// Get or set the date that this stock was last purchased or sold.
+        ///     Get or set the date that this stock was last purchased or sold.
         /// </summary>
-        [DateTimeKind(DateTimeKind.Utc)]
-        public DateTime DateLastActive {get; set;} = DateTime.UtcNow;
+        [DateTimeKind]
+        public DateTime DateLastActive { get; set; } = DateTime.UtcNow;
 
         /// <summary>
-        /// Get the date that the student originally acquired the stock.
+        ///     Get the date that the student originally acquired the stock.
         /// </summary>
-        [DateTimeKind(DateTimeKind.Utc)]
-        public DateTime DateCreated {get; private set;} = DateTime.UtcNow;
+        [DateTimeKind]
+        public DateTime DateCreated { get; set; } = DateTime.UtcNow;
     }
 }

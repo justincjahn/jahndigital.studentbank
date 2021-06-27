@@ -5,6 +5,7 @@ using HotChocolate;
 using HotChocolate.AspNetCore.Authorization;
 using HotChocolate.Types;
 using jahndigital.studentbank.dal.Contexts;
+using jahndigital.studentbank.dal.Entities;
 using jahndigital.studentbank.server.Models;
 using jahndigital.studentbank.utils;
 using Microsoft.EntityFrameworkCore;
@@ -12,34 +13,39 @@ using Microsoft.EntityFrameworkCore;
 namespace jahndigital.studentbank.server.GraphQL.Mutations
 {
     /// <summary>
-    /// CRUD operations for <see cref="dal.Entities.Group"/> entities..
+    ///     CRUD operations for <see cref="dal.Entities.Group" /> entities..
     /// </summary>
     [ExtendObjectType(Name = "Mutation")]
     public class GroupMutations
     {
         /// <summary>
-        /// Update a <see cref="dal.Entities.Group"/>.
+        ///     Update a <see cref="dal.Entities.Group" />.
         /// </summary>
         /// <param name="input"></param>
         /// <param name="context"></param>
         /// <returns></returns>
         [UseSelection, Authorize(Policy = Constants.Privilege.PRIVILEGE_MANAGE_GROUPS)]
-        public async Task<IQueryable<dal.Entities.Group>> UpdateGroupAsync(
+        public async Task<IQueryable<Group>> UpdateGroupAsync(
             UpdateGroupRequest input,
             [Service] AppDbContext context
-        ) {
+        )
+        {
             var group = await context.Groups.Where(x => x.Id == input.Id).SingleOrDefaultAsync()
-             ?? throw ErrorFactory.NotFound();
+                ?? throw ErrorFactory.NotFound();
 
             if (input.InstanceId != null) {
                 var instanceExists = await context.Instances.Where(x => x.Id == input.InstanceId).AnyAsync();
-                if (!instanceExists) throw ErrorFactory.QueryFailed($"Instance with ID {input.InstanceId} not found.");
+
+                if (!instanceExists) {
+                    throw ErrorFactory.QueryFailed($"Instance with ID {input.InstanceId} not found.");
+                }
+
                 group.InstanceId = input.InstanceId.Value;
             }
 
             if (input.Name != null) {
                 var groupExists = await context.Groups
-                    .Where(x => 
+                    .Where(x =>
                         x.Name == input.Name
                         && x.Id != group.Id
                         && x.InstanceId == group.InstanceId)
@@ -47,7 +53,7 @@ namespace jahndigital.studentbank.server.GraphQL.Mutations
 
                 if (groupExists) {
                     throw ErrorFactory.QueryFailed(
-                        $"A group named {input.Name} already exists in instance {group.InstanceId}."
+                        $"A group named {input.Name} already exists in instance {@group.InstanceId}."
                     );
                 }
 
@@ -66,16 +72,17 @@ namespace jahndigital.studentbank.server.GraphQL.Mutations
         }
 
         /// <summary>
-        /// Create a new <see cref="dal.Entities.Group"/>.
+        ///     Create a new <see cref="dal.Entities.Group" />.
         /// </summary>
         /// <param name="input"></param>
         /// <param name="context"></param>
         /// <returns></returns>
         [UseSelection, Authorize(Policy = Constants.Privilege.PRIVILEGE_MANAGE_GROUPS)]
-        public async Task<IQueryable<dal.Entities.Group>> NewGroupAsync(
+        public async Task<IQueryable<Group>> NewGroupAsync(
             NewGroupRequest input,
             [Service] AppDbContext context
-        ) {
+        )
+        {
             var groupExists = await context.Groups.Where(x =>
                 x.Name == input.Name && x.InstanceId == input.InstanceId
             ).AnyAsync();
@@ -87,13 +94,14 @@ namespace jahndigital.studentbank.server.GraphQL.Mutations
             }
 
             var instanceExists = await context.Instances.Where(x => x.Id == input.InstanceId).AnyAsync();
+
             if (!instanceExists) {
                 throw ErrorFactory.QueryFailed(
                     $"An instance with the ID {input.InstanceId} does not exist."
                 );
             }
 
-            var group = new dal.Entities.Group {
+            var group = new Group {
                 Name = input.Name,
                 InstanceId = input.InstanceId
             };
@@ -109,19 +117,25 @@ namespace jahndigital.studentbank.server.GraphQL.Mutations
         }
 
         /// <summary>
-        /// Delete a <see cref="dal.Entities.Group"/>.
+        ///     Delete a <see cref="dal.Entities.Group" />.
         /// </summary>
         /// <param name="id"></param>
         /// <param name="context"></param>
         /// <returns></returns>
         [Authorize(Policy = Constants.Privilege.PRIVILEGE_MANAGE_GROUPS)]
-        public async Task<bool> DeleteGroupAsync(long id, [Service]AppDbContext context)
+        public async Task<bool> DeleteGroupAsync(long id, [Service] AppDbContext context)
         {
             var hasStudents = await context.Students.Where(x => x.GroupId == id).AnyAsync();
-            if (hasStudents) throw ErrorFactory.QueryFailed("Cannot delete a group that still has students!");
+
+            if (hasStudents) {
+                throw ErrorFactory.QueryFailed("Cannot delete a group that still has students!");
+            }
 
             var group = await context.Groups.FindAsync(id);
-            if (group == null) throw ErrorFactory.NotFound();
+
+            if (group == null) {
+                throw ErrorFactory.NotFound();
+            }
 
             group.DateDeleted = DateTime.UtcNow;
 
@@ -136,18 +150,18 @@ namespace jahndigital.studentbank.server.GraphQL.Mutations
         }
 
         /// <summary>
-        /// Restore a soft-deleted <see cref="dal.Entities.Group"/>.
+        ///     Restore a soft-deleted <see cref="dal.Entities.Group" />.
         /// </summary>
         /// <param name="id"></param>
         /// <param name="context"></param>
         /// <returns></returns>
         [UseSelection, Authorize(Policy = Constants.Privilege.PRIVILEGE_MANAGE_GROUPS)]
-        public async Task<IQueryable<dal.Entities.Group>> RestoreGroupAsync(long id, [Service]AppDbContext context)
+        public async Task<IQueryable<Group>> RestoreGroupAsync(long id, [Service] AppDbContext context)
         {
             var group = await context.Groups
-                .Where(x => x.Id == id && x.DateDeleted != null)
-                .SingleOrDefaultAsync()
-            ?? throw ErrorFactory.NotFound();
+                    .Where(x => x.Id == id && x.DateDeleted != null)
+                    .SingleOrDefaultAsync()
+                ?? throw ErrorFactory.NotFound();
 
             group.DateDeleted = null;
 

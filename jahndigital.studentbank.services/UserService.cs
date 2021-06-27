@@ -7,17 +7,16 @@ using jahndigital.studentbank.services.Interfaces;
 using jahndigital.studentbank.utils;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Options;
 
 namespace jahndigital.studentbank.services
 {
     /// <summary>
-    /// Facilitates authentication and authorization.
+    ///     Facilitates authentication and authorization.
     /// </summary>
     public class UserService : IUserService
     {
         /// <summary>
-        /// The database context to use when querying and updating the data store.
+        ///     The database context to use when querying and updating the data store.
         /// </summary>
         private readonly AppDbContext _context;
 
@@ -39,14 +38,19 @@ namespace jahndigital.studentbank.services
                 .Include(x => x.Role)
                 .SingleOrDefaultAsync(
                     x => x.Email == model.Username
-                    && x.DateDeleted == null
-                    && x.DateRegistered != null
+                        && x.DateDeleted == null
+                        && x.DateRegistered != null
                 );
 
-            if (user == null) return null;
+            if (user == null) {
+                return null;
+            }
 
             var valid = user.ValidatePassword(model.Password);
-            if (valid == PasswordVerificationResult.Failed) return null;
+
+            if (valid == PasswordVerificationResult.Failed) {
+                return null;
+            }
 
             if (valid == PasswordVerificationResult.SuccessRehashNeeded) {
                 user.Password = model.Password;
@@ -60,7 +64,7 @@ namespace jahndigital.studentbank.services
                 user.Id,
                 user.Email,
                 user.Role.Name,
-                email: user.Email,
+                user.Email,
                 expires: _tokenLifetime
             );
 
@@ -81,11 +85,17 @@ namespace jahndigital.studentbank.services
                     u.RefreshTokens.Any(t => t.Token == token)
                     && u.DateDeleted == null);
 
-            if (user == null) return null;
+            if (user == null) {
+                return null;
+            }
+
             user.DateLastLogin = DateTime.UtcNow;
 
             var refreshToken = user.RefreshTokens.Single(x => x.Token == token);
-            if (refreshToken == null) return null;
+
+            if (refreshToken == null) {
+                return null;
+            }
 
             var newToken = JwtTokenService.GenerateRefreshToken(ipAddress);
             refreshToken.Revoked = DateTime.UtcNow;
@@ -99,7 +109,7 @@ namespace jahndigital.studentbank.services
                 user.Id,
                 user.Email,
                 user.Role.Name,
-                email: user.Email,
+                user.Email,
                 expires: _tokenLifetime
             );
 
@@ -115,11 +125,19 @@ namespace jahndigital.studentbank.services
                 u => u.RefreshTokens.Any(t => t.Token == token)
             );
 
-            if (user == null) return false;
+            if (user == null) {
+                return false;
+            }
 
             var refreshToken = user.RefreshTokens.SingleOrDefault(x => x.Token == token);
-            if (refreshToken == null) return false;
-            if (!refreshToken.IsActive) return false;
+
+            if (refreshToken == null) {
+                return false;
+            }
+
+            if (!refreshToken.IsActive) {
+                return false;
+            }
 
             refreshToken.Revoked = DateTime.UtcNow;
             refreshToken.RevokedByIpAddress = ipAddress;

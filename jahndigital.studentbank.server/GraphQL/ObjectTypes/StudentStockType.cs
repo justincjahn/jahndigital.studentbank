@@ -4,7 +4,7 @@ using jahndigital.studentbank.utils;
 
 namespace jahndigital.studentbank.server.GraphQL.ObjectTypes
 {
-    public class StudentStockType : ObjectType<dal.Entities.StudentStock>
+    public class StudentStockType : ObjectType<StudentStock>
     {
         protected override void Configure(IObjectTypeDescriptor<StudentStock> descriptor)
         {

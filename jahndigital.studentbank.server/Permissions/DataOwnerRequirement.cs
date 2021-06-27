@@ -4,16 +4,19 @@ using Microsoft.AspNetCore.Authorization;
 namespace jahndigital.studentbank.server.Permissions
 {
     /// <summary>
-    /// Require that the user accessing the resource owns the data.
+    ///     Require that the user accessing the resource owns the data.
     /// </summary>
-    public class DataOwnerRequirement : IAuthorizationRequirement {
+    public class DataOwnerRequirement : IAuthorizationRequirement
+    {
+        public DataOwnerRequirement() { }
+
+        public DataOwnerRequirement(params string[] permissions)
+        {
+            Permissions = permissions;
+        }
+
         /// <summary>
-        /// 
         /// </summary>
-        public IEnumerable<string> Permissions { get; private set;} = new string[] {};
-
-        public DataOwnerRequirement() {}
-
-        public DataOwnerRequirement(params string[] permissions) => Permissions = permissions;
+        public IEnumerable<string> Permissions { get; } = new string[] { };
     }
 }

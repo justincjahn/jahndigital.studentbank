@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using jahndigital.studentbank.dal.Contexts;
 using jahndigital.studentbank.dal.Entities;
+using jahndigital.studentbank.dal.Enums;
 using jahndigital.studentbank.services.Interfaces;
 using jahndigital.studentbank.utils;
 using Microsoft.EntityFrameworkCore;
@@ -11,44 +12,50 @@ using Microsoft.Extensions.DependencyInjection;
 namespace jahndigital.studentbank.services
 {
     /// <summary>
-    /// Handles automatic database migrations and seeding.
+    ///     Handles automatic database migrations and seeding.
     /// </summary>
     public class DbInitializerService : IDbInitializerService
     {
         /// <summary>
-        /// Set during seeding if needed.
-        /// </summary>
-        private ShareType? _shareType;
-
-        /// <summary>
-        /// Cache the products in the system so we don't have to keep fetching it.
-        /// </summary>
-        private IReadOnlyCollection<Product> _productsCache = new Product[] {};
-
-        /// <summary>
-        /// 
         /// </summary>
         private readonly IServiceScopeFactory _scopeFactory;
 
         /// <summary>
-        /// Pull in the services from dependency injection api.
+        ///     Cache the products in the system so we don't have to keep fetching it.
         /// </summary>
-        /// <param name="scopeFactory"></param>
-        public DbInitializerService(IServiceScopeFactory scopeFactory) => _scopeFactory = scopeFactory;
+        private IReadOnlyCollection<Product> _productsCache = new Product[] { };
 
         /// <summary>
-        /// Perform migrations.
+        ///     Set during seeding if needed.
+        /// </summary>
+        private ShareType? _shareType;
+
+        /// <summary>
+        ///     Pull in the services from dependency injection api.
+        /// </summary>
+        /// <param name="scopeFactory"></param>
+        public DbInitializerService(IServiceScopeFactory scopeFactory)
+        {
+            _scopeFactory = scopeFactory;
+        }
+
+        /// <summary>
+        ///     Perform migrations.
         /// </summary>
         public void Initialize()
         {
             using var serviceScope = _scopeFactory.CreateScope();
             using var context = serviceScope.ServiceProvider.GetService<AppDbContext>();
-            if (context == null) throw new ArgumentNullException("Expected an AppDbContext.");
+
+            if (context == null) {
+                throw new ArgumentNullException("Expected an AppDbContext.");
+            }
+
             context.Database.Migrate();
         }
 
         /// <summary>
-        /// Seed the database with core data and optionally random data.
+        ///     Seed the database with core data and optionally random data.
         /// </summary>
         public void SeedData()
         {
@@ -64,20 +71,21 @@ namespace jahndigital.studentbank.services
             SeedUsers(context);
 
             #if DEBUG
-                // Generates semi-random data for development and testing.
-                SeedShareTypes(context);
-                SeedProducts(context);
-                SeedStocks(context);
-                SeedGroups(context, SeedInstances(context));
+
+            // Generates semi-random data for development and testing.
+            SeedShareTypes(context);
+            SeedProducts(context);
+            SeedStocks(context);
+            SeedGroups(context, SeedInstances(context));
             #endif
         }
 
         /// <summary>
-        /// Add privileges to the system if they don't already exist.
+        ///     Add privileges to the system if they don't already exist.
         /// </summary>
         private void SeedPrivileges(AppDbContext context)
         {
-            List<Privilege> dbPrivileges = context.Privileges.ToList();
+            var dbPrivileges = context.Privileges.ToList();
 
             foreach (var privilege in Constants.Privilege.Privileges) {
                 if (dbPrivileges.Where(x => x.Name == privilege.Name).FirstOrDefault() == null) {
@@ -92,20 +100,20 @@ namespace jahndigital.studentbank.services
         }
 
         /// <summary>
-        /// Add roles to the system if they don't already exist.
+        ///     Add roles to the system if they don't already exist.
         /// </summary>
         /// <param name="context"></param>
         private void SeedRoles(AppDbContext context)
         {
-            List<Privilege> dbPrivileges = context.Privileges.ToList();
-            List<Role> dbRoles = context.Roles.Where(x => x.IsBuiltIn == true).ToList();
+            var dbPrivileges = context.Privileges.ToList();
+            var dbRoles = context.Roles.Where(x => x.IsBuiltIn).ToList();
 
             foreach (var role in Constants.Role.Roles) {
                 if (dbRoles.Where(x => x.Name == role.Name).FirstOrDefault() == null) {
                     var dbRole = new Role {
                         Name = role.Name,
                         Description = role.Description,
-                        IsBuiltIn = true,
+                        IsBuiltIn = true
                     };
 
                     foreach (var privilege in role.Privileges) {
@@ -124,12 +132,12 @@ namespace jahndigital.studentbank.services
         }
 
         /// <summary>
-        /// Insert an admin user in the database if no users exist.
+        ///     Insert an admin user in the database if no users exist.
         /// </summary>
         /// <param name="context"></param>
         private void SeedUsers(AppDbContext context)
         {
-            Role superuser = context.Roles.Where(x => x.Name == Constants.Role.Superuser.Name).FirstOrDefault()
+            var superuser = context.Roles.Where(x => x.Name == Constants.Role.Superuser.Name).FirstOrDefault()
                 ?? throw new DbUpdateException("Unable to seed admin user- superuser role not found.");
 
             if (!context.Users.Any()) {
@@ -146,7 +154,7 @@ namespace jahndigital.studentbank.services
         }
 
         /// <summary>
-        /// Add a savings and checking account type to the database.
+        ///     Add a savings and checking account type to the database.
         /// </summary>
         /// <param name="context"></param>
         private void SeedShareTypes(AppDbContext context)
@@ -155,7 +163,7 @@ namespace jahndigital.studentbank.services
                 _shareType = new ShareType {
                     DividendRate = Rate.FromRate(0.05m), // 0.05%
                     WithdrawalLimitCount = 6,
-                    WithdrawalLimitPeriod = dal.Enums.Period.Weekly,
+                    WithdrawalLimitPeriod = Period.Weekly,
                     Name = "Savings"
                 };
 
@@ -168,6 +176,7 @@ namespace jahndigital.studentbank.services
                 context.SaveChanges();
             } else {
                 _shareType = context.ShareTypes.Where(x => x.RawDividendRate > 0).FirstOrDefault();
+
                 if (_shareType == null) {
                     _shareType = context.ShareTypes.FirstOrDefault();
                 }
@@ -175,12 +184,14 @@ namespace jahndigital.studentbank.services
         }
 
         /// <summary>
-        /// Add some fake products to the database as examples.
+        ///     Add some fake products to the database as examples.
         /// </summary>
         /// <param name="context"></param>
         private void SeedProducts(AppDbContext context)
         {
-            if (context.Products.Any()) return;
+            if (context.Products.Any()) {
+                return;
+            }
 
             context.Add(new Product {
                 Name = "Extra Credit",
@@ -201,7 +212,7 @@ namespace jahndigital.studentbank.services
         }
 
         /// <summary>
-        /// Add some fake stocks to the database.
+        ///     Add some fake stocks to the database.
         /// </summary>
         /// <param name="context"></param>
         private void SeedStocks(AppDbContext context)
@@ -211,16 +222,15 @@ namespace jahndigital.studentbank.services
             }
 
             var stocks = new List<Stock>();
-            for (int i = 0; i < 5; i++)
-            {
-                int amount = new Random().Next(30, 250);
-                var stock = new Stock
-                {
+
+            for (var i = 0; i < 5; i++) {
+                var amount = new Random().Next(30, 250);
+                var stock = new Stock {
                     Name = $"Stock {i + 1}",
                     Symbol = $"STK{i + 1}",
                     TotalShares = 10000,
                     AvailableShares = 10000,
-                    CurrentValue = Money.FromCurrency(amount),
+                    CurrentValue = Money.FromCurrency(amount)
                 };
 
                 stocks.Add(stock);
@@ -232,7 +242,7 @@ namespace jahndigital.studentbank.services
         }
 
         /// <summary>
-        /// Generate random stock history for a random number of days.
+        ///     Generate random stock history for a random number of days.
         /// </summary>
         /// <param name="context"></param>
         /// <param name="stocks"></param>
@@ -244,7 +254,7 @@ namespace jahndigital.studentbank.services
                 for (var i = days; i >= 0; i--) {
                     decimal percent = new Random().Next(1, 80);
                     percent *= new Random().Next(0, 2) == 1 ? 1 : -1;
-                    percent = (percent / 100) + 1;
+                    percent = percent / 100 + 1;
 
                     var newAmount = stock.CurrentValue * Rate.FromRate(percent);
                     newAmount = newAmount.Amount > 0 ? newAmount : Money.FromCurrency(0.1M);
@@ -263,7 +273,7 @@ namespace jahndigital.studentbank.services
         }
 
         /// <summary>
-        /// Seed instances.
+        ///     Seed instances.
         /// </summary>
         /// <param name="context"></param>
         /// <returns></returns>
@@ -320,18 +330,19 @@ namespace jahndigital.studentbank.services
         }
 
         /// <summary>
-        /// Seed groups into the provided instances and link them to all products found in the database.
+        ///     Seed groups into the provided instances and link them to all products found in the database.
         /// </summary>
         /// <param name="context"></param>
         /// <param name="instances"></param>
         private void SeedGroups(AppDbContext context, IEnumerable<Instance> instances)
         {
             var products = context.Products.ToList();
+
             foreach (var instance in instances) {
                 var groups = new List<Group>();
+
                 for (var i = 0; i < 5; i++) {
-                    var group = new Group
-                    {
+                    var group = new Group {
                         Name = $"Group {i}",
                         Instance = instance
                     };
@@ -351,7 +362,7 @@ namespace jahndigital.studentbank.services
         }
 
         /// <summary>
-        /// Seed students into the provided groups.
+        ///     Seed students into the provided groups.
         /// </summary>
         /// <param name="context"></param>
         /// <param name="groups"></param>
@@ -360,6 +371,7 @@ namespace jahndigital.studentbank.services
             foreach (var group in groups) {
                 var students = new List<Student>();
                 var max = new Random().Next(5, 100);
+
                 for (var i = 0; i <= max; i++) {
                     var accountNumber = $"{group.Id}{i}".PadLeft(10, '0');
                     var student = new Student {
@@ -382,13 +394,14 @@ namespace jahndigital.studentbank.services
         }
 
         /// <summary>
-        /// Creates initial shares for the students provided.
+        ///     Creates initial shares for the students provided.
         /// </summary>
         /// <param name="context"></param>
         /// <param name="students"></param>
         private void SeedShares(AppDbContext context, IEnumerable<Student> students)
         {
             var shares = new List<Share>();
+
             foreach (var student in students) {
                 var share = new Share {
                     Student = student,
@@ -406,7 +419,7 @@ namespace jahndigital.studentbank.services
         }
 
         /// <summary>
-        /// Seed a random number of transactions for the provided students.
+        ///     Seed a random number of transactions for the provided students.
         /// </summary>
         /// <param name="context"></param>
         /// <param name="shares"></param>
@@ -414,6 +427,7 @@ namespace jahndigital.studentbank.services
         {
             foreach (var share in shares) {
                 var max = new Random().Next(5, 500);
+
                 for (var i = 0; i <= max; i++) {
                     var amount = new Random().Next(1, 50000); // between $0.01 and $500.00
                     amount *= new Random().Next(0, 2) == 1 ? 1 : -1;
@@ -439,18 +453,21 @@ namespace jahndigital.studentbank.services
         }
 
         /// <summary>
-        /// Select some students with a positive balance and purchase some stuff.
+        ///     Select some students with a positive balance and purchase some stuff.
         /// </summary>
         /// <remarks>
-        /// In the application API, we should be checking to ensure the item being purchased
-        /// was linked to the group of the student's share, but everything is linked to
-        /// everything when we seed initially.
+        ///     In the application API, we should be checking to ensure the item being purchased
+        ///     was linked to the group of the student's share, but everything is linked to
+        ///     everything when we seed initially.
         /// </remarks>
         /// <param name="context"></param>
         private void SeedPurchases(AppDbContext context)
         {
             _productsCache = context.Products.ToList();
-            if (_productsCache.Count == 0) return;
+
+            if (_productsCache.Count == 0) {
+                return;
+            }
 
             // Loop through all student shares with a positive balance and build a purchase
             foreach (var share in context.Shares.Where(x => x.RawBalance >= 0)) {
@@ -482,7 +499,7 @@ namespace jahndigital.studentbank.services
         }
 
         /// <summary>
-        /// Add some extra credit to the purchase if there's enough money.
+        ///     Add some extra credit to the purchase if there's enough money.
         /// </summary>
         /// <param name="context"></param>
         /// <param name="share"></param>
@@ -490,14 +507,20 @@ namespace jahndigital.studentbank.services
         private void SeedPurchasesExtraCredit(AppDbContext context, Share share, StudentPurchase purchase)
         {
             var extraCredit = _productsCache.Where(x => x.IsLimitedQuantity = true).FirstOrDefault();
-            if (extraCredit == null) return;
+
+            if (extraCredit == null) {
+                return;
+            }
 
             // Get the max number of extra credits we can purchase with the balance we have
             var max = decimal.ToInt32(Math.Floor(decimal.Divide(share.Balance.Amount, extraCredit.Cost.Amount)));
 
             // Get a random number as the quantity for the purchase.
             var quantity = new Random().Next(0, max);
-            if (quantity < 1) return;
+
+            if (quantity < 1) {
+                return;
+            }
 
             // Add the purchase, subtract from share balance
             var item = new StudentPurchaseItem {
@@ -515,22 +538,32 @@ namespace jahndigital.studentbank.services
         }
 
         /// <summary>
-        /// Add some limited quantity items to shares until there are none left.
+        ///     Add some limited quantity items to shares until there are none left.
         /// </summary>
         /// <param name="context"></param>
         /// <param name="share"></param>
         /// <param name="purchase"></param>
         private void SeedPurchasesLimited(AppDbContext context, Share share, StudentPurchase purchase)
         {
-            var chocolateBar = _productsCache.Where(x => x.IsLimitedQuantity == true).FirstOrDefault();
-            if (chocolateBar == null) return;
-            if (chocolateBar.Quantity < 0) return;
+            var chocolateBar = _productsCache.Where(x => x.IsLimitedQuantity).FirstOrDefault();
+
+            if (chocolateBar == null) {
+                return;
+            }
+
+            if (chocolateBar.Quantity < 0) {
+                return;
+            }
 
             // Make sure the share can afford a chocolate bar
-            if (chocolateBar.Cost > share.Balance) return;
+            if (chocolateBar.Cost > share.Balance) {
+                return;
+            }
 
             // Randomly decide if this student is buying a chocolate bar
-            if (new Random().Next(0, 6) != 1) return; // 1 in 6
+            if (new Random().Next(0, 6) != 1) {
+                return; // 1 in 6
+            }
 
             // Add the purchase, subtract from share balance
             var item = new StudentPurchaseItem {

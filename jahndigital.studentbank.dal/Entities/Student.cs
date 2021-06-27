@@ -10,26 +10,33 @@ using Microsoft.AspNetCore.Identity;
 namespace jahndigital.studentbank.dal.Entities
 {
     /// <summary>
-    /// Represents a student
+    ///     Represents a student
     /// </summary>
     public class Student
     {
         /// <summary>
-        /// The unique ID of the student.
-        /// </summary>
-        public long Id {get; set;}
-
-        /// <summary>
-        /// Backing field for <see cref="AccountNumber"/>.
+        ///     Backing field for <see cref="AccountNumber" />.
         /// </summary>
         private string _accountNumber = null!;
 
         /// <summary>
-        /// Student's account number. Left-zero-fill to 10 characters.
+        ///     Backing field for encrypted password.
+        /// </summary>
+        private string _password = null!;
+
+        /// <summary>
+        ///     The unique ID of the student.
+        /// </summary>
+        public long Id { get; set; }
+
+        /// <summary>
+        ///     Student's account number. Left-zero-fill to 10 characters.
         /// </summary>
         [MaxLength(10), MinLength(10), Required]
-        public string AccountNumber {
+        public string AccountNumber
+        {
             get => _accountNumber;
+
             set {
                 if (!Regex.IsMatch(value, "^[0-9]{1,10}$")) {
                     throw new ArgumentOutOfRangeException(
@@ -43,35 +50,31 @@ namespace jahndigital.studentbank.dal.Entities
         }
 
         /// <summary>
-        /// The email address of the student.
+        ///     The email address of the student.
         /// </summary>
         [MaxLength(64)]
-        public string? Email {get; set;} = null;
+        public string? Email { get; set; } = null;
 
         /// <summary>
-        /// The student's given name.
+        ///     The student's given name.
         /// </summary>
         [MaxLength(64), Required]
-        public string FirstName {get; set;} = default!;
+        public string FirstName { get; set; } = default!;
 
         /// <summary>
-        /// The student's surname.
+        ///     The student's surname.
         /// </summary>
         [MaxLength(64), Required]
-        public string LastName {get; set;} = default!;
+        public string LastName { get; set; } = default!;
 
         /// <summary>
-        /// Backing field for encrypted password.
-        /// </summary>
-        private string _password = null!;
-
-        /// <summary>
-        /// The encrypted credentials of the user.
+        ///     The encrypted credentials of the user.
         /// </summary>
         [MaxLength(84), Required]
         public string Password
         {
             get => _password;
+
             set {
                 var passwordHasher = new PasswordHasher<Student>();
                 _password = passwordHasher.HashPassword(this, value);
@@ -79,66 +82,66 @@ namespace jahndigital.studentbank.dal.Entities
         }
 
         /// <summary>
-        /// Validate the provided password.
+        /// </summary>
+        [ForeignKey("Group"), Required]
+        public long GroupId { get; set; }
+
+        /// <summary>
+        ///     Student's group (class/period/etc.).
+        /// </summary>
+        [Required]
+        public Group Group { get; set; } = null!;
+
+        /// <summary>
+        ///     Student's shares.
+        /// </summary>
+        /// <typeparam name="Share"></typeparam>
+        public ICollection<Share> Shares { get; set; } = new HashSet<Share>();
+
+        /// <summary>
+        ///     A list of JWT refresh tokens for the user.
+        /// </summary>
+        [JsonIgnore]
+        public ICollection<RefreshToken> RefreshTokens { get; set; } = new HashSet<RefreshToken>();
+
+        /// <summary>
+        ///     Get a list of purchases this student has made.
+        /// </summary>
+        public ICollection<StudentPurchase> Purchases { get; set; } = new HashSet<StudentPurchase>();
+
+        /// <summary>
+        ///     Get or set the date the student last logged in.
+        /// </summary>
+        [DateTimeKind]
+        public DateTime? DateLastLogin { get; set; } = null;
+
+        /// <summary>
+        ///     Get or set the date the student was created.
+        /// </summary>
+        [DateTimeKind]
+        public DateTime DateCreated { get; set; } = DateTime.UtcNow;
+
+        /// <summary>
+        ///     Get or set the date the student was registered.
+        /// </summary>
+        [DateTimeKind]
+        public DateTime? DateRegistered { get; set; } = null;
+
+        /// <summary>
+        ///     Get or set the date the student was deleted.
+        /// </summary>
+        [DateTimeKind]
+        public DateTime? DateDeleted { get; set; } = null;
+
+        /// <summary>
+        ///     Validate the provided password.
         /// </summary>
         /// <param name="password"></param>
         public PasswordVerificationResult ValidatePassword(string password)
         {
             var passwordHasher = new PasswordHasher<Student>();
+
             return passwordHasher.VerifyHashedPassword(this, Password, password);
         }
-
-        /// <summary>
-        /// 
-        /// </summary>
-        [ForeignKey("Group"), Required]
-        public long GroupId {get; set;}
-
-        /// <summary>
-        /// Student's group (class/period/etc.).
-        /// </summary>
-        [Required]
-        public Group Group {get; set;} = null!;
-
-        /// <summary>
-        /// Student's shares.
-        /// </summary>
-        /// <typeparam name="Share"></typeparam>
-        public ICollection<Share> Shares {get; set;} = new HashSet<Share>();
-
-        /// <summary>
-        /// A list of JWT refresh tokens for the user.
-        /// </summary>
-        [JsonIgnore]
-        public ICollection<RefreshToken> RefreshTokens {get;set;} = new HashSet<RefreshToken>();
-
-        /// <summary>
-        /// Get a list of purchases this student has made.
-        /// </summary>
-        public ICollection<StudentPurchase> Purchases {get; set;} = new HashSet<StudentPurchase>();
-
-        /// <summary>
-        /// Get or set the date the student last logged in.
-        /// </summary>
-        [DateTimeKind(DateTimeKind.Utc)]
-        public DateTime? DateLastLogin { get; set; } = null;
-
-        /// <summary>
-        /// Get or set the date the student was created.
-        /// </summary>
-        [DateTimeKind(DateTimeKind.Utc)]
-        public DateTime DateCreated {get; set;} = DateTime.UtcNow;
-
-        /// <summary>
-        /// Get or set the date the student was registered.
-        /// </summary>
-        [DateTimeKind(DateTimeKind.Utc)]
-        public DateTime? DateRegistered { get; set; } = null;
-
-        /// <summary>
-        /// Get or set the date the student was deleted.
-        /// </summary>
-        [DateTimeKind(DateTimeKind.Utc)]
-        public DateTime? DateDeleted {get; set;} = null;
     }
 }

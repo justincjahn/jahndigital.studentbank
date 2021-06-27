@@ -5,6 +5,7 @@ using HotChocolate.AspNetCore.Authorization;
 using HotChocolate.Resolvers;
 using HotChocolate.Types;
 using jahndigital.studentbank.dal.Contexts;
+using jahndigital.studentbank.dal.Entities;
 using jahndigital.studentbank.services.DTOs;
 using jahndigital.studentbank.services.Interfaces;
 using jahndigital.studentbank.utils;
@@ -13,13 +14,13 @@ using Microsoft.EntityFrameworkCore;
 namespace jahndigital.studentbank.server.GraphQL.Mutations
 {
     /// <summary>
-    /// CRUD operations for stock purchases.
+    ///     CRUD operations for stock purchases.
     /// </summary>
     [ExtendObjectType(Name = "Mutation")]
     public class StudentStockMutations
     {
         /// <summary>
-        /// Attempt to buy or sell the provided stock.
+        ///     Attempt to buy or sell the provided stock.
         /// </summary>
         /// <param name="input"></param>
         /// <param name="context"></param>
@@ -27,33 +28,31 @@ namespace jahndigital.studentbank.server.GraphQL.Mutations
         /// <param name="resolverContext"></param>
         /// <returns></returns>
         [UseSelection, Authorize]
-        public async Task<IQueryable<dal.Entities.StudentStock>> NewStockPurchaseAsync(
+        public async Task<IQueryable<StudentStock>> NewStockPurchaseAsync(
             PurchaseStockRequest input,
             [Service] AppDbContext context,
             [Service] ITransactionService transactionService,
             [Service] IResolverContext resolverContext
-        ) {
+        )
+        {
             // Fetch the student ID that owns the share and validate they are authorized
-            long studentId = await context.Shares
-                .Where(x => x.Id == input.ShareId)
-                .Select(x => (long?)x.StudentId)
-                .FirstOrDefaultAsync()
-            ?? throw ErrorFactory.NotFound();
+            var studentId = await context.Shares
+                    .Where(x => x.Id == input.ShareId)
+                    .Select(x => (long?) x.StudentId)
+                    .FirstOrDefaultAsync()
+                ?? throw ErrorFactory.NotFound();
 
             resolverContext.SetUser(studentId, Constants.UserType.Student);
             var auth = await resolverContext.AuthorizeAsync(
                 $"{Constants.AuthPolicy.DataOwner}<{Constants.Privilege.ManageStudents}>"
             );
 
-            if (!auth.Succeeded) throw ErrorFactory.Unauthorized();
-
-            dal.Entities.StudentStock? purchase;
-            try {
-                purchase = await transactionService.PurchaseStockAsync(input);
-            } catch {
-                // TODO: Log this exception instead of just re-throwing it.
-                throw;
+            if (!auth.Succeeded) {
+                throw ErrorFactory.Unauthorized();
             }
+
+            StudentStock? purchase;
+            purchase = await transactionService.PurchaseStockAsync(input);
 
             return context.StudentStocks.Where(x => x.Id == purchase.Id);
         }

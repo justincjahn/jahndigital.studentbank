@@ -6,12 +6,13 @@ using jahndigital.studentbank.utils;
 namespace jahndigital.studentbank.server.GraphQL.Types
 {
     /// <summary>
-    /// US Currency as a float or string without the dollar symbol.
+    ///     US Currency as a float or string without the dollar symbol.
     /// </summary>
-    public sealed class RateType: ScalarType
+    public sealed class RateType : ScalarType
     {
-        public RateType(): base("Rate") {
-            this.Description = "API/Interest Rate represented as a float.  E.g. 0.02 is 0.02%";
+        public RateType() : base("Rate")
+        {
+            Description = "API/Interest Rate represented as a float.  E.g. 0.02 is 0.02%";
         }
 
         // define which .NET type represents your type
@@ -37,7 +38,8 @@ namespace jahndigital.studentbank.server.GraphQL.Types
             }
 
             if (literal is StringValueNode stringLiteral) {
-                decimal dec = 0m;
+                var dec = 0m;
+
                 if (decimal.TryParse(stringLiteral.Value, out dec)) {
                     return Rate.FromRate(dec);
                 }
@@ -46,7 +48,8 @@ namespace jahndigital.studentbank.server.GraphQL.Types
             }
 
             if (literal is FloatValueNode floatLiteral) {
-                decimal dec = 0m;
+                var dec = 0m;
+
                 if (decimal.TryParse(floatLiteral.Value, out dec)) {
                     return Rate.FromRate(dec);
                 }
@@ -100,36 +103,44 @@ namespace jahndigital.studentbank.server.GraphQL.Types
         {
             if (serialized is null) {
                 value = null;
+
                 return true;
             }
 
             if (serialized is string s) {
-                decimal dec = 0m;
+                var dec = 0m;
+
                 if (!decimal.TryParse(s, out dec)) {
                     value = null;
+
                     return false;
                 }
 
                 value = Rate.FromRate(dec);
+
                 return true;
             }
 
             if (serialized is float f) {
-                value = Rate.FromRate((decimal)f);
+                value = Rate.FromRate((decimal) f);
+
                 return true;
             }
 
             if (serialized is long l) {
-                value = Rate.FromRate((decimal)l);
+                value = Rate.FromRate((decimal) l);
+
                 return true;
             }
 
             if (serialized is decimal d) {
                 value = Rate.FromRate(d);
+
                 return true;
             }
 
             value = null;
+
             return false;
         }
     }

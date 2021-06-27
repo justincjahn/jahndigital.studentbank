@@ -5,6 +5,8 @@ using HotChocolate;
 using HotChocolate.AspNetCore.Authorization;
 using HotChocolate.Types;
 using jahndigital.studentbank.dal.Contexts;
+using jahndigital.studentbank.dal.Entities;
+using jahndigital.studentbank.dal.Enums;
 using jahndigital.studentbank.server.Models;
 using jahndigital.studentbank.utils;
 using Microsoft.EntityFrameworkCore;
@@ -12,22 +14,23 @@ using Microsoft.EntityFrameworkCore;
 namespace jahndigital.studentbank.server.GraphQL.Mutations
 {
     /// <summary>
-    /// CRUD operations for <see cref="dal.Entities.ShareType"/> entities.
+    ///     CRUD operations for <see cref="dal.Entities.ShareType" /> entities.
     /// </summary>
     [ExtendObjectType(Name = "Mutation")]
     public class ShareTypeMutations
     {
         /// <summary>
-        /// Create a new <see cref="dal.Entities.ShareType"/>.
+        ///     Create a new <see cref="dal.Entities.ShareType" />.
         /// </summary>
         /// <param name="input"></param>
         /// <param name="context"></param>
         /// <returns></returns>
         [UseSelection, Authorize(Policy = Constants.Privilege.PRIVILEGE_MANAGE_SHARE_TYPES)]
-        public async Task<IQueryable<dal.Entities.ShareType>> NewShareTypeAsync(
+        public async Task<IQueryable<ShareType>> NewShareTypeAsync(
             NewShareTypeRequest input,
             [Service] AppDbContext context
-        ) {
+        )
+        {
             if (await context.ShareTypes.AnyAsync(x => x.Name == input.Name)) {
                 throw new ArgumentOutOfRangeException(
                     "Name",
@@ -35,12 +38,11 @@ namespace jahndigital.studentbank.server.GraphQL.Mutations
                 );
             }
 
-            var shareType = new dal.Entities.ShareType
-            {
+            var shareType = new ShareType {
                 Name = input.Name,
                 DividendRate = input.DividendRate,
                 WithdrawalLimitCount = input.WithdrawalLimitCount ?? 0,
-                WithdrawalLimitPeriod = input.WithdrawalLimitPeriod ?? dal.Enums.Period.Monthly,
+                WithdrawalLimitPeriod = input.WithdrawalLimitPeriod ?? Period.Monthly,
                 WithdrawalLimitShouldFee = input.WithdrawalLimitShouldFee ?? false,
                 WithdrawalLimitFee = input.WithdrawalLimitFee ?? Money.FromCurrency(0)
             };
@@ -56,16 +58,17 @@ namespace jahndigital.studentbank.server.GraphQL.Mutations
         }
 
         /// <summary>
-        /// Update a <see cref="dal.Entities.ShareType"/>.
+        ///     Update a <see cref="dal.Entities.ShareType" />.
         /// </summary>
         /// <param name="input"></param>
         /// <param name="context"></param>
         /// <returns></returns>
         [UseSelection, Authorize(Policy = Constants.Privilege.PRIVILEGE_MANAGE_SHARE_TYPES)]
-        public async Task<IQueryable<dal.Entities.ShareType>> UpdateShareTypeAsync(
+        public async Task<IQueryable<ShareType>> UpdateShareTypeAsync(
             UpdateShareTypeRequest input,
             [Service] AppDbContext context
-        ) {
+        )
+        {
             var shareType = await context.ShareTypes.FindAsync(input.Id)
                 ?? throw ErrorFactory.NotFound();
 
@@ -98,29 +101,38 @@ namespace jahndigital.studentbank.server.GraphQL.Mutations
         }
 
         /// <summary>
-        /// Link a <see cref="dal.Entities.ShareType"/> to an <see cref="dal.Entities.Instance"/>.<see langword="abstract"/>
+        ///     Link a <see cref="dal.Entities.ShareType" /> to an <see cref="dal.Entities.Instance" />.<see langword="abstract" />
         /// </summary>
         /// <param name="input"></param>
         /// <param name="context"></param>
         /// <returns></returns>
         [UseSelection, Authorize(Policy = Constants.Privilege.PRIVILEGE_MANAGE_SHARE_TYPES)]
-        public async Task<IQueryable<dal.Entities.ShareType>> LinkShareTypeAsync(
+        public async Task<IQueryable<ShareType>> LinkShareTypeAsync(
             LinkShareTypeRequest input,
             [Service] AppDbContext context
-        ) {
+        )
+        {
             var hasInstance = await context.Instances.AnyAsync(x => x.Id == input.InstanceId);
-            if (!hasInstance) throw ErrorFactory.NotFound();
+
+            if (!hasInstance) {
+                throw ErrorFactory.NotFound();
+            }
 
             var hasShareType = await context.ShareTypes.AnyAsync(x => x.Id == input.ShareTypeId);
-            if (!hasShareType) throw ErrorFactory.NotFound();
+
+            if (!hasShareType) {
+                throw ErrorFactory.NotFound();
+            }
 
             var hasLinks = await context.ShareTypeInstances
                 .Where(x => x.ShareTypeId == input.ShareTypeId && x.InstanceId == input.InstanceId)
                 .AnyAsync();
 
-            if (hasLinks) throw ErrorFactory.QueryFailed("Share Type is already linked to the provided instance!");
+            if (hasLinks) {
+                throw ErrorFactory.QueryFailed("Share Type is already linked to the provided instance!");
+            }
 
-            var link = new dal.Entities.ShareTypeInstance {
+            var link = new ShareTypeInstance {
                 ShareTypeId = input.ShareTypeId,
                 InstanceId = input.InstanceId
             };
@@ -136,31 +148,40 @@ namespace jahndigital.studentbank.server.GraphQL.Mutations
         }
 
         /// <summary>
-        /// Unlink a <see cref="dal.Entities.ShareType"/> from an <see cref="dal.Entities.Instance"/>.
+        ///     Unlink a <see cref="dal.Entities.ShareType" /> from an <see cref="dal.Entities.Instance" />.
         /// </summary>
         /// <param name="input"></param>
         /// <param name="context"></param>
         /// <returns></returns>
         [UseSelection, Authorize(Policy = Constants.Privilege.PRIVILEGE_MANAGE_SHARE_TYPES)]
-        public async Task<IQueryable<dal.Entities.ShareType>> UnlinkShareTypeAsync(
+        public async Task<IQueryable<ShareType>> UnlinkShareTypeAsync(
             LinkShareTypeRequest input,
             [Service] AppDbContext context
-        ) {
+        )
+        {
             var hasInstance = await context.Instances.AnyAsync(x => x.Id == input.InstanceId);
-            if (!hasInstance) throw ErrorFactory.NotFound();
+
+            if (!hasInstance) {
+                throw ErrorFactory.NotFound();
+            }
 
             var hasShareType = await context.ShareTypes.AnyAsync(x => x.Id == input.ShareTypeId);
-            if (!hasShareType) throw ErrorFactory.NotFound();
+
+            if (!hasShareType) {
+                throw ErrorFactory.NotFound();
+            }
 
             var link = await context.ShareTypeInstances
                 .Where(x => x.ShareTypeId == input.ShareTypeId && x.InstanceId == input.InstanceId)
                 .FirstOrDefaultAsync();
 
-            if (link == null) throw ErrorFactory.QueryFailed("Share Type is already unlinked from the provided instance!");
+            if (link == null) {
+                throw ErrorFactory.QueryFailed("Share Type is already unlinked from the provided instance!");
+            }
 
             var hasSharesInInstance = await context.Shares
                 .Include(x => x.Student)
-                    .ThenInclude(x => x.Group)
+                .ThenInclude(x => x.Group)
                 .Where(x =>
                     x.Student.Group.InstanceId == input.InstanceId
                     && x.ShareTypeId == input.ShareTypeId
@@ -184,19 +205,22 @@ namespace jahndigital.studentbank.server.GraphQL.Mutations
         }
 
         /// <summary>
-        /// Soft-delete a <see cref="dal.Entities.ShareType"/>.
+        ///     Soft-delete a <see cref="dal.Entities.ShareType" />.
         /// </summary>
         /// <param name="id"></param>
         /// <param name="context"></param>
         /// <returns></returns>
         [Authorize(Policy = Constants.Privilege.PRIVILEGE_MANAGE_SHARE_TYPES)]
-        public async Task<bool> DeleteShareTypeAsync(long id, [Service]AppDbContext context)
+        public async Task<bool> DeleteShareTypeAsync(long id, [Service] AppDbContext context)
         {
             var shareType = await context.ShareTypes.FindAsync(id)
                 ?? throw ErrorFactory.NotFound();
 
             var hasShares = await context.Shares.AnyAsync(x => x.ShareTypeId == id && x.DateDeleted == null);
-            if (hasShares) throw ErrorFactory.QueryFailed("Cannot delete a share type with active shares.");
+
+            if (hasShares) {
+                throw ErrorFactory.QueryFailed("Cannot delete a share type with active shares.");
+            }
 
             shareType.DateDeleted = DateTime.UtcNow;
 
@@ -210,18 +234,18 @@ namespace jahndigital.studentbank.server.GraphQL.Mutations
         }
 
         /// <summary>
-        /// Restore a soft-deleted <see cref="dal.Entities.ShareType"/>.
+        ///     Restore a soft-deleted <see cref="dal.Entities.ShareType" />.
         /// </summary>
         /// <param name="id"></param>
         /// <param name="context"></param>
         /// <returns></returns>
         [Authorize(Policy = Constants.Privilege.PRIVILEGE_MANAGE_SHARE_TYPES)]
-        public async Task<IQueryable<dal.Entities.ShareType>> RestoreShareTypeAsync(long id, [Service]AppDbContext context)
+        public async Task<IQueryable<ShareType>> RestoreShareTypeAsync(long id, [Service] AppDbContext context)
         {
             var shareType = await context.ShareTypes
-                .Where(x => x.Id == id && x.DateDeleted != null)
-                .SingleOrDefaultAsync()
-            ?? throw ErrorFactory.NotFound();
+                    .Where(x => x.Id == id && x.DateDeleted != null)
+                    .SingleOrDefaultAsync()
+                ?? throw ErrorFactory.NotFound();
 
             shareType.DateDeleted = null;
 

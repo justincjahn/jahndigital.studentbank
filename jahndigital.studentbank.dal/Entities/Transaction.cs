@@ -7,47 +7,47 @@ using jahndigital.studentbank.utils;
 namespace jahndigital.studentbank.dal.Entities
 {
     /// <summary>
-    /// Represents a monetary transaction on a Share.
+    ///     Represents a monetary transaction on a Share.
     /// </summary>
     public class Transaction
     {
         /// <summary>
-        /// Unique ID number for the transaction.
+        ///     Unique ID number for the transaction.
         /// </summary>
-        public long Id {get; set;}
+        public long Id { get; set; }
 
         /// <summary>
-        /// Get the ID number of the target share.
+        ///     Get the ID number of the target share.
         /// </summary>
         [ForeignKey("TargetShare")]
-        public long TargetShareId {get; set;}
+        public long TargetShareId { get; set; }
 
         /// <summary>
-        /// Type of transaction.
+        ///     Type of transaction.
         /// </summary>
         [MaxLength(1), Required]
-        public string TransactionType {get; set;} = default!;
+        public string TransactionType { get; set; } = default!;
 
         /// <summary>
-        /// The target share of the transaction.
+        ///     The target share of the transaction.
         /// </summary>
         [Required]
-        public Share TargetShare {get; set;} = default!;
+        public Share TargetShare { get; set; } = default!;
 
         /// <summary>
-        /// An optional transaction comment.
+        ///     An optional transaction comment.
         /// </summary>
         [MaxLength(255)]
-        public string? Comment {get; set;}
+        public string? Comment { get; set; }
 
         /// <summary>
-        /// Raw dollar amount of the transaction.
+        ///     Raw dollar amount of the transaction.
         /// </summary>
         [Column("Amount"), Required]
-        public long RawAmount {get; private set;}
+        public long RawAmount { get; private set; }
 
         /// <summary>
-        /// The dollar amount of the transaction.
+        ///     The dollar amount of the transaction.
         /// </summary>
         [NotMapped]
         public Money Amount
@@ -57,13 +57,13 @@ namespace jahndigital.studentbank.dal.Entities
         }
 
         /// <summary>
-        /// The raw new balance of the share.
+        ///     The raw new balance of the share.
         /// </summary>
         [Column("NewBalance"), Required]
-        public long RawNewBalance {get; private set;}
+        public long RawNewBalance { get; private set; }
 
         /// <summary>
-        /// The new balance of the share.
+        ///     The new balance of the share.
         /// </summary>
         [NotMapped]
         public Money NewBalance
@@ -73,9 +73,9 @@ namespace jahndigital.studentbank.dal.Entities
         }
 
         /// <summary>
-        /// The date the transaction was posted.
+        ///     The date the transaction was posted.
         /// </summary>
-        [Required, DateTimeKind(DateTimeKind.Utc)]
-        public DateTime EffectiveDate {get; set;} = DateTime.UtcNow;
+        [Required, DateTimeKind]
+        public DateTime EffectiveDate { get; set; } = DateTime.UtcNow;
     }
 }

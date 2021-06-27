@@ -1,28 +1,28 @@
 namespace jahndigital.studentbank.server.Models
 {
     /// <summary>
-    /// Data fields to update a user.
+    ///     Data fields to update a user.
     /// </summary>
     public class UpdateUserRequest
     {
         /// <summary>
-        /// Get or set the user's ID.
+        ///     Get or set the user's ID.
         /// </summary>
         public long Id { get; set; }
 
         /// <summary>
-        /// Get or set the user's email address.
+        ///     Get or set the user's email address.
         /// </summary>
-        public string? Email {get; set;}
+        public string? Email { get; set; }
 
         /// <summary>
-        /// Get or set the user's password.
+        ///     Get or set the user's password.
         /// </summary>
-        public string? Password {get; set;}
+        public string? Password { get; set; }
 
         /// <summary>
-        /// Get or set the user's role.
+        ///     Get or set the user's role.
         /// </summary>
-        public long? RoleId {get; set;}
+        public long? RoleId { get; set; }
     }
 }

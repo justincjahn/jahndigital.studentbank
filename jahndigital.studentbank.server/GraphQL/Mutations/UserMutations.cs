@@ -7,6 +7,7 @@ using HotChocolate.Execution;
 using HotChocolate.Resolvers;
 using HotChocolate.Types;
 using jahndigital.studentbank.dal.Contexts;
+using jahndigital.studentbank.dal.Entities;
 using jahndigital.studentbank.server.Models;
 using jahndigital.studentbank.services.DTOs;
 using jahndigital.studentbank.services.Interfaces;
@@ -18,13 +19,13 @@ using static jahndigital.studentbank.utils.Constants;
 namespace jahndigital.studentbank.server.GraphQL.Mutations
 {
     /// <summary>
-    /// CRUD operations for <see cref="dal.Entities.User"/> entities.
+    ///     CRUD operations for <see cref="dal.Entities.User" /> entities.
     /// </summary>
     [ExtendObjectType(Name = "Mutation")]
     public class UserMutations : TokenManagerAbstract
     {
         /// <summary>
-        /// Log the user in using a username and password and return JWT tokens.
+        ///     Log the user in using a username and password and return JWT tokens.
         /// </summary>
         /// <param name="input"></param>
         /// <param name="userService"></param>
@@ -34,9 +35,15 @@ namespace jahndigital.studentbank.server.GraphQL.Mutations
             AuthenticateRequest input,
             [Service] IUserService userService,
             [Service] IHttpContextAccessor contextAccessor
-        ) {
-            if (string.IsNullOrEmpty(input.Username)) throw ErrorFactory.Unauthorized();
-            if (string.IsNullOrEmpty(input.Password)) throw ErrorFactory.Unauthorized();
+        )
+        {
+            if (string.IsNullOrEmpty(input.Username)) {
+                throw ErrorFactory.Unauthorized();
+            }
+
+            if (string.IsNullOrEmpty(input.Password)) {
+                throw ErrorFactory.Unauthorized();
+            }
 
             var response = await userService.AuthenticateAsync(input, GetIp(contextAccessor))
                 ?? throw new QueryException(
@@ -46,11 +53,12 @@ namespace jahndigital.studentbank.server.GraphQL.Mutations
                         .Build());
 
             SetTokenCookie(contextAccessor, response.RefreshToken);
+
             return response;
         }
 
         /// <summary>
-        /// Obtain a new JWT token using a refresh token.
+        ///     Obtain a new JWT token using a refresh token.
         /// </summary>
         /// <param name="token">The refresh token to use when obtaining a new JWT token. Must be valid and not expired.</param>
         /// <param name="userService"></param>
@@ -60,28 +68,30 @@ namespace jahndigital.studentbank.server.GraphQL.Mutations
             string? token,
             [Service] IUserService userService,
             [Service] IHttpContextAccessor contextAccessor
-        ) {
+        )
+        {
             token = token
                 ?? GetToken(contextAccessor)
                 ?? throw new QueryException(
                     ErrorBuilder.New()
                         .SetMessage("No refresh token provided.")
-                        .SetCode(Constants.ErrorStrings.INVALID_REFRESH_TOKEN)
+                        .SetCode(ErrorStrings.INVALID_REFRESH_TOKEN)
                         .Build());
 
             var response = await userService.RefreshTokenAsync(token, GetIp(contextAccessor))
                 ?? throw new QueryException(
                     ErrorBuilder.New()
                         .SetMessage("Invalid refresh token.")
-                        .SetCode(Constants.ErrorStrings.INVALID_REFRESH_TOKEN)
+                        .SetCode(ErrorStrings.INVALID_REFRESH_TOKEN)
                         .Build());
 
             SetTokenCookie(contextAccessor, response.RefreshToken);
+
             return response;
         }
 
         /// <summary>
-        /// Revoke a refresh token.
+        ///     Revoke a refresh token.
         /// </summary>
         /// <param name="token">The refresh token to revoke.</param>
         /// <param name="userService"></param>
@@ -92,13 +102,14 @@ namespace jahndigital.studentbank.server.GraphQL.Mutations
             string? token,
             [Service] IUserService userService,
             [Service] IHttpContextAccessor contextAccessor
-        ) {
+        )
+        {
             token = token
                 ?? GetToken(contextAccessor)
                 ?? throw new QueryException(
                     ErrorBuilder.New()
                         .SetMessage("A token is required.")
-                        .SetCode(Constants.ErrorStrings.INVALID_REFRESH_TOKEN)
+                        .SetCode(ErrorStrings.INVALID_REFRESH_TOKEN)
                         .Build());
 
             try {
@@ -122,35 +133,41 @@ namespace jahndigital.studentbank.server.GraphQL.Mutations
                 throw new QueryException(e.Message);
             }
         }
-    
+
         /// <summary>
-        /// Update a user.
+        ///     Update a user.
         /// </summary>
         /// <param name="input"></param>
         /// <param name="context"></param>
         /// <param name="resolverContext"></param>
         /// <returns></returns>
         [UseSelection, Authorize]
-        public async Task<IQueryable<dal.Entities.User>> UpdateUserAsync(
+        public async Task<IQueryable<User>> UpdateUserAsync(
             UpdateUserRequest input,
             [Service] AppDbContext context,
             [Service] IResolverContext resolverContext
-        ) {
+        )
+        {
             resolverContext.SetUser(input.Id, UserType.User);
             var auth = await resolverContext.AuthorizeAsync(
-                $"{Constants.AuthPolicy.DataOwner}<{Constants.Privilege.ManageUsers}>"
+                $"{AuthPolicy.DataOwner}<{Constants.Privilege.ManageUsers}>"
             );
 
-            if (!auth.Succeeded) throw ErrorFactory.Unauthorized();
+            if (!auth.Succeeded) {
+                throw ErrorFactory.Unauthorized();
+            }
 
             var user = await context.Users
-                .Where(x => x.Id == input.Id)
-                .SingleOrDefaultAsync()
-            ?? throw ErrorFactory.NotFound();
+                    .Where(x => x.Id == input.Id)
+                    .SingleOrDefaultAsync()
+                ?? throw ErrorFactory.NotFound();
 
             user.Email = input.Email ?? user.Email;
             user.RoleId = input.RoleId ?? user.RoleId;
-            if (input.Password != null) user.Password = input.Password;
+
+            if (input.Password != null) {
+                user.Password = input.Password;
+            }
 
             try {
                 await context.SaveChangesAsync();
@@ -164,23 +181,30 @@ namespace jahndigital.studentbank.server.GraphQL.Mutations
         }
 
         /// <summary>
-        /// Create a new user.
+        ///     Create a new user.
         /// </summary>
         /// <param name="input"></param>
         /// <param name="context"></param>
         /// <returns></returns>
         [Authorize(Policy = Constants.Privilege.PRIVILEGE_MANAGE_USERS)]
-        public async Task<IQueryable<dal.Entities.User>> NewUserAsync(
+        public async Task<IQueryable<User>> NewUserAsync(
             NewUserRequest input,
             [Service] AppDbContext context
-        ) {
+        )
+        {
             var roleExists = await context.Roles.Where(x => x.Id == input.RoleId).AnyAsync();
-            if (!roleExists) throw ErrorFactory.QueryFailed($"The Role ID ({input.RoleId}) does not exist.");
+
+            if (!roleExists) {
+                throw ErrorFactory.QueryFailed($"The Role ID ({input.RoleId}) does not exist.");
+            }
 
             var userExists = await context.Users.Where(x => x.Email == input.Email).AnyAsync();
-            if (userExists) throw ErrorFactory.QueryFailed($"A user with the email {input.Email} already exists.");
-            
-            var user = new dal.Entities.User {
+
+            if (userExists) {
+                throw ErrorFactory.QueryFailed($"A user with the email {input.Email} already exists.");
+            }
+
+            var user = new User {
                 Email = input.Email,
                 RoleId = input.RoleId,
                 Password = input.Password
@@ -195,9 +219,9 @@ namespace jahndigital.studentbank.server.GraphQL.Mutations
 
             return context.Users.Where(x => x.Id == user.Id);
         }
-    
+
         /// <summary>
-        /// Delete a user.
+        ///     Delete a user.
         /// </summary>
         /// <param name="id"></param>
         /// <param name="context"></param>
@@ -208,7 +232,8 @@ namespace jahndigital.studentbank.server.GraphQL.Mutations
             long id,
             [Service] AppDbContext context,
             [Service] IResolverContext resolverContext
-        ) {
+        )
+        {
             var user = await context.Users.FindAsync(id)
                 ?? throw ErrorFactory.NotFound();
 

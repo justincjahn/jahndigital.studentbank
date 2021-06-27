@@ -8,6 +8,7 @@ namespace jahndigital.studentbank.dal.Contexts
 {
     public class AppDbContext : DbContext
     {
+        public AppDbContext(DbContextOptions options) : base(options) { }
         public DbSet<Group> Groups => Set<Group>();
         public DbSet<Instance> Instances => Set<Instance>();
         public DbSet<Privilege> Privileges => Set<Privilege>();
@@ -30,30 +31,32 @@ namespace jahndigital.studentbank.dal.Contexts
         public DbSet<ProductInstance> ProductInstances => Set<ProductInstance>();
         public DbSet<ProductImage> ProductImages => Set<ProductImage>();
 
-        public AppDbContext(DbContextOptions options): base(options) { }
-
         /// <summary>
-        /// Closure that generates a <see cref="ValueConverter{TModel, TProvider}"/> for dates.
+        ///     Closure that generates a <see cref="ValueConverter{TModel, TProvider}" /> for dates.
         /// </summary>
         /// <param name="kind">The date kind.</param>
         /// <returns></returns>
         private ValueConverter<DateTime, DateTime> _convert(DateTimeKind kind)
         {
-            return new ValueConverter<DateTime, DateTime>(x => x, x => DateTime.SpecifyKind(x, kind));
+            return new(x => x, x => DateTime.SpecifyKind(x, kind));
         }
 
-        protected override void OnModelCreating(ModelBuilder modelBuilder) {
+        protected override void OnModelCreating(ModelBuilder modelBuilder)
+        {
             base.OnModelCreating(modelBuilder);
             modelBuilder.ApplyConfigurationsFromAssembly(GetType().Assembly);
 
             // Loop through all the model properties and apply a converter if there is a DateTimeKindAttribute
-            foreach (var entityType in modelBuilder.Model.GetEntityTypes()) {
-                foreach (var property in entityType.GetProperties()) {
-                    if (property.ClrType == typeof(DateTime) || property.ClrType == typeof(DateTime?)) {
-                        var kind = property.DateTimeKind();
-                        if (kind == DateTimeKind.Unspecified) continue; // We can make all dates UTC by default here
-                        property.SetValueConverter(_convert(kind));
+            foreach (var entityType in modelBuilder.Model.GetEntityTypes())
+            foreach (var property in entityType.GetProperties()) {
+                if (property.ClrType == typeof(DateTime) || property.ClrType == typeof(DateTime?)) {
+                    var kind = property.DateTimeKind();
+
+                    if (kind == DateTimeKind.Unspecified) {
+                        continue; // We can make all dates UTC by default here
                     }
+
+                    property.SetValueConverter(_convert(kind));
                 }
             }
         }

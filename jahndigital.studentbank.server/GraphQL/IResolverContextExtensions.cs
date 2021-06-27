@@ -4,7 +4,6 @@ using System.Security.Claims;
 using System.Threading.Tasks;
 using HotChocolate.Resolvers;
 using jahndigital.studentbank.server.Permissions;
-using jahndigital.studentbank.utils;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using static jahndigital.studentbank.utils.Constants;
@@ -14,7 +13,7 @@ namespace jahndigital.studentbank.server.GraphQL
     public static class IResolverContextExtensions
     {
         /// <summary>
-        /// Declaratively authorize the active user (if logged in) against the policy provided.
+        ///     Declaratively authorize the active user (if logged in) against the policy provided.
         /// </summary>
         /// <param name="context"></param>
         /// <param name="policy"></param>
@@ -23,40 +22,42 @@ namespace jahndigital.studentbank.server.GraphQL
         {
             var svc = context.Service<IAuthorizationService>();
             var usr = context.GetHttpContext().User;
+
             return svc.AuthorizeAsync(usr, context, policy);
         }
 
         /// <summary>
-        /// Explicitly mark the request as authorized.
+        ///     Explicitly mark the request as authorized.
         /// </summary>
         /// <param name="context"></param>
         /// <param name="authorized"></param>
-        public static IResolverContext SetAuthorized(this IResolverContext context, bool authorized = true) {
+        public static IResolverContext SetAuthorized(this IResolverContext context, bool authorized = true)
+        {
             context.ScopedContextData = context.ScopedContextData
                 .SetItem(DataOwnerAuthorizationHandlerGraphQL.CTX_ISOWNER, authorized);
-            
+
             return context;
         }
 
         /// <summary>
-        /// Get the <see cref="UserType"/> of the user currently logged in, if any.
+        ///     Get the <see cref="UserType" /> of the user currently logged in, if any.
         /// </summary>
         /// <param name="context"></param>
         /// <returns></returns>
         public static UserType? GetUserType(this IResolverContext context)
         {
             var type = context.GetHttpContext().User.Claims
-                .FirstOrDefault(x => x.Type == Constants.Auth.CLAIM_USER_TYPE);
-            
+                .FirstOrDefault(x => x.Type == Auth.CLAIM_USER_TYPE);
+
             if (type != null) {
-                return (UserType?)type.Value;
+                return (UserType?) type.Value;
             }
 
             return null;
         }
 
         /// <summary>
-        /// Get the ID of the user currently logged in, if any.
+        ///     Get the ID of the user currently logged in, if any.
         /// </summary>
         /// <param name="context"></param>
         /// <returns></returns>
@@ -64,16 +65,16 @@ namespace jahndigital.studentbank.server.GraphQL
         {
             var id = context.GetHttpContext().User.Claims
                 .FirstOrDefault(x => x.Type == ClaimTypes.NameIdentifier);
-            
+
             if (id != null) {
                 return long.Parse(id.Value);
             }
 
             return null;
         }
-        
+
         /// <summary>
-        /// Set the user ID and type for the appropriate authentication to occur.
+        ///     Set the user ID and type for the appropriate authentication to occur.
         /// </summary>
         /// <param name="context"></param>
         /// <param name="userId"></param>
@@ -89,13 +90,14 @@ namespace jahndigital.studentbank.server.GraphQL
         }
 
         /// <summary>
-        /// Get the HTTP context from the resolver.
+        ///     Get the HTTP context from the resolver.
         /// </summary>
         /// <param name="context"></param>
         public static HttpContext GetHttpContext(this IResolverContext context)
         {
             var ctx = context.ContextData.FirstOrDefault(x => x.Value is HttpContext);
-            return (HttpContext)ctx.Value;
+
+            return (HttpContext) ctx.Value;
         }
     }
 }

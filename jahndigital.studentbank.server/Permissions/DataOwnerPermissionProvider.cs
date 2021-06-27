@@ -6,20 +6,26 @@ using Microsoft.Extensions.Options;
 namespace jahndigital.studentbank.server.Permissions
 {
     /// <summary>
-    /// Dynamically builds authorization policies for built-in privileges.
+    ///     Dynamically builds authorization policies for built-in privileges.
     /// </summary>
     internal class DataOwnerPermissionProvider : IAuthorizationPolicyProvider
     {
+        public DataOwnerPermissionProvider(IOptions<AuthorizationOptions> options)
+        {
+            FallbackPolicyProvider = new DefaultAuthorizationPolicyProvider(options);
+        }
+
         public DefaultAuthorizationPolicyProvider FallbackPolicyProvider { get; }
 
-        public DataOwnerPermissionProvider(IOptions<AuthorizationOptions> options) =>
-            FallbackPolicyProvider = new DefaultAuthorizationPolicyProvider(options);
+        public Task<AuthorizationPolicy> GetDefaultPolicyAsync()
+        {
+            return FallbackPolicyProvider.GetDefaultPolicyAsync();
+        }
 
-        public Task<AuthorizationPolicy> GetDefaultPolicyAsync() =>
-            FallbackPolicyProvider.GetDefaultPolicyAsync();
-
-        public Task<AuthorizationPolicy?> GetFallbackPolicyAsync() =>
-            FallbackPolicyProvider.GetFallbackPolicyAsync();
+        public Task<AuthorizationPolicy?> GetFallbackPolicyAsync()
+        {
+            return FallbackPolicyProvider.GetFallbackPolicyAsync();
+        }
 
         public Task<AuthorizationPolicy?> GetPolicyAsync(string policyName)
         {
@@ -32,11 +38,12 @@ namespace jahndigital.studentbank.server.Permissions
             }
 
             var policy = new AuthorizationPolicyBuilder().AddRequirements(new DataOwnerRequirement());
+
             return Task.FromResult(policy.Build()) as Task<AuthorizationPolicy?>;
         }
 
         /// <summary>
-        /// Determine what roles may be allowed to access the resource in addition to the data owner.
+        ///     Determine what roles may be allowed to access the resource in addition to the data owner.
         /// </summary>
         /// <param name="policyName"></param>
         /// <returns></returns>
@@ -47,7 +54,7 @@ namespace jahndigital.studentbank.server.Permissions
             var roles = policyName.Substring(start + 1, end - start - 1).Split(',');
             var policy = new AuthorizationPolicyBuilder()
                 .AddRequirements(new DataOwnerRequirement(roles));
-    
+
             return Task.FromResult(policy.Build());
         }
     }

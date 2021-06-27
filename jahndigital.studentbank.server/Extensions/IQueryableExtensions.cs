@@ -1,30 +1,34 @@
+using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
-using System.Collections.Generic;
-using Microsoft.EntityFrameworkCore.Query.SqlExpressions;
 using Microsoft.EntityFrameworkCore.Query;
+using Microsoft.EntityFrameworkCore.Query.SqlExpressions;
 
 namespace jahndigital.studentbank.server.Extensions
 {
-    #nullable disable
+#nullable disable
 
     /// <summary>
-    /// Extensions to the <see cref="IQueryable"/> interface.
+    ///     Extensions to the <see cref="IQueryable" /> interface.
     /// </summary>
     public static class IQueryableExtensions
     {
-        private static object Private(this object obj, string privateField) =>
-            obj?.GetType()
+        private static object Private(this object obj, string privateField)
+        {
+            return obj?.GetType()
                 .GetField(privateField, BindingFlags.Instance | BindingFlags.NonPublic)
                 ?.GetValue(obj);
+        }
 
-        private static T Private<T>(this object obj, string privateField) =>
-            (T)obj?.GetType()
+        private static T Private<T>(this object obj, string privateField)
+        {
+            return (T) obj?.GetType()
                 .GetField(privateField, BindingFlags.Instance | BindingFlags.NonPublic)
                 ?.GetValue(obj);
+        }
 
         /// <summary>
-        /// Convert to a SQL string... Doesn't always work!
+        ///     Convert to a SQL string... Doesn't always work!
         /// </summary>
         public static string ToSql<TEntity>(this IQueryable<TEntity> query) where TEntity : class
         {
@@ -36,7 +40,8 @@ namespace jahndigital.studentbank.server.Extensions
             var sqlGenerator = factory.Create();
             var command = sqlGenerator.GetCommand(selectExpression);
 
-            string sql = command.CommandText;
+            var sql = command.CommandText;
+
             return sql;
         }
     }

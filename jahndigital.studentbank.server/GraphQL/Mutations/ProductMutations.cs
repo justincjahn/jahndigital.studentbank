@@ -6,6 +6,7 @@ using HotChocolate.AspNetCore.Authorization;
 using HotChocolate.Execution;
 using HotChocolate.Types;
 using jahndigital.studentbank.dal.Contexts;
+using jahndigital.studentbank.dal.Entities;
 using jahndigital.studentbank.server.Models;
 using jahndigital.studentbank.utils;
 using Microsoft.EntityFrameworkCore;
@@ -13,31 +14,32 @@ using Microsoft.EntityFrameworkCore;
 namespace jahndigital.studentbank.server.GraphQL.Mutations
 {
     /// <summary>
-    /// CRUD operations for <see cref="dal.Entities.Product"/> and <see cref="dal.Entities.ProductInstance"/>
+    ///     CRUD operations for <see cref="dal.Entities.Product" /> and <see cref="dal.Entities.ProductInstance" />
     /// </summary>
     [ExtendObjectType(Name = "Mutation")]
     public class ProductMutations
     {
         /// <summary>
-        /// Create a new <see cref="dal.Entities.Product"/>.
+        ///     Create a new <see cref="dal.Entities.Product" />.
         /// </summary>
         /// <param name="input"></param>
         /// <param name="context"></param>
         /// <param name="requestContext"></param>
         /// <returns></returns>
         [Authorize(Policy = Constants.Privilege.PRIVILEGE_MANAGE_PURCHASES)]
-        public async Task<IQueryable<dal.Entities.Product>> NewProductAsync(
+        public async Task<IQueryable<Product>> NewProductAsync(
             NewProductRequest input,
             [Service] AppDbContext context,
             [Service] IRequestContext requestContext
-        ) {
+        )
+        {
             var hasProduct = await context.Products.AnyAsync(x => x.Name == input.Name);
 
             if (hasProduct) {
                 throw ErrorFactory.QueryFailed("A product with the specified name already exists!");
             }
 
-            var product = new dal.Entities.Product {
+            var product = new Product {
                 Name = input.Name,
                 Description = input.Description,
                 Cost = input.Cost,
@@ -56,20 +58,21 @@ namespace jahndigital.studentbank.server.GraphQL.Mutations
         }
 
         /// <summary>
-        /// Update a <see cref="dal.Entities.Product"/>.
+        ///     Update a <see cref="dal.Entities.Product" />.
         /// </summary>
         /// <param name="input"></param>
         /// <param name="context"></param>
         /// <returns></returns>
         [Authorize(Policy = Constants.Privilege.PRIVILEGE_MANAGE_PRODUCTS)]
-        public async Task<IQueryable<dal.Entities.Product>> UpdateProductAsync(
+        public async Task<IQueryable<Product>> UpdateProductAsync(
             UpdateProductRequest input,
             [Service] AppDbContext context
-        ) {
+        )
+        {
             var product = await context.Products
-                .Where(x => x.Id == input.Id)
-                .FirstOrDefaultAsync()
-            ?? throw ErrorFactory.NotFound();
+                    .Where(x => x.Id == input.Id)
+                    .FirstOrDefaultAsync()
+                ?? throw ErrorFactory.NotFound();
 
             product.Cost = input.Cost ?? product.Cost;
             product.IsLimitedQuantity = input.IsLimitedQuantity ?? product.IsLimitedQuantity;
@@ -79,8 +82,10 @@ namespace jahndigital.studentbank.server.GraphQL.Mutations
             if (input.Name != null) {
                 var hasName = await context.Products
                     .AnyAsync(x => x.Id != product.Id && x.Name == input.Name);
-                
-                if (hasName) throw ErrorFactory.QueryFailed($"Product with name '{input.Name}' already exists!");
+
+                if (hasName) {
+                    throw ErrorFactory.QueryFailed($"Product with name '{input.Name}' already exists!");
+                }
 
                 product.Name = input.Name;
             }
@@ -97,22 +102,25 @@ namespace jahndigital.studentbank.server.GraphQL.Mutations
         }
 
         /// <summary>
-        /// Link a <see cref="dal.Entities.Product"/> with the provided <see cref="dal.Entities.Group"/>.
+        ///     Link a <see cref="dal.Entities.Product" /> with the provided <see cref="dal.Entities.Group" />.
         /// </summary>
         /// <param name="input"></param>
         /// <param name="context"></param>
         /// <returns></returns>
         [UseSelection, Authorize(Policy = Constants.Privilege.PRIVILEGE_MANAGE_PRODUCTS)]
-        public async Task<IQueryable<dal.Entities.Product>> LinkProductAsync(
+        public async Task<IQueryable<Product>> LinkProductAsync(
             LinkProductRequest input,
             [Service] AppDbContext context
-        ) {
+        )
+        {
             var hasLink = await context.ProductInstances
                 .AnyAsync(x => x.ProductId == input.ProductId && x.InstanceId == input.InstanceId);
 
-            if (hasLink) throw ErrorFactory.QueryFailed("A link already exists!");
+            if (hasLink) {
+                throw ErrorFactory.QueryFailed("A link already exists!");
+            }
 
-            var productInstance = new dal.Entities.ProductInstance {
+            var productInstance = new ProductInstance {
                 ProductId = input.ProductId,
                 InstanceId = input.InstanceId
             };
@@ -128,20 +136,21 @@ namespace jahndigital.studentbank.server.GraphQL.Mutations
         }
 
         /// <summary>
-        /// Unlink a <see cref="dal.Entities.Product"/> from the provided <see cref="dal.Entities.Group"/>.
+        ///     Unlink a <see cref="dal.Entities.Product" /> from the provided <see cref="dal.Entities.Group" />.
         /// </summary>
         /// <param name="input"></param>
         /// <param name="context"></param>
         /// <returns></returns>
         [UseSelection, Authorize(Policy = Constants.Privilege.PRIVILEGE_MANAGE_PRODUCTS)]
-        public async Task<IQueryable<dal.Entities.Product>> UnlinkProductAsync(
+        public async Task<IQueryable<Product>> UnlinkProductAsync(
             LinkProductRequest input,
             [Service] AppDbContext context
-        ) {
+        )
+        {
             var link = await context.ProductInstances
-                .Where(x => x.ProductId == input.ProductId && x.InstanceId == input.InstanceId)
-                .FirstOrDefaultAsync()
-            ?? throw ErrorFactory.NotFound();
+                    .Where(x => x.ProductId == input.ProductId && x.InstanceId == input.InstanceId)
+                    .FirstOrDefaultAsync()
+                ?? throw ErrorFactory.NotFound();
 
             try {
                 context.Remove(link);
@@ -154,13 +163,13 @@ namespace jahndigital.studentbank.server.GraphQL.Mutations
         }
 
         /// <summary>
-        /// Soft-delete a <see cref="dal.Entities.Product"/>.
+        ///     Soft-delete a <see cref="dal.Entities.Product" />.
         /// </summary>
         /// <param name="id"></param>
         /// <param name="context"></param>
         /// <returns></returns>
         [Authorize(Policy = Constants.Privilege.PRIVILEGE_MANAGE_PRODUCTS)]
-        public async Task<bool> DeleteProductAsync(long id, [Service]AppDbContext context)
+        public async Task<bool> DeleteProductAsync(long id, [Service] AppDbContext context)
         {
             var product = await context.Products.FindAsync(id)
                 ?? throw ErrorFactory.NotFound();
@@ -177,18 +186,18 @@ namespace jahndigital.studentbank.server.GraphQL.Mutations
         }
 
         /// <summary>
-        /// Restore a soft-deleted <see cref="dal.Entities.Product"/>.
+        ///     Restore a soft-deleted <see cref="dal.Entities.Product" />.
         /// </summary>
         /// <param name="id"></param>
         /// <param name="context"></param>
         /// <returns></returns>
         [UseSelection, Authorize(Policy = Constants.Privilege.PRIVILEGE_MANAGE_PRODUCTS)]
-        public async Task<IQueryable<dal.Entities.Product>> RestoreProductAsync(long id, [Service]AppDbContext context)
+        public async Task<IQueryable<Product>> RestoreProductAsync(long id, [Service] AppDbContext context)
         {
             var product = await context.Products
-                .Where(x => x.Id == id && x.DateDeleted != null)
-                .SingleOrDefaultAsync()
-            ?? throw ErrorFactory.NotFound();
+                    .Where(x => x.Id == id && x.DateDeleted != null)
+                    .SingleOrDefaultAsync()
+                ?? throw ErrorFactory.NotFound();
 
             product.DateDeleted = null;
 

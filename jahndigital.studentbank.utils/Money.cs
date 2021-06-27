@@ -4,211 +4,268 @@ using System.Globalization;
 namespace jahndigital.studentbank.utils
 {
     /// <summary>
-    /// Represents an immutable monetary value.
+    ///     Represents an immutable monetary value.
     /// </summary>
     public class Money : IComparable<decimal>, IComparable<Money>
     {
         /// <summary>
-        /// The precision when rounding and storing in the database (should probably be 2 for us currency)
+        ///     The precision when rounding and storing in the database (should probably be 2 for us currency)
         /// </summary>
         protected const int precision = 2;
 
         /// <summary>
-        /// Represents the current value as a decimal.
         /// </summary>
-        public decimal Amount { get; private set; }
+        /// <param name="amount"></param>
+        protected Money(decimal amount)
+        {
+            Amount = amount;
+        }
 
         /// <summary>
-        /// Gets the current value as a database long.
+        ///     Represents the current value as a decimal.
+        /// </summary>
+        public decimal Amount { get; }
+
+        /// <summary>
+        ///     Gets the current value as a database long.
         /// </summary>
         public long DatabaseAmount
         {
-            get
-            {
+            get {
                 var dPrecision = new decimal(Math.Pow(10, precision));
                 var dAmount = decimal.Round(Amount, precision, MidpointRounding.AwayFromZero);
+
                 return decimal.ToInt64(decimal.Multiply(dAmount, dPrecision));
             }
         }
 
         /// <summary>
-        /// Deserializes an integer value from the database.
+        ///     Compare the monetary amount with another decimal
+        /// </summary>
+        /// <param name="other"></param>
+        /// <returns></returns>
+        public int CompareTo(decimal other)
+        {
+            if (Amount > other) {
+                return 1;
+            }
+
+            if (Amount < other) {
+                return -1;
+            }
+
+            return 0;
+        }
+
+        /// <summary>
+        ///     Compare two money objects.
+        /// </summary>
+        /// <param name="other"></param>
+        /// <returns></returns>
+        public int CompareTo(Money? other)
+        {
+            if (other is null) {
+                return -1;
+            }
+
+            if (Amount > other.Amount) {
+                return 1;
+            }
+
+            if (Amount < other.Amount) {
+                return -1;
+            }
+
+            return 0;
+        }
+
+        /// <summary>
+        ///     Deserializes an integer value from the database.
         /// </summary>
         /// <param name="amount">The value from the database.</param>
         /// <returns>An immutable object that represents the currency from the database.</returns>
         public static Money FromDatabase(long amount)
         {
             var dAmount = new decimal(amount / Math.Pow(10, precision));
+
             return new Money(dAmount);
         }
 
         /// <summary>
-        /// Creates a new Money object from the provided whole number.
+        ///     Creates a new Money object from the provided whole number.
         /// </summary>
         /// <param name="amount">The whole-number value.</param>
         /// <returns>An immutable object that represents the currency from the database.</returns>
-        public static Money FromCurrency(long amount) => new Money(new decimal(amount));
+        public static Money FromCurrency(long amount)
+        {
+            return new(new decimal(amount));
+        }
 
         /// <summary>
-        /// Creates a new Money object from the provided decmial number.
+        ///     Creates a new Money object from the provided decmial number.
         /// </summary>
         /// <param name="amount">The decimal value.</param>
         /// <returns>An immutable object that represents the currency from the database.</returns>
-        public static Money FromCurrency(decimal amount) => new Money(amount);
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="a"></param>
-        /// <returns></returns>
-        public static Money operator +(Money a) => a;
-
-        /// <summary>
-        /// Add two money values.
-        /// </summary>
-        /// <param name="a"></param>
-        /// <param name="b"></param>
-        /// <returns></returns>
-        public static Money operator +(Money a, Money b) =>
-            new Money(decimal.Add(a.Amount, b.Amount));
-
-        /// <summary>
-        /// Negate a money value.
-        /// </summary>
-        /// <param name="a"></param>
-        /// <returns></returns>
-        public static Money operator -(Money a) =>
-            new Money(decimal.Negate(a.Amount));
-
-        /// <summary>
-        /// Subtract two money values.
-        /// </summary>
-        /// <param name="a"></param>
-        /// <param name="b"></param>
-        /// <returns></returns>
-        public static Money operator -(Money a, Money b) => 
-            new Money(decimal.Subtract(a.Amount, b.Amount));
-
-        /// <summary>
-        /// Multiply two money values.
-        /// </summary>
-        /// <param name="a"></param>
-        /// <param name="b"></param>
-        /// <returns></returns>
-        public static Money operator *(Money a, Money b) =>
-            new Money(decimal.Multiply(a.Amount, b.Amount));
-
-        /// <summary>
-        /// Multiply a money value by a rate.
-        /// </summary>
-        /// <param name="a"></param>
-        /// <param name="b"></param>
-        /// <returns></returns>
-        public static Money operator *(Money a, Rate b) =>
-            new Money(decimal.Multiply(a.Amount, b.Value));
-
-        /// <summary>
-        /// Multiply a money value by a long or integer.
-        /// </summary>
-        /// <param name="a"></param>
-        /// <param name="b"></param>
-        /// <returns></returns>
-        public static Money operator *(Money a, long b) =>
-            new Money(decimal.Multiply(a.Amount, (decimal)b));
-
-        /// <summary>
-        /// Determine if two money objects are equal.
-        /// </summary>
-        /// <param name="a"></param>
-        /// <param name="b"></param>
-        /// <returns></returns>
-        public static bool operator ==(Money a, Money b) => a.CompareTo(b) == 0;
-        
-        /// <summary>
-        /// Determine if two money objects are not equal.
-        /// </summary>
-        /// <param name="a"></param>
-        /// <param name="b"></param>
-        /// <returns></returns>
-        public static bool operator !=(Money a, Money b) => a.CompareTo(b) != 0;
-        
-        /// <summary>
-        /// Determine if the first money object is greater than the second.
-        /// </summary>
-        /// <param name="a"></param>
-        /// <param name="b"></param>
-        /// <returns></returns>
-        public static bool operator >(Money a, Money b) => a.CompareTo(b) == 1;
-
-        /// <summary>
-        /// Determine if the first money object is less than the second.
-        /// </summary>
-        /// <param name="a"></param>
-        /// <param name="b"></param>
-        /// <returns></returns>
-        public static bool operator <(Money a, Money b) => a.CompareTo(b) == -1;
-        
-        /// <summary>
-        /// Determine if the first money object is greater than or equal to the second.
-        /// </summary>
-        /// <param name="a"></param>
-        /// <param name="b"></param>
-        /// <returns></returns>
-        public static bool operator >=(Money a, Money b) => a.CompareTo(b) >= 1;
-        
-        /// <summary>
-        /// Determines if the first money object is less than or equal to the second.
-        /// </summary>
-        /// <param name="a"></param>
-        /// <param name="b"></param>
-        /// <returns></returns>
-        public static bool operator <=(Money a, Money b) => a.CompareTo(b) <= 0;
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="amount"></param>
-        protected Money(decimal amount) =>
-            this.Amount = amount;
-
-        /// <summary>
-        /// Outputs the money as a currency string.
-        /// </summary>
-        /// <returns></returns>
-        public override string ToString() =>
-            Amount.ToString("C", CultureInfo.CurrentCulture);
-
-        /// <summary>
-        /// Compare the monetary amount with another decimal
-        /// </summary>
-        /// <param name="other"></param>
-        /// <returns></returns>
-        public int CompareTo(decimal other)
+        public static Money FromCurrency(decimal amount)
         {
-            if (Amount > other) return 1;
-            if (Amount < other) return -1;
-            return 0;
+            return new(amount);
         }
 
         /// <summary>
-        /// Compare two money objects.
         /// </summary>
-        /// <param name="other"></param>
+        /// <param name="a"></param>
         /// <returns></returns>
-        public int CompareTo(Money other)
+        public static Money operator +(Money a)
         {
-            if (other is null) return -1;
-            if (Amount > other.Amount) return 1;
-            if (Amount < other.Amount) return -1;
-            return 0;
+            return a;
         }
 
         /// <summary>
-        /// Determine if two money objects are equal
+        ///     Add two money values.
+        /// </summary>
+        /// <param name="a"></param>
+        /// <param name="b"></param>
+        /// <returns></returns>
+        public static Money operator +(Money a, Money b)
+        {
+            return new(decimal.Add(a.Amount, b.Amount));
+        }
+
+        /// <summary>
+        ///     Negate a money value.
+        /// </summary>
+        /// <param name="a"></param>
+        /// <returns></returns>
+        public static Money operator -(Money a)
+        {
+            return new(decimal.Negate(a.Amount));
+        }
+
+        /// <summary>
+        ///     Subtract two money values.
+        /// </summary>
+        /// <param name="a"></param>
+        /// <param name="b"></param>
+        /// <returns></returns>
+        public static Money operator -(Money a, Money b)
+        {
+            return new(decimal.Subtract(a.Amount, b.Amount));
+        }
+
+        /// <summary>
+        ///     Multiply two money values.
+        /// </summary>
+        /// <param name="a"></param>
+        /// <param name="b"></param>
+        /// <returns></returns>
+        public static Money operator *(Money a, Money b)
+        {
+            return new(decimal.Multiply(a.Amount, b.Amount));
+        }
+
+        /// <summary>
+        ///     Multiply a money value by a rate.
+        /// </summary>
+        /// <param name="a"></param>
+        /// <param name="b"></param>
+        /// <returns></returns>
+        public static Money operator *(Money a, Rate b)
+        {
+            return new(decimal.Multiply(a.Amount, b.Value));
+        }
+
+        /// <summary>
+        ///     Multiply a money value by a long or integer.
+        /// </summary>
+        /// <param name="a"></param>
+        /// <param name="b"></param>
+        /// <returns></returns>
+        public static Money operator *(Money a, long b)
+        {
+            return new(decimal.Multiply(a.Amount, b));
+        }
+
+        /// <summary>
+        ///     Determine if two money objects are equal.
+        /// </summary>
+        /// <param name="a"></param>
+        /// <param name="b"></param>
+        /// <returns></returns>
+        public static bool operator ==(Money a, Money b)
+        {
+            return a.CompareTo(b) == 0;
+        }
+
+        /// <summary>
+        ///     Determine if two money objects are not equal.
+        /// </summary>
+        /// <param name="a"></param>
+        /// <param name="b"></param>
+        /// <returns></returns>
+        public static bool operator !=(Money a, Money b)
+        {
+            return a.CompareTo(b) != 0;
+        }
+
+        /// <summary>
+        ///     Determine if the first money object is greater than the second.
+        /// </summary>
+        /// <param name="a"></param>
+        /// <param name="b"></param>
+        /// <returns></returns>
+        public static bool operator >(Money a, Money b)
+        {
+            return a.CompareTo(b) == 1;
+        }
+
+        /// <summary>
+        ///     Determine if the first money object is less than the second.
+        /// </summary>
+        /// <param name="a"></param>
+        /// <param name="b"></param>
+        /// <returns></returns>
+        public static bool operator <(Money a, Money b)
+        {
+            return a.CompareTo(b) == -1;
+        }
+
+        /// <summary>
+        ///     Determine if the first money object is greater than or equal to the second.
+        /// </summary>
+        /// <param name="a"></param>
+        /// <param name="b"></param>
+        /// <returns></returns>
+        public static bool operator >=(Money a, Money b)
+        {
+            return a.CompareTo(b) >= 1;
+        }
+
+        /// <summary>
+        ///     Determines if the first money object is less than or equal to the second.
+        /// </summary>
+        /// <param name="a"></param>
+        /// <param name="b"></param>
+        /// <returns></returns>
+        public static bool operator <=(Money a, Money b)
+        {
+            return a.CompareTo(b) <= 0;
+        }
+
+        /// <summary>
+        ///     Outputs the money as a currency string.
+        /// </summary>
+        /// <returns></returns>
+        public override string ToString()
+        {
+            return Amount.ToString("C", CultureInfo.CurrentCulture);
+        }
+
+        /// <summary>
+        ///     Determine if two money objects are equal
         /// </summary>
         /// <param name="obj"></param>
         /// <returns></returns>
-        public override bool Equals(object obj)
+        public override bool Equals(object? obj)
         {
             if (obj is Money m) {
                 return CompareTo(m) == 0;
@@ -222,9 +279,11 @@ namespace jahndigital.studentbank.utils
         }
 
         /// <summary>
-        /// 
         /// </summary>
         /// <returns></returns>
-        public override int GetHashCode() => base.GetHashCode();
+        public override int GetHashCode()
+        {
+            return base.GetHashCode();
+        }
     }
 }

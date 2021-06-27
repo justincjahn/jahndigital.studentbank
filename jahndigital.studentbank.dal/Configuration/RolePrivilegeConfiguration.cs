@@ -8,7 +8,7 @@ namespace jahndigital.studentbank.dal.Configuration
     {
         public void Configure(EntityTypeBuilder<RolePrivilege> builder)
         {
-            builder.HasKey(x => new { x.RoleId, x.PrivilegeId });
+            builder.HasKey(x => new {x.RoleId, x.PrivilegeId});
 
             builder.HasOne(x => x.Role)
                 .WithMany(x => x.RolePrivileges)

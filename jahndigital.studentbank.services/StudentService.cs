@@ -7,12 +7,11 @@ using jahndigital.studentbank.services.Interfaces;
 using jahndigital.studentbank.utils;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Options;
 
 namespace jahndigital.studentbank.services
 {
     /// <summary>
-    /// Facilitates authentication and authorization.
+    ///     Facilitates authentication and authorization.
     /// </summary>
     public class StudentService : IStudentService
     {
@@ -48,9 +47,13 @@ namespace jahndigital.studentbank.services
             }
 
             var valid = student.ValidatePassword(model.Password);
-            if (valid == PasswordVerificationResult.Failed) return null;
+
+            if (valid == PasswordVerificationResult.Failed) {
+                return null;
+            }
 
             student.DateLastLogin = DateTime.UtcNow;
+
             if (valid == PasswordVerificationResult.SuccessRehashNeeded) {
                 student.Password = model.Password;
             }
@@ -61,10 +64,10 @@ namespace jahndigital.studentbank.services
                 student.Id,
                 student.AccountNumber,
                 Constants.Role.Student.Name,
-                email: student.Email ?? "",
-                firstName: student.FirstName,
-                lastName: student.LastName,
-                expires: _tokenLifetime
+                student.Email ?? "",
+                student.FirstName,
+                student.LastName,
+                _tokenLifetime
             );
 
             var refresh = JwtTokenService.GenerateRefreshToken(ipAddress);
@@ -75,7 +78,7 @@ namespace jahndigital.studentbank.services
             return new AuthenticateResponse(student, token, refresh.Token);
         }
 
-        /// <inheritdoc/>
+        /// <inheritdoc />
         /// <exception cref="ArgumentException">If the Invite Code or account number is invalid.</exception>
         public async Task<string> AuthenticateInviteAsync(string inviteCode, string accountNumber)
         {
@@ -86,12 +89,12 @@ namespace jahndigital.studentbank.services
                     AND INSTANCES.DATEDELETED = NULL
             */
             var instance = await _context.Instances
-                .Where(x => x.IsActive && x.InviteCode.ToUpper() == inviteCode.ToUpper())
-                .SingleOrDefaultAsync()
-            ?? throw new ArgumentException(
-                "No instances available with the provided invite code.",
-                nameof(inviteCode)
-            );
+                    .Where(x => x.IsActive && x.InviteCode.ToUpper() == inviteCode.ToUpper())
+                    .SingleOrDefaultAsync()
+                ?? throw new ArgumentException(
+                    "No instances available with the provided invite code.",
+                    nameof(inviteCode)
+                );
 
             /*
                 SELECT * FROM STUDENTS
@@ -104,18 +107,18 @@ namespace jahndigital.studentbank.services
 
             */
             var student = await _context.Students
-                .Include(x => x.Group)
-                .Where(x => x.Group.InstanceId == instance.Id)
-                .Where(x =>
-                    x.DateDeleted == null
-                    && x.DateRegistered == null
-                    && x.AccountNumber == accountNumber.PadLeft(10, '0')
-                )
-                .FirstOrDefaultAsync()
-            ?? throw new ArgumentException(
-                "No students found with the provided invite code and account number.",
-                nameof(accountNumber)
-            );
+                    .Include(x => x.Group)
+                    .Where(x => x.Group.InstanceId == instance.Id)
+                    .Where(x =>
+                        x.DateDeleted == null
+                        && x.DateRegistered == null
+                        && x.AccountNumber == accountNumber.PadLeft(10, '0')
+                    )
+                    .FirstOrDefaultAsync()
+                ?? throw new ArgumentException(
+                    "No students found with the provided invite code and account number.",
+                    nameof(accountNumber)
+                );
 
             return JwtTokenService.GenerateToken(
                 _secret,
@@ -123,11 +126,11 @@ namespace jahndigital.studentbank.services
                 student.Id,
                 student.AccountNumber,
                 Constants.Role.Student.Name,
-                email: student.Email ?? "",
-                firstName: student.FirstName,
-                lastName: student.LastName,
-                expires: 5,
-                preauthorization: true
+                student.Email ?? "",
+                student.FirstName,
+                student.LastName,
+                5,
+                true
             );
         }
 
@@ -140,10 +143,15 @@ namespace jahndigital.studentbank.services
                 && x.RefreshTokens.Any(t => t.Token == token)
             );
 
-            if (student == null) return null;
+            if (student == null) {
+                return null;
+            }
 
             var refreshToken = student.RefreshTokens.SingleOrDefault(x => x.Token == token);
-            if (refreshToken == null) return null;
+
+            if (refreshToken == null) {
+                return null;
+            }
 
             var newToken = JwtTokenService.GenerateRefreshToken(ipAddress);
             refreshToken.Revoked = DateTime.UtcNow;
@@ -159,10 +167,10 @@ namespace jahndigital.studentbank.services
                 student.Id,
                 student.AccountNumber,
                 Constants.Role.Student.Name,
-                email: student.Email ?? "",
-                firstName: student.FirstName,
-                lastName: student.LastName,
-                expires: _tokenLifetime
+                student.Email ?? "",
+                student.FirstName,
+                student.LastName,
+                _tokenLifetime
             );
 
             return new AuthenticateResponse(student, jwtToken, newToken.Token);
@@ -175,11 +183,19 @@ namespace jahndigital.studentbank.services
                 u => u.RefreshTokens.Any(t => t.Token == token)
             );
 
-            if (student == null) return false;
+            if (student == null) {
+                return false;
+            }
 
             var refreshToken = student.RefreshTokens.SingleOrDefault(x => x.Token == token);
-            if (refreshToken == null) return false;
-            if (!refreshToken.IsActive) return false;
+
+            if (refreshToken == null) {
+                return false;
+            }
+
+            if (!refreshToken.IsActive) {
+                return false;
+            }
 
             refreshToken.Revoked = DateTime.UtcNow;
             refreshToken.RevokedByIpAddress = ipAddress;

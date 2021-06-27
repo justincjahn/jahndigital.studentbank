@@ -5,6 +5,7 @@ using HotChocolate;
 using HotChocolate.AspNetCore.Authorization;
 using HotChocolate.Types;
 using jahndigital.studentbank.dal.Contexts;
+using jahndigital.studentbank.dal.Entities;
 using jahndigital.studentbank.server.Models;
 using jahndigital.studentbank.utils;
 using Microsoft.EntityFrameworkCore;
@@ -12,22 +13,23 @@ using Microsoft.EntityFrameworkCore;
 namespace jahndigital.studentbank.server.GraphQL.Mutations
 {
     /// <summary>
-    /// CRUD operations for <see cref="dal.Entities.Stock"/> entities.
+    ///     CRUD operations for <see cref="dal.Entities.Stock" /> entities.
     /// </summary>
     [ExtendObjectType(Name = "Mutation")]
     public class StockMutations
     {
         /// <summary>
-        /// Create a new stock.
+        ///     Create a new stock.
         /// </summary>
         /// <param name="input"></param>
         /// <param name="context"></param>
         /// <returns></returns>
         [UseSelection, Authorize(Policy = Constants.Privilege.PRIVILEGE_MANAGE_STOCKS)]
-        public async Task<IQueryable<dal.Entities.Stock>> NewStockAsync (
+        public async Task<IQueryable<Stock>> NewStockAsync(
             NewStockRequest input,
-            [Service]AppDbContext context
-        ) {
+            [Service] AppDbContext context
+        )
+        {
             var hasStock = await context.Stocks.AnyAsync(x => x.Symbol == input.Symbol);
 
             if (hasStock) {
@@ -36,7 +38,7 @@ namespace jahndigital.studentbank.server.GraphQL.Mutations
                 );
             }
 
-            var stock = new dal.Entities.Stock {
+            var stock = new Stock {
                 Symbol = input.Symbol,
                 Name = input.Name,
                 CurrentValue = input.CurrentValue,
@@ -44,7 +46,7 @@ namespace jahndigital.studentbank.server.GraphQL.Mutations
                 AvailableShares = input.TotalShares
             };
 
-            stock.History.Add(new dal.Entities.StockHistory {
+            stock.History.Add(new StockHistory {
                 Stock = stock,
                 Value = input.CurrentValue
             });
@@ -60,23 +62,24 @@ namespace jahndigital.studentbank.server.GraphQL.Mutations
         }
 
         /// <summary>
-        /// Update a <see cref="dal.Entities.Stock"/>.
+        ///     Update a <see cref="dal.Entities.Stock" />.
         /// </summary>
         /// <param name="input"></param>
         /// <param name="context"></param>
         /// <returns></returns>
         [UseSelection, Authorize(Policy = Constants.Privilege.PRIVILEGE_MANAGE_STOCKS)]
-        public async Task<IQueryable<dal.Entities.Stock>> UpdateStockAsync(
+        public async Task<IQueryable<Stock>> UpdateStockAsync(
             UpdateStockRequest input,
             [Service] AppDbContext context
-        ) {
+        )
+        {
             var stock = await context.Stocks.FindAsync(input.Id)
                 ?? throw ErrorFactory.NotFound();
 
             if (input.Name != null && stock.Name != input.Name) {
                 var stockExists = await context.Stocks
                     .Where(x => x.Name == input.Name && x.Id != input.Id)
-                .AnyAsync();
+                    .AnyAsync();
 
                 if (stockExists) {
                     throw ErrorFactory.QueryFailed($"A stock named {input.Name} already exists.");
@@ -89,7 +92,7 @@ namespace jahndigital.studentbank.server.GraphQL.Mutations
                 var symbol = input.Symbol.ToUpper();
                 var symbolExists = await context.Stocks
                     .Where(x => x.Symbol == symbol && x.Id != input.Id)
-                .AnyAsync();
+                    .AnyAsync();
 
                 if (symbolExists) {
                     throw ErrorFactory.QueryFailed($"A stock with the symbol {symbol} already exists.");
@@ -110,7 +113,7 @@ namespace jahndigital.studentbank.server.GraphQL.Mutations
             }
 
             if (input.CurrentValue is not null && stock.CurrentValue != input.CurrentValue) {
-                context.StockHistory.Add(new dal.Entities.StockHistory {
+                context.StockHistory.Add(new StockHistory {
                     Stock = stock,
                     Value = input.CurrentValue
                 });
@@ -130,29 +133,38 @@ namespace jahndigital.studentbank.server.GraphQL.Mutations
         }
 
         /// <summary>
-        /// Link a <see cref="dal.Entities.Stock"/> to an <see cref="dal.Entities.Instance"/>.
+        ///     Link a <see cref="dal.Entities.Stock" /> to an <see cref="dal.Entities.Instance" />.
         /// </summary>
         /// <param name="input"></param>
         /// <param name="context"></param>
         /// <returns></returns>
         [UseSelection, Authorize(Policy = Constants.Privilege.PRIVILEGE_MANAGE_STOCKS)]
-        public async Task<IQueryable<dal.Entities.Stock>> LinkStockAsync(
+        public async Task<IQueryable<Stock>> LinkStockAsync(
             LinkStockRequest input,
             [Service] AppDbContext context
-        ) {
+        )
+        {
             var hasInstance = await context.Instances.AnyAsync(x => x.Id == input.InstanceId);
-            if (!hasInstance) throw ErrorFactory.NotFound();
+
+            if (!hasInstance) {
+                throw ErrorFactory.NotFound();
+            }
 
             var hasStock = await context.Stocks.AnyAsync(x => x.Id == input.StockId);
-            if (!hasStock) throw ErrorFactory.NotFound();
+
+            if (!hasStock) {
+                throw ErrorFactory.NotFound();
+            }
 
             var hasLinks = await context.StockInstances
                 .Where(x => x.StockId == input.StockId && x.InstanceId == input.InstanceId)
                 .AnyAsync();
-            
-            if (hasLinks) throw ErrorFactory.QueryFailed("Stock is already linked to the provided instance!");
 
-            var link = new dal.Entities.StockInstance {
+            if (hasLinks) {
+                throw ErrorFactory.QueryFailed("Stock is already linked to the provided instance!");
+            }
+
+            var link = new StockInstance {
                 StockId = input.StockId,
                 InstanceId = input.InstanceId
             };
@@ -168,32 +180,41 @@ namespace jahndigital.studentbank.server.GraphQL.Mutations
         }
 
         /// <summary>
-        /// Unlink a <see cref="dal.Entities.Stock"/> from an <see cref="dal.Entities.Instance"/>.
+        ///     Unlink a <see cref="dal.Entities.Stock" /> from an <see cref="dal.Entities.Instance" />.
         /// </summary>
         /// <param name="input"></param>
         /// <param name="context"></param>
         /// <returns></returns>
         [UseSelection, Authorize(Policy = Constants.Privilege.PRIVILEGE_MANAGE_STOCKS)]
-        public async Task<IQueryable<dal.Entities.Stock>> UnlinkStockAsync(
+        public async Task<IQueryable<Stock>> UnlinkStockAsync(
             LinkStockRequest input,
             [Service] AppDbContext context
-        ) {
+        )
+        {
             var hasInstance = await context.Instances.AnyAsync(x => x.Id == input.InstanceId);
-            if (!hasInstance) throw ErrorFactory.NotFound();
+
+            if (!hasInstance) {
+                throw ErrorFactory.NotFound();
+            }
 
             var hasStock = await context.Stocks.AnyAsync(x => x.Id == input.StockId);
-            if (!hasStock) throw ErrorFactory.NotFound();
+
+            if (!hasStock) {
+                throw ErrorFactory.NotFound();
+            }
 
             var link = await context.StockInstances
                 .Where(x => x.StockId == input.StockId && x.InstanceId == input.InstanceId)
                 .FirstOrDefaultAsync();
-            
-            if (link == null) throw ErrorFactory.QueryFailed("Stock is already unlinked to the provided instance!");
+
+            if (link == null) {
+                throw ErrorFactory.QueryFailed("Stock is already unlinked to the provided instance!");
+            }
 
             // Determine if the students in the instance being unlinked still have shares.
             var hasIssuedShares = await context.StockInstances
                 .Include(x => x.Stock)
-                    .ThenInclude(x => x.StudentStock)
+                .ThenInclude(x => x.StudentStock)
                 .Where(x =>
                     x.StockId == input.StockId
                     && x.InstanceId == input.InstanceId
@@ -217,26 +238,30 @@ namespace jahndigital.studentbank.server.GraphQL.Mutations
         }
 
         /// <summary>
-        /// Soft-delete a stock.
+        ///     Soft-delete a stock.
         /// </summary>
         /// <param name="id"></param>
         /// <param name="context"></param>
         /// <returns></returns>
         [Authorize(Policy = Constants.Privilege.PRIVILEGE_MANAGE_STOCKS)]
-        public async Task<bool> DeleteStockAsync(long id, [Service]AppDbContext context)
+        public async Task<bool> DeleteStockAsync(long id, [Service] AppDbContext context)
         {
             var stock = await context.Stocks.SingleOrDefaultAsync(x => x.Id == id)
                 ?? throw ErrorFactory.NotFound();
 
             var hasPurchases = await context.StudentStocks.AnyAsync(x => x.SharesOwned > 0 && x.StockId == stock.Id);
+
             if (hasPurchases) {
                 throw ErrorFactory.QueryFailed(
                     "There are still students who own shares of this stock.  Please buy them out first!"
                 );
             }
-            
+
             var hasLinks = await context.StockInstances.AnyAsync(x => x.StockId == stock.Id);
-            if (hasLinks) throw ErrorFactory.QueryFailed("Cannot delete a stock that's still linked to an instance!");
+
+            if (hasLinks) {
+                throw ErrorFactory.QueryFailed("Cannot delete a stock that's still linked to an instance!");
+            }
 
             stock.DateDeleted = DateTime.UtcNow;
 
@@ -250,17 +275,17 @@ namespace jahndigital.studentbank.server.GraphQL.Mutations
         }
 
         /// <summary>
-        /// Restore a deleted stock.
+        ///     Restore a deleted stock.
         /// </summary>
         /// <param name="id"></param>
         /// <param name="context"></param>
         /// <returns></returns>
         [UseSelection, Authorize(Policy = Constants.Privilege.PRIVILEGE_MANAGE_STOCKS)]
-        public async Task<IQueryable<dal.Entities.Stock>> RestoreStockAsync(long id, [Service]AppDbContext context)
+        public async Task<IQueryable<Stock>> RestoreStockAsync(long id, [Service] AppDbContext context)
         {
             var stock = await context.Stocks.SingleOrDefaultAsync(x => x.Id == id && x.DateDeleted != null)
                 ?? throw ErrorFactory.NotFound();
-            
+
             stock.DateDeleted = null;
 
             try {

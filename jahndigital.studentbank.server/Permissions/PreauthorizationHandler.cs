@@ -7,12 +7,13 @@ namespace jahndigital.studentbank.server.Permissions
     public class PreauthorizationHandler : AuthorizationHandler<PreauthorizationRequirement>
     {
         /// <summary>
-        /// Ensures that the provided <see cname="AuthorizationHandlerContext"/> has a user that
-        /// is preauthenticated.
+        ///     Ensures that the provided <see cname="AuthorizationHandlerContext" /> has a user that
+        ///     is preauthenticated.
         /// </summary>
         /// <param name="context"></param>
         /// <returns></returns>
-        public static bool AssertPreauthenticated(AuthorizationHandlerContext context) {
+        public static bool AssertPreauthenticated(AuthorizationHandlerContext context)
+        {
             var claim = context.User.FindFirst(claim => claim.Type == Constants.Auth.CLAIM_PREAUTH_TYPE);
 
             if (claim is null) {
@@ -29,7 +30,8 @@ namespace jahndigital.studentbank.server.Permissions
         protected override Task HandleRequirementAsync(
             AuthorizationHandlerContext context,
             PreauthorizationRequirement requirement
-        ) {
+        )
+        {
             if (AssertPreauthenticated(context)) {
                 context.Succeed(requirement);
             }

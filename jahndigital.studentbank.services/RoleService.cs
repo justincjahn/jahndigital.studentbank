@@ -9,86 +9,86 @@ using Microsoft.EntityFrameworkCore;
 namespace jahndigital.studentbank.services
 {
     /// <summary>
-    /// Service that enables the validating role permissions.
+    ///     Service that enables the validating role permissions.
     /// </summary>
     public class RoleService : IRoleService
     {
         /// <summary>
-        /// Cache requests so we don't need to pull data from the database on every authentication iteration.
+        ///     Cache requests so we don't need to pull data from the database on every authentication iteration.
         /// </summary>
-        private readonly Dictionary<string, Dictionary<string, bool>> _cache = new Dictionary<string, Dictionary<string, bool>>();
+        private readonly Dictionary<string, Dictionary<string, bool>> _cache = new();
 
         /// <summary>
-        /// Cache for the roles.
-        /// </summary>
-        private readonly Dictionary<string, long> _roleCache = new Dictionary<string, long>();
-
-        /// <summary>
-        /// The database context to use when querying and updating the data store.
+        ///     The database context to use when querying and updating the data store.
         /// </summary>
         private readonly AppDbContext _context;
 
         /// <summary>
-        /// Initialize the instance with a database context.
+        ///     Cache for the roles.
         /// </summary>
-        /// <param name="context"></param>
-        public RoleService(AppDbContext context) => _context = context;
+        private readonly Dictionary<string, long> _roleCache = new();
 
         /// <summary>
-        /// 
+        ///     Initialize the instance with a database context.
         /// </summary>
-        /// <param name="role"></param>
-        /// <returns></returns>
-        private async Task<long?> GetRoleId(string role)
+        /// <param name="context"></param>
+        public RoleService(AppDbContext context)
         {
-            if (!this._roleCache.ContainsKey(role)) {
-                var dbRole = await _context.Roles.SingleOrDefaultAsync(x => x.Name == role);
-                if (dbRole == null) return null;
-                this._roleCache.Add(role, dbRole.Id);
-                return dbRole.Id;
-            }
-
-            return this._roleCache[role];
+            _context = context;
         }
 
         /// <inheritdoc />
         public async Task<bool> HasPermissionAsync(string role, string permission)
         {
-            if (!this._cache.ContainsKey(role))  {
-                this._cache.Add(role, new Dictionary<string, bool>());
-            };
+            if (!_cache.ContainsKey(role)) {
+                _cache.Add(role, new Dictionary<string, bool>());
+            }
 
-            if (!this._cache[role].ContainsKey(permission)) {
+            ;
+
+            if (!_cache[role].ContainsKey(permission)) {
                 var roleId = await GetRoleId(role);
-                if (!roleId.HasValue) return false;
+
+                if (!roleId.HasValue) {
+                    return false;
+                }
 
                 var dbPermissions = await _context.RolePrivileges
                     .Where(x => x.RoleId == roleId
                         && (x.Privilege.Name == permission
                             || x.Privilege.Name == Constants.Privilege.All.Name))
                     .SingleOrDefaultAsync();
-                
-                this._cache[role].Add(permission, dbPermissions != null);
+
+                _cache[role].Add(permission, dbPermissions != null);
             }
 
-            return this._cache[role][permission];
+            return _cache[role][permission];
         }
 
         /// <inheritdoc />
         public async Task<bool> HasPermissionAsync(string role, IEnumerable<string> permissions)
         {
-            if (!this._cache.ContainsKey(role))  {
-                this._cache.Add(role, new Dictionary<string, bool>());
-            };
-            
-            var cache = this._cache[role].Where(x => permissions.Contains(x.Key) && x.Value == true).Any();
-            if (cache) return true;
+            if (!_cache.ContainsKey(role)) {
+                _cache.Add(role, new Dictionary<string, bool>());
+            }
+
+            ;
+
+            var cache = _cache[role].Where(x => permissions.Contains(x.Key) && x.Value).Any();
+
+            if (cache) {
+                return true;
+            }
 
             // If there are missing permissions, fetch them
-            var missing = permissions.Where(x => !this._cache[role].Keys.Contains(x)).ToList();
+            var missing = permissions.Where(x => !_cache[role].Keys.Contains(x)).ToList();
+
             if (missing.Count > 0) {
                 var roleId = await GetRoleId(role);
-                if (!roleId.HasValue) return false;
+
+                if (!roleId.HasValue) {
+                    return false;
+                }
 
                 var dbPermissions = await _context.RolePrivileges
                     .Include(x => x.Privilege)
@@ -96,7 +96,7 @@ namespace jahndigital.studentbank.services
                         && (missing.Contains(x.Privilege.Name)
                             || x.Privilege.Name == Constants.Privilege.All.Name))
                     .ToListAsync();
-                
+
                 foreach (var missingPrivilege in missing) {
                     if (
                         dbPermissions.Where(x =>
@@ -104,9 +104,9 @@ namespace jahndigital.studentbank.services
                             || x.Privilege.Name == Constants.Privilege.PRIVILEGE_ALL
                         ).Any()
                     ) {
-                        this._cache[role].Add(missingPrivilege, true);
+                        _cache[role].Add(missingPrivilege, true);
                     } else {
-                        this._cache[role].Add(missingPrivilege, false);
+                        _cache[role].Add(missingPrivilege, false);
                     }
                 }
 
@@ -114,6 +114,27 @@ namespace jahndigital.studentbank.services
             }
 
             return false;
+        }
+
+        /// <summary>
+        /// </summary>
+        /// <param name="role"></param>
+        /// <returns></returns>
+        private async Task<long?> GetRoleId(string role)
+        {
+            if (!_roleCache.ContainsKey(role)) {
+                var dbRole = await _context.Roles.SingleOrDefaultAsync(x => x.Name == role);
+
+                if (dbRole == null) {
+                    return null;
+                }
+
+                _roleCache.Add(role, dbRole.Id);
+
+                return dbRole.Id;
+            }
+
+            return _roleCache[role];
         }
     }
 }

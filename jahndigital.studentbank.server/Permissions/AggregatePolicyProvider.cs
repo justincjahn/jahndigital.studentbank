@@ -7,25 +7,23 @@ using Microsoft.Extensions.Options;
 namespace jahndigital.studentbank.server.Permissions
 {
     /// <summary>
-    /// An <see cref="IAuthorizationPolicyProvider" /> that aggregates several to enable multiple
-    /// different policy providers to generate an <see cref="AuthorizationPolicy" />.
+    ///     An <see cref="IAuthorizationPolicyProvider" /> that aggregates several to enable multiple
+    ///     different policy providers to generate an <see cref="AuthorizationPolicy" />.
     /// </summary>
     public class AggregatePolicyProvider : IAuthorizationPolicyProvider
     {
-        private IHttpContextAccessor _httpContext;
-
-        public DefaultAuthorizationPolicyProvider FallbackPolicyProvider { get; }
-
         private readonly DataOwnerPermissionProvider _doPermissionProvider;
 
         private readonly PermissionPolicyProvider _permissionProvider;
 
         private readonly PreauthorizationProvider _preauthorizationProvider;
+        private IHttpContextAccessor _httpContext;
 
         public AggregatePolicyProvider(
             IHttpContextAccessor httpContextAccessor,
             IOptions<AuthorizationOptions> options
-        ) {
+        )
+        {
             FallbackPolicyProvider = new DefaultAuthorizationPolicyProvider(options);
             _httpContext = httpContextAccessor;
             _doPermissionProvider = new DataOwnerPermissionProvider(options);
@@ -33,23 +31,30 @@ namespace jahndigital.studentbank.server.Permissions
             _preauthorizationProvider = new PreauthorizationProvider(options);
         }
 
-        public Task<AuthorizationPolicy> GetDefaultPolicyAsync() =>
-            FallbackPolicyProvider.GetDefaultPolicyAsync();
+        public DefaultAuthorizationPolicyProvider FallbackPolicyProvider { get; }
 
-        public Task<AuthorizationPolicy?> GetFallbackPolicyAsync() =>
-            FallbackPolicyProvider.GetFallbackPolicyAsync();
+        public Task<AuthorizationPolicy> GetDefaultPolicyAsync()
+        {
+            return FallbackPolicyProvider.GetDefaultPolicyAsync();
+        }
+
+        public Task<AuthorizationPolicy?> GetFallbackPolicyAsync()
+        {
+            return FallbackPolicyProvider.GetFallbackPolicyAsync();
+        }
 
         /// <summary>
-        /// 
         /// </summary>
         /// <param name="policyName"></param>
         /// <returns></returns>
-        public Task<AuthorizationPolicy?> GetPolicyAsync(string policyName) =>
-            GetPolicyProvider(policyName).GetPolicyAsync(policyName);
+        public Task<AuthorizationPolicy?> GetPolicyAsync(string policyName)
+        {
+            return GetPolicyProvider(policyName).GetPolicyAsync(policyName);
+        }
 
         /// <summary>
-        /// Fetch the appropriate <see cref="IAuthorizationPolicyProvider" /> for the
-        /// policy string.
+        ///     Fetch the appropriate <see cref="IAuthorizationPolicyProvider" /> for the
+        ///     policy string.
         /// </summary>
         /// <param name="name"></param>
         /// <returns></returns>

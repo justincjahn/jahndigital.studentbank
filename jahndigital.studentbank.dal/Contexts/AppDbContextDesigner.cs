@@ -9,6 +9,7 @@ namespace jahndigital.studentbank.dal.Contexts
         {
             var builder = new DbContextOptionsBuilder();
             builder.UseSqlServer("Data Source=.\\SQLExpress;Initial Catalog=studentbankdev; Integrated Security=True;");
+
             return new AppDbContext(builder.Options);
         }
     }

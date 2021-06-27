@@ -4,7 +4,7 @@ using jahndigital.studentbank.utils;
 
 namespace jahndigital.studentbank.server.GraphQL.ObjectTypes
 {
-    public class TransactionTypes : ObjectType<dal.Entities.Transaction>
+    public class TransactionTypes : ObjectType<Transaction>
     {
         protected override void Configure(IObjectTypeDescriptor<Transaction> descriptor)
         {

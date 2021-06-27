@@ -1,45 +1,47 @@
 using System;
+using jahndigital.studentbank.dal.Entities;
 using jahndigital.studentbank.utils;
 
 namespace jahndigital.studentbank.services.Exceptions
 {
-    public class NonsufficientFundsException : BaseException {
-        public dal.Entities.Share? Share {get; private set;}
+    public class NonsufficientFundsException : BaseException
+    {
+        private Transaction? _transaction;
 
-        public Money Amount { get; private set;}
+        public NonsufficientFundsException(Share share, Money amount) : base(
+            $"Nonsufficient funds on Share {share.Student?.AccountNumber ?? ""}#{share.Id} ({share.Balance}) to honor transaction amount of {amount}."
+        )
+        {
+            Share = share;
+            Amount = amount;
+        }
 
-        private dal.Entities.Transaction? _transaction;
+        public Share? Share { get; }
+
+        public Money Amount { get; }
 
         /// <summary>
-        /// Get or set the transaction object representing the exception.
+        ///     Get or set the transaction object representing the exception.
         /// </summary>
-        public dal.Entities.Transaction Transaction {
+        public Transaction Transaction
+        {
             get {
                 if (_transaction == null) {
-                    _transaction = new dal.Entities.Transaction {
+                    _transaction = new Transaction {
                         Amount = Money.FromCurrency(0.0m),
-                        NewBalance = this.Share?.Balance ?? Money.FromCurrency(0.0m),
-                        TargetShare = this.Share ?? new dal.Entities.Share() { Id = -1},
-                        TargetShareId = this.Share?.Id ?? -1,
+                        NewBalance = Share?.Balance ?? Money.FromCurrency(0.0m),
+                        TargetShare = Share ?? new Share {Id = -1},
+                        TargetShareId = Share?.Id ?? -1,
                         TransactionType = "NSF",
                         EffectiveDate = DateTime.UtcNow,
-                        Comment = this.Message
+                        Comment = Message
                     };
                 }
 
                 return _transaction;
             }
 
-            set {
-                _transaction = value;
-            }
-        }
-
-        public NonsufficientFundsException(dal.Entities.Share share, Money amount) : base (
-            $"Nonsufficient funds on Share {share.Student?.AccountNumber ?? ""}#{share.Id} ({share.Balance}) to honor transaction amount of {amount}."
-        ) {
-            Share = share;
-            Amount = amount;
+            set => _transaction = value;
         }
     }
 }

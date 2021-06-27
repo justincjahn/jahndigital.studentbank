@@ -5,21 +5,21 @@ using jahndigital.studentbank.utils;
 namespace jahndigital.studentbank.server.GraphQL
 {
     /// <summary>
-    /// A factory object to produce various HotChocolate error messages.
+    ///     A factory object to produce various HotChocolate error messages.
     /// </summary>
     /// <remarks>
-    /// Use an <see cname="IErrorFilter" /> instead.
-    /// https://josiahmortenson.dev/blog/2020-06-05-hotchocolate-graphql-errors
+    ///     Use an <see cname="IErrorFilter" /> instead.
+    ///     https://josiahmortenson.dev/blog/2020-06-05-hotchocolate-graphql-errors
     /// </remarks>
     public static class ErrorFactory
     {
         /// <summary>
-        /// Tell the client that the currently logged in user is unauthorized.
+        ///     Tell the client that the currently logged in user is unauthorized.
         /// </summary>
         /// <returns></returns>
         public static QueryException Unauthorized()
         {
-            return new QueryException(
+            return new(
                 ErrorBuilder.New()
                     .SetMessage("The current user is not authorized to access this resource.")
                     .SetCode(Constants.ErrorStrings.ERROR_UNAUTHORIZED)
@@ -28,12 +28,12 @@ namespace jahndigital.studentbank.server.GraphQL
         }
 
         /// <summary>
-        /// Tell the client that the resource they requested was not found.
+        ///     Tell the client that the resource they requested was not found.
         /// </summary>
         /// <returns></returns>
         public static QueryException NotFound()
         {
-            return new QueryException(
+            return new(
                 ErrorBuilder.New()
                     .SetMessage("The requested resource was not found.")
                     .SetCode(Constants.ErrorStrings.ERROR_NOT_FOUND)
@@ -42,13 +42,13 @@ namespace jahndigital.studentbank.server.GraphQL
         }
 
         /// <summary>
-        /// A database query failed.
+        ///     A database query failed.
         /// </summary>
         /// <param name="message"></param>
         /// <returns></returns>
         public static QueryException QueryFailed(string message)
         {
-            return new QueryException(
+            return new(
                 ErrorBuilder.New()
                     .SetMessage(message)
                     .SetCode(Constants.ErrorStrings.ERROR_QUERY_FAILED)

@@ -8,7 +8,7 @@ namespace jahndigital.studentbank.dal.Configuration
     {
         public void Configure(EntityTypeBuilder<StockInstance> builder)
         {
-            builder.HasKey(x => new { x.InstanceId, x.StockId });
+            builder.HasKey(x => new {x.InstanceId, x.StockId});
 
             builder.HasOne(x => x.Instance)
                 .WithMany(x => x.StockInstances)
