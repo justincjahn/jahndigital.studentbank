@@ -34,6 +34,11 @@ namespace jahndigital.studentbank.server.Models
         ///     Get or set the student's password.
         /// </summary>
         public string? Password { get; set; }
+        
+        /// <summary>
+        ///     Get or set the student's current password.
+        /// </summary>
+        public string? CurrentPassword { get; set; }
 
         /// <summary>
         ///     Get or set the student's group ID.

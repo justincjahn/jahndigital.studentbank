@@ -140,12 +140,16 @@ namespace jahndigital.studentbank.server.GraphQL.Mutations
         /// <param name="input"></param>
         /// <param name="context"></param>
         /// <param name="resolverContext"></param>
+        /// <param name="contextAccessor"></param>
+        /// <param name="userService"></param>
         /// <returns></returns>
         [UseSelection, Authorize]
         public async Task<IQueryable<User>> UpdateUserAsync(
             UpdateUserRequest input,
             [Service] AppDbContext context,
-            [Service] IResolverContext resolverContext
+            [Service] IResolverContext resolverContext,
+            [Service] IHttpContextAccessor contextAccessor,
+            [Service] IUserService userService
         )
         {
             resolverContext.SetUser(input.Id, UserType.User);
@@ -162,10 +166,31 @@ namespace jahndigital.studentbank.server.GraphQL.Mutations
                     .SingleOrDefaultAsync()
                 ?? throw ErrorFactory.NotFound();
 
+            // If the account belongs to the user, they must provide their current password
+            if (user.Id == (resolverContext.GetUserId() ?? -1) && input.Password is not null) {
+                if (input.CurrentPassword is null) {
+                    throw ErrorFactory.Unauthorized();
+                }
+
+                var req = new AuthenticateRequest() {
+                    Username = user.Email,
+                    Password = input.CurrentPassword
+                };
+
+                var res = await userService.AuthenticateAsync(req, GetIp(contextAccessor));
+                if (res is null) {
+                    throw new QueryException(
+                        ErrorBuilder.New()
+                            .SetMessage("Bad username or password.")
+                            .SetCode("LOGIN_FAIL")
+                            .Build());
+                }
+            }
+
             user.Email = input.Email ?? user.Email;
             user.RoleId = input.RoleId ?? user.RoleId;
 
-            if (input.Password != null) {
+            if (input.Password is not null) {
                 user.Password = input.Password;
             }
 

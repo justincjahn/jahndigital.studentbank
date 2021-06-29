@@ -256,12 +256,16 @@ namespace jahndigital.studentbank.server.GraphQL.Mutations
         /// <param name="input"></param>
         /// <param name="context"></param>
         /// <param name="resolverContext"></param>
+        /// <param name="studentService"></param>
+        /// <param name="contextAccessor"></param>
         /// <returns></returns>
         [UseSelection, Authorize]
         public async Task<IQueryable<Student>> UpdateStudentAsync(
             UpdateStudentRequest input,
             [Service] AppDbContext context,
-            [Service] IResolverContext resolverContext
+            [Service] IResolverContext resolverContext,
+            [Service] IStudentService studentService,
+            [Service] IHttpContextAccessor contextAccessor
         )
         {
             resolverContext.SetUser(input.Id, UserType.Student);
@@ -286,6 +290,32 @@ namespace jahndigital.studentbank.server.GraphQL.Mutations
 
                 if (type != UserType.User) {
                     throw ErrorFactory.Unauthorized();
+                }
+            }
+
+            if (input.Password is not null) {
+                if (input.CurrentPassword is null) {
+                    throw new QueryException(
+                        ErrorBuilder.New()
+                            .SetMessage("Bad username or password.")
+                            .SetCode("LOGIN_FAIL")
+                            .Build()
+                    );
+                }
+
+                var req = new AuthenticateRequest() {
+                    Username = student.AccountNumber,
+                    Password = input.CurrentPassword
+                };
+
+                var res = await studentService.AuthenticateAsync(req, GetIp(contextAccessor));
+                if (res is null) {
+                    throw new QueryException(
+                        ErrorBuilder.New()
+                            .SetMessage("Bad username or password.")
+                            .SetCode("LOGIN_FAIL")
+                            .Build()
+                    );
                 }
             }
 

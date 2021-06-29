@@ -19,6 +19,11 @@ namespace jahndigital.studentbank.server.Models
         ///     Get or set the user's password.
         /// </summary>
         public string? Password { get; set; }
+        
+        /// <summary>
+        ///     If a password change is requested, then this field must be set to the user's current password.
+        /// </summary>
+        public string? CurrentPassword { get; set; }
 
         /// <summary>
         ///     Get or set the user's role.
