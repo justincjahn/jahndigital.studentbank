@@ -61,7 +61,7 @@ namespace jahndigital.studentbank.services
                 ?? throw new ShareNotFoundException(shareId);
 
             if (withdrawalLimit && type == "W") {
-                await _assessWithdrawalLimit(share);
+                _assessWithdrawalLimit(share);
             }
 
             if (amount < Money.FromCurrency(0.0m) && share.Balance < amount && !takeNegative) {
@@ -193,12 +193,13 @@ namespace jahndigital.studentbank.services
 
             if (sourceShare.Student.Group.InstanceId != destinationShare.Student.Group.InstanceId) {
                 throw new ArgumentOutOfRangeException(
-                    "destinationShare", "Source and destination share must be in the same instance."
+                    nameof(destinationShareId),
+                    "Source and destination share must be in the same instance."
                 );
             }
 
             if (withdrawalLimit) {
-                await _assessWithdrawalLimit(sourceShare);
+                _assessWithdrawalLimit(sourceShare);
             }
 
             if (sourceShare.Balance < amount && !takeNegative) {
@@ -264,7 +265,10 @@ namespace jahndigital.studentbank.services
         {
             // Validate that the items don't contain negative or zero quantities
             if (input.Items.Any(x => x.Count < 1)) {
-                throw new ArgumentOutOfRangeException("Purchase quantities must be greater than zero.");
+                throw new ArgumentOutOfRangeException(
+                    nameof(input),
+                    "Purchase quantities must be greater than zero."
+                );
             }
 
             // Get the share's Student ID and Instance ID for later use
@@ -402,7 +406,7 @@ namespace jahndigital.studentbank.services
                     .Include(x => x.StockInstances)
                     .Where(x =>
                         x.Id == input.StockId
-                        && x.StockInstances.Any(x => x.InstanceId == share.InstanceId))
+                        && x.StockInstances.Any(xx => xx.InstanceId == share.InstanceId))
                     .SingleOrDefaultAsync()
                 ?? throw new UnauthorizedPurchaseException();
 
@@ -435,9 +439,8 @@ namespace jahndigital.studentbank.services
             studentStock.DateLastActive = DateTime.UtcNow;
 
             var totalCost = stock.CurrentValue * input.Quantity * -1;
-            Transaction? transaction;
             var buySell = totalCost.Amount > 0.0M ? "sale" : "purchase";
-            transaction = await PostAsync(
+            var transaction = await PostAsync(
                 share.Id,
                 totalCost,
                 $"Stock {buySell}: {input.Quantity} shares of {stock.Symbol}"
@@ -482,7 +485,9 @@ namespace jahndigital.studentbank.services
 
             if (shareType.DividendRate == Rate.FromRate(0.0m)) {
                 throw new ArgumentOutOfRangeException(
-                    "input", "Share Type provided has no dividend rate.");
+                    nameof(input),
+                    "Share Type provided has no dividend rate."
+                );
             }
 
             var instances = await _context.Instances
@@ -491,7 +496,9 @@ namespace jahndigital.studentbank.services
 
             if (instances != input.Instances.Count()) {
                 throw new ArgumentOutOfRangeException(
-                    "input", "One or more instances provided do not exist.");
+                    nameof(input),
+                    "One or more instances provided do not exist."
+                );
             }
 
             var transaction = await _context.Database.BeginTransactionAsync();
@@ -550,34 +557,34 @@ namespace jahndigital.studentbank.services
         /// </summary>
         /// <param name="share"></param>
         /// <returns></returns>
-        protected async Task _assessWithdrawalLimit(Share share)
+        private void _assessWithdrawalLimit(Share share)
         {
-            var shareType = share.ShareType
-                ?? await _context.ShareTypes.Where(x => x.Id == share.ShareTypeId).FirstOrDefaultAsync()
-                ?? throw new ShareNotFoundException(share.Id);
+            var shareType = share.ShareType;
 
-            if (shareType.WithdrawalLimitCount > 0) {
-                if (share.LimitedWithdrawalCount >= shareType.WithdrawalLimitCount &&
-                    !shareType.WithdrawalLimitShouldFee) {
-                    throw new WithdrawalLimitExceededException(shareType, share);
-                }
-
-                if (shareType.WithdrawalLimitShouldFee) {
-                    // Charge a fee for the withdrawal instead of denying it
-                    share.Balance -= shareType.WithdrawalLimitFee;
-
-                    _context.Add(new Transaction {
-                        Amount = shareType.WithdrawalLimitFee,
-                        NewBalance = share.Balance,
-                        TargetShare = share,
-                        TransactionType = "F",
-                        EffectiveDate = DateTime.UtcNow,
-                        Comment = "Withdrawal Limit Fee"
-                    });
-                }
-
-                share.LimitedWithdrawalCount += 1;
+            if (shareType.WithdrawalLimitCount <= 0) {
+                return;
             }
+
+            if (share.LimitedWithdrawalCount >= shareType.WithdrawalLimitCount &&
+                !shareType.WithdrawalLimitShouldFee) {
+                throw new WithdrawalLimitExceededException(shareType, share);
+            }
+
+            if (shareType.WithdrawalLimitShouldFee) {
+                // Charge a fee for the withdrawal instead of denying it
+                share.Balance -= shareType.WithdrawalLimitFee;
+
+                _context.Add(new Transaction {
+                    Amount = shareType.WithdrawalLimitFee,
+                    NewBalance = share.Balance,
+                    TargetShare = share,
+                    TransactionType = "F",
+                    EffectiveDate = DateTime.UtcNow,
+                    Comment = "Withdrawal Limit Fee"
+                });
+            }
+
+            share.LimitedWithdrawalCount += 1;
         }
     }
 }
