@@ -514,6 +514,10 @@ namespace jahndigital.studentbank.dal.Migrations.mssql
                     b.Property<DateTime>("DateLastActive")
                         .HasColumnType("datetime2");
 
+                    b.Property<long>("RawNetContribution")
+                        .HasColumnType("bigint")
+                        .HasColumnName("NetContribution");
+
                     b.Property<long>("SharesOwned")
                         .HasColumnType("bigint");
 

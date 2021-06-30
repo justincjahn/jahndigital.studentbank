@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using jahndigital.studentbank.dal.Attributes;
+using jahndigital.studentbank.utils;
 
 namespace jahndigital.studentbank.dal.Entities
 {
@@ -45,6 +46,22 @@ namespace jahndigital.studentbank.dal.Entities
         /// </summary>
         [Required]
         public long SharesOwned { get; set; } = 0;
+
+        /// <summary>
+        ///     Raw dollar amount of net contributions.
+        /// </summary>
+        [Column("NetContribution"), Required]
+        public long RawNetContribution { get; private set; } = 0;
+
+        /// <summary>
+        ///     The dollar amount of net contributions.
+        /// </summary>
+        [NotMapped]
+        public Money NetContribution
+        {
+            get => Money.FromDatabase(RawNetContribution);
+            set => RawNetContribution = value.DatabaseAmount;
+        }
 
         /// <summary>
         ///     The history of buy/sells for this stock.

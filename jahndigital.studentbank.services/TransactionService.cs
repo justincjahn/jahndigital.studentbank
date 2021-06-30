@@ -424,7 +424,8 @@ namespace jahndigital.studentbank.services
                 studentStock = new StudentStock {
                     StudentId = share.StudentId,
                     StockId = stock.Id,
-                    SharesOwned = 0
+                    SharesOwned = 0,
+                    NetContribution = Money.FromCurrency(0m)
                 };
 
                 _context.Add(studentStock);
@@ -454,6 +455,7 @@ namespace jahndigital.studentbank.services
             });
 
             stock.AvailableShares -= input.Quantity;
+            studentStock.NetContribution += (transaction.Amount * -1);
 
             try {
                 await _context.SaveChangesAsync();
