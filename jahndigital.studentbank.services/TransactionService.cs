@@ -443,7 +443,7 @@ namespace jahndigital.studentbank.services
             var transaction = await PostAsync(
                 share.Id,
                 totalCost,
-                $"Stock {buySell}: {input.Quantity} shares of {stock.Symbol}"
+                $"Stock {buySell}: {input.Quantity} shares of {stock.Symbol} at {stock.CurrentValue}"
             );
 
             studentStock.History.Add(new StudentStockHistory {
