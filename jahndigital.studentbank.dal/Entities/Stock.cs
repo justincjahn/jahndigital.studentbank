@@ -34,7 +34,7 @@ namespace jahndigital.studentbank.dal.Entities
         ///     Total number of shares for the stock.
         /// </summary>
         [Required]
-        public long TotalShares { get; set; } = 0;
+        public long TotalShares { get; set; } = 10000000;
 
         /// <summary>
         ///     Total number of shares available to buy.

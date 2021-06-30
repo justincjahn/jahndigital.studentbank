@@ -228,8 +228,8 @@ namespace jahndigital.studentbank.services
                 var stock = new Stock {
                     Name = $"Stock {i + 1}",
                     Symbol = $"STK{i + 1}",
-                    TotalShares = 10000,
-                    AvailableShares = 10000,
+                    TotalShares = 10000000,
+                    AvailableShares = 10000000,
                     CurrentValue = Money.FromCurrency(amount)
                 };
 
