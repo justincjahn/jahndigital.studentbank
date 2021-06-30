@@ -212,13 +212,14 @@ namespace jahndigital.studentbank.server.GraphQL.Mutations
             }
 
             // Determine if the students in the instance being unlinked still have shares.
-            var hasIssuedShares = await context.StockInstances
-                .Include(x => x.Stock)
-                .ThenInclude(x => x.StudentStock)
+            var hasIssuedShares = await context.StudentStocks
+                .Include(x => x.Student)
+                .ThenInclude(x => x.Group)
                 .Where(x =>
-                    x.StockId == input.StockId
-                    && x.InstanceId == input.InstanceId
-                    && x.Stock.StudentStock.Any(xx => xx.SharesOwned > 0))
+                    x.Student.Group.InstanceId == input.InstanceId
+                    && x.StockId == input.StockId
+                    && x.SharesOwned > 0
+                )
                 .AnyAsync();
 
             if (hasIssuedShares) {
