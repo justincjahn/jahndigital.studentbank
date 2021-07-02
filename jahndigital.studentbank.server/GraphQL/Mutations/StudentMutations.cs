@@ -293,7 +293,7 @@ namespace jahndigital.studentbank.server.GraphQL.Mutations
                 }
             }
 
-            if (input.Password is not null) {
+            if (input.Password is not null && resolverContext.GetUserType() != UserType.User) {
                 if (input.CurrentPassword is null) {
                     throw new QueryException(
                         ErrorBuilder.New()
