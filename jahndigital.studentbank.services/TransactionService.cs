@@ -568,11 +568,14 @@ namespace jahndigital.studentbank.services
             }
 
             if (share.LimitedWithdrawalCount >= shareType.WithdrawalLimitCount &&
-                !shareType.WithdrawalLimitShouldFee) {
+                !shareType.WithdrawalLimitShouldFee)
+            {
                 throw new WithdrawalLimitExceededException(shareType, share);
             }
 
-            if (shareType.WithdrawalLimitShouldFee) {
+            if (share.LimitedWithdrawalCount >= shareType.WithdrawalLimitCount &&
+                shareType.WithdrawalLimitShouldFee)
+            {
                 // Charge a fee for the withdrawal instead of denying it
                 share.Balance -= shareType.WithdrawalLimitFee;
 
