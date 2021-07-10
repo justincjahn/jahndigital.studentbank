@@ -30,7 +30,7 @@ namespace jahndigital.studentbank.dal.Migrations.sqlite
                 {
                     Id = table.Column<long>(type: "INTEGER", nullable: false)
                         .Annotation("Sqlite:Autoincrement", true),
-                    Name = table.Column<string>(type: "TEXT", maxLength: 16, nullable: false),
+                    Name = table.Column<string>(type: "TEXT", maxLength: 64, nullable: false),
                     Description = table.Column<string>(type: "TEXT", maxLength: 128, nullable: false),
                     DateCreated = table.Column<DateTime>(type: "TEXT", nullable: false)
                 },
@@ -540,8 +540,7 @@ namespace jahndigital.studentbank.dal.Migrations.sqlite
                         name: "FK_StudentStockHistory_Transactions_TransactionId",
                         column: x => x.TransactionId,
                         principalTable: "Transactions",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
+                        principalColumn: "Id");
                 });
 
             migrationBuilder.CreateIndex(
@@ -646,7 +645,8 @@ namespace jahndigital.studentbank.dal.Migrations.sqlite
             migrationBuilder.CreateIndex(
                 name: "IX_StudentStockHistory_TransactionId",
                 table: "StudentStockHistory",
-                column: "TransactionId");
+                column: "TransactionId",
+                unique: true);
 
             migrationBuilder.CreateIndex(
                 name: "IX_StudentStocks_StockId",

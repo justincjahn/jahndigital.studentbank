@@ -21,6 +21,7 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -64,8 +65,11 @@ namespace jahndigital.studentbank.server
                     options.UseLoggerFactory(Factory);
                 });
             } else {
+                string connectionString = Configuration.GetConnectionString("Default");
+                SqlAuthenticationProvider.SetProvider(SqlAuthenticationMethod.ActiveDirectoryInteractive,
+                    new SqlAppAuthenticationProvider());
                 services.AddDbContext<AppDbContext>(options => {
-                    options.UseSqlServer(Configuration.GetConnectionString("Default"));
+                    options.UseSqlServer(connectionString);
                     options.UseLoggerFactory(Factory);
                 });
             }
