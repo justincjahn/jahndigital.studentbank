@@ -30,7 +30,7 @@ namespace jahndigital.studentbank.dal.Migrations.mssql
                 {
                     Id = table.Column<long>(type: "bigint", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
-                    Name = table.Column<string>(type: "nvarchar(16)", maxLength: 16, nullable: false),
+                    Name = table.Column<string>(type: "nvarchar(64)", maxLength: 64, nullable: false),
                     Description = table.Column<string>(type: "nvarchar(128)", maxLength: 128, nullable: false),
                     DateCreated = table.Column<DateTime>(type: "datetime2", nullable: false)
                 },
@@ -540,8 +540,7 @@ namespace jahndigital.studentbank.dal.Migrations.mssql
                         name: "FK_StudentStockHistory_Transactions_TransactionId",
                         column: x => x.TransactionId,
                         principalTable: "Transactions",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
+                        principalColumn: "Id");
                 });
 
             migrationBuilder.CreateIndex(
@@ -646,7 +645,8 @@ namespace jahndigital.studentbank.dal.Migrations.mssql
             migrationBuilder.CreateIndex(
                 name: "IX_StudentStockHistory_TransactionId",
                 table: "StudentStockHistory",
-                column: "TransactionId");
+                column: "TransactionId",
+                unique: true);
 
             migrationBuilder.CreateIndex(
                 name: "IX_StudentStocks_StockId",

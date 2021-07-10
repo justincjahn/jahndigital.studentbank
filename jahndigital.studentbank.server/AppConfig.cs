@@ -66,5 +66,27 @@ namespace jahndigital.studentbank.server
                 _tokenLifetime = value;
             }
         }
+
+        private string _dbDriver = "sqlite";
+
+        /// <summary>
+        /// The database driver to use
+        /// </summary>
+        public string DbDriver
+        {
+            get => _dbDriver;
+
+            set {
+                switch (value.ToLower())
+                {
+                    case "mssql":
+                        _dbDriver = "mssql";
+                        break;
+                    default:
+                        _dbDriver = "sqlite";
+                        break;
+                }
+            }
+        }
     }
 }

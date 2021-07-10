@@ -18,7 +18,7 @@ namespace jahndigital.studentbank.dal.Entities
         /// <summary>
         ///     Unique name of the privilege.
         /// </summary>
-        [MaxLength(16), Required]
+        [MaxLength(64), Required]
         public string Name { get; set; } = default!;
 
         /// <summary>

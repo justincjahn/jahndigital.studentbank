@@ -104,8 +104,8 @@ namespace jahndigital.studentbank.dal.Migrations.mssql
 
                     b.Property<string>("Name")
                         .IsRequired()
-                        .HasMaxLength(16)
-                        .HasColumnType("nvarchar(16)");
+                        .HasMaxLength(64)
+                        .HasColumnType("nvarchar(64)");
 
                     b.HasKey("Id");
 
@@ -563,7 +563,8 @@ namespace jahndigital.studentbank.dal.Migrations.mssql
 
                     b.HasIndex("StudentStockId");
 
-                    b.HasIndex("TransactionId");
+                    b.HasIndex("TransactionId")
+                        .IsUnique();
 
                     b.ToTable("StudentStockHistory");
                 });
@@ -909,9 +910,9 @@ namespace jahndigital.studentbank.dal.Migrations.mssql
                         .IsRequired();
 
                     b.HasOne("jahndigital.studentbank.dal.Entities.Transaction", "Transaction")
-                        .WithMany()
-                        .HasForeignKey("TransactionId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .WithOne()
+                        .HasForeignKey("jahndigital.studentbank.dal.Entities.StudentStockHistory", "TransactionId")
+                        .OnDelete(DeleteBehavior.NoAction)
                         .IsRequired();
 
                     b.Navigation("StudentStock");

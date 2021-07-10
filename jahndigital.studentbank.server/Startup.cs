@@ -58,10 +58,17 @@ namespace jahndigital.studentbank.server
 
             var tokenKey = Encoding.ASCII.GetBytes(appConfig.Get<AppConfig>().Secret);
 
-            services.AddDbContext<AppDbContext, SqliteDbContext>(options => {
-                options.UseSqlite(Configuration.GetConnectionString("Default"));
-                options.UseLoggerFactory(Factory);
-            });
+            if (appConfig.Get<AppConfig>().DbDriver == "sqlite") {
+                services.AddDbContext<AppDbContext, SqliteDbContext>(options => {
+                    options.UseSqlite(Configuration.GetConnectionString("Default"));
+                    options.UseLoggerFactory(Factory);
+                });
+            } else {
+                services.AddDbContext<AppDbContext>(options => {
+                    options.UseSqlServer(Configuration.GetConnectionString("Default"));
+                    options.UseLoggerFactory(Factory);
+                });
+            }
 
             services.AddHttpContextAccessor();
 
