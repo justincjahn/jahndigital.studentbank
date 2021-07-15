@@ -36,7 +36,7 @@ namespace jahndigital.studentbank.services
                 .Include(x => x.Group)
                 .Where(x => activeInstances.Select(x => x.Id).Contains(x.Group.InstanceId))
                 .Where(x =>
-                    (x.AccountNumber == model.Username.PadLeft(10, '0') || x.Email == model.Username)
+                    (x.AccountNumber == model.Username.PadLeft(10, '0') || x.Email == model.Username.ToLower())
                     && x.DateDeleted == null
                     && x.DateRegistered != null
                 )

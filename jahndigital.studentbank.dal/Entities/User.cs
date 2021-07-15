@@ -14,11 +14,6 @@ namespace jahndigital.studentbank.dal.Entities
     public class User
     {
         /// <summary>
-        ///     Backing field for encrypted password.
-        /// </summary>
-        private string _password = "";
-
-        /// <summary>
         ///     The unique ID of the user.
         /// </summary>
         /// <value></value>
@@ -31,17 +26,31 @@ namespace jahndigital.studentbank.dal.Entities
         public long RoleId { get; set; }
 
         /// <summary>
+        ///     Backing field for Email.
+        /// </summary>
+        private string _email = default!;
+
+        /// <summary>
         ///     The email address of the user.
         /// </summary>
         /// <value></value>
         [MaxLength(64), Required]
-        public string Email { get; set; } = default!;
+        public string Email
+        {
+            get => _email;
+            set => _email = value.ToLower();
+        }
 
         /// <summary>
         ///     The user's role.
         /// </summary>
         [Required]
         public Role Role { get; set; } = default!;
+        
+        /// <summary>
+        ///     Backing field for encrypted password.
+        /// </summary>
+        private string _password = "";
 
         /// <summary>
         ///     The encrypted credentials of the user.

@@ -37,7 +37,7 @@ namespace jahndigital.studentbank.services
             var user = await _context.Users
                 .Include(x => x.Role)
                 .SingleOrDefaultAsync(
-                    x => x.Email == model.Username
+                    x => x.Email == model.Username.ToLower()
                         && x.DateDeleted == null
                         && x.DateRegistered != null
                 );

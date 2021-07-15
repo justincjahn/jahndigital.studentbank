@@ -15,19 +15,14 @@ namespace jahndigital.studentbank.dal.Entities
     public class Student
     {
         /// <summary>
-        ///     Backing field for <see cref="AccountNumber" />.
-        /// </summary>
-        private string _accountNumber = null!;
-
-        /// <summary>
-        ///     Backing field for encrypted password.
-        /// </summary>
-        private string _password = null!;
-
-        /// <summary>
         ///     The unique ID of the student.
         /// </summary>
         public long Id { get; set; }
+        
+        /// <summary>
+        ///     Backing field for <see cref="AccountNumber" />.
+        /// </summary>
+        private string _accountNumber = null!;
 
         /// <summary>
         ///     Student's account number. Left-zero-fill to 10 characters.
@@ -40,7 +35,7 @@ namespace jahndigital.studentbank.dal.Entities
             set {
                 if (!Regex.IsMatch(value, "^[0-9]{1,10}$")) {
                     throw new ArgumentOutOfRangeException(
-                        "AccountNumber",
+                        nameof(value),
                         "Can be a maximum of 10 digits."
                     );
                 }
@@ -48,12 +43,22 @@ namespace jahndigital.studentbank.dal.Entities
                 _accountNumber = value.PadLeft(10, '0');
             }
         }
+        
+        /// <summary>
+        ///     Backing field for Email.
+        /// </summary>
+        private string? _email;
 
         /// <summary>
-        ///     The email address of the student.
+        ///     The email address of the user.
         /// </summary>
+        /// <value></value>
         [MaxLength(64)]
-        public string? Email { get; set; } = null;
+        public string? Email
+        {
+            get => _email;
+            set => _email = value?.ToLower() ?? null;
+        }
 
         /// <summary>
         ///     The student's given name.
@@ -66,6 +71,11 @@ namespace jahndigital.studentbank.dal.Entities
         /// </summary>
         [MaxLength(64), Required]
         public string LastName { get; set; } = default!;
+        
+        /// <summary>
+        ///     Backing field for encrypted password.
+        /// </summary>
+        private string _password = null!;
 
         /// <summary>
         ///     The encrypted credentials of the user.
@@ -95,7 +105,6 @@ namespace jahndigital.studentbank.dal.Entities
         /// <summary>
         ///     Student's shares.
         /// </summary>
-        /// <typeparam name="Share"></typeparam>
         public ICollection<Share> Shares { get; set; } = new HashSet<Share>();
 
         /// <summary>
@@ -113,7 +122,7 @@ namespace jahndigital.studentbank.dal.Entities
         ///     Get or set the date the student last logged in.
         /// </summary>
         [DateTimeKind]
-        public DateTime? DateLastLogin { get; set; } = null;
+        public DateTime? DateLastLogin { get; set; }
 
         /// <summary>
         ///     Get or set the date the student was created.
@@ -125,13 +134,13 @@ namespace jahndigital.studentbank.dal.Entities
         ///     Get or set the date the student was registered.
         /// </summary>
         [DateTimeKind]
-        public DateTime? DateRegistered { get; set; } = null;
+        public DateTime? DateRegistered { get; set; }
 
         /// <summary>
         ///     Get or set the date the student was deleted.
         /// </summary>
         [DateTimeKind]
-        public DateTime? DateDeleted { get; set; } = null;
+        public DateTime? DateDeleted { get; set; }
 
         /// <summary>
         ///     Validate the provided password.
@@ -140,7 +149,6 @@ namespace jahndigital.studentbank.dal.Entities
         public PasswordVerificationResult ValidatePassword(string password)
         {
             var passwordHasher = new PasswordHasher<Student>();
-
             return passwordHasher.VerifyHashedPassword(this, Password, password);
         }
     }
