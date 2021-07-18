@@ -19,15 +19,25 @@ namespace jahndigital.studentbank.services
     {
         private readonly IDbContextFactory<AppDbContext> _factory;
 
-        private AppDbContext? _sharedContext = null;
-
         public TransactionService(IDbContextFactory<AppDbContext> factory) => _factory = factory;
 
-        /// <inheritdoc />
-        /// <exception cref="WithdrawalLimitExceededException"></exception>
+        /// <summary>
+        /// Post a transaction using the provided database context.
+        /// </summary>
+        /// <param name="context"></param>
+        /// <param name="shareId"></param>
+        /// <param name="amount"></param>
+        /// <param name="comment"></param>
+        /// <param name="type"></param>
+        /// <param name="effectiveDate"></param>
+        /// <param name="takeNegative"></param>
+        /// <param name="withdrawalLimit"></param>
+        /// <returns></returns>
+        /// <exception cref="ShareNotFoundException"></exception>
         /// <exception cref="NonsufficientFundsException"></exception>
         /// <exception cref="DatabaseException"></exception>
         public async Task<Transaction> PostAsync(
+            AppDbContext context,
             long shareId,
             Money amount,
             string? comment = null,
@@ -37,9 +47,6 @@ namespace jahndigital.studentbank.services
             bool withdrawalLimit = true
         )
         {
-            await using var newCtx = _factory.CreateDbContext();
-            var context = _sharedContext ?? newCtx;
-
             if (type == null) {
                 if (amount == Money.FromCurrency(0.0m)) {
                     type = "C";
@@ -97,6 +104,33 @@ namespace jahndigital.studentbank.services
         /// <exception cref="WithdrawalLimitExceededException"></exception>
         /// <exception cref="NonsufficientFundsException"></exception>
         /// <exception cref="DatabaseException"></exception>
+        public async Task<Transaction> PostAsync(
+            long shareId,
+            Money amount,
+            string? comment = null,
+            string? type = null,
+            DateTime? effectiveDate = null,
+            bool takeNegative = false,
+            bool withdrawalLimit = true
+        )
+        {
+            await using var context = _factory.CreateDbContext();
+
+            return await PostAsync(
+                context,
+                shareId,
+                amount,
+                comment,
+                type,
+                effectiveDate,
+                takeNegative,
+                withdrawalLimit);
+        }
+
+        /// <inheritdoc />
+        /// <exception cref="WithdrawalLimitExceededException"></exception>
+        /// <exception cref="NonsufficientFundsException"></exception>
+        /// <exception cref="DatabaseException"></exception>
         public async Task<IQueryable<Transaction>> PostAsync(
             IEnumerable<NewTransactionRequest> transactions,
             bool stopOnException = true,
@@ -104,14 +138,13 @@ namespace jahndigital.studentbank.services
         )
         {
             await using var context = _factory.CreateDbContext();
-            _sharedContext = context;
-
             var postedTransactions = new List<Transaction>();
             var dbTransaction = await context.Database.BeginTransactionAsync();
 
             foreach (var transaction in transactions) {
                 try {
                     postedTransactions.Add(await PostAsync(
+                        context,
                         transaction.ShareId,
                         transaction.Amount,
                         transaction.Comment,
@@ -121,7 +154,6 @@ namespace jahndigital.studentbank.services
                 } catch (NonsufficientFundsException e) {
                     if (stopOnException) {
                         await dbTransaction.RollbackAsync();
-                        _sharedContext = null;
 
                         // TODO: Log this exception instead of just re-throwing it.
                         throw;
@@ -130,13 +162,11 @@ namespace jahndigital.studentbank.services
                     postedTransactions.Add(e.Transaction);
                 } catch (DatabaseException) {
                     await dbTransaction.RollbackAsync();
-                    _sharedContext = null;
 
                     // TODO: Log this exception instead of just re-throwing it.
                     throw;
                 } catch (Exception e) {
                     await dbTransaction.RollbackAsync();
-                    _sharedContext = null;
 
                     throw new DatabaseException(e.Message);
                 }
@@ -145,7 +175,6 @@ namespace jahndigital.studentbank.services
             try {
                 await dbTransaction.CommitAsync();
             } catch (Exception e) {
-                _sharedContext = null;
                 throw new DatabaseException(e.Message);
             }
 

@@ -143,7 +143,7 @@ namespace jahndigital.studentbank.server
                     IncludeTotalCount = true
                 })
                 .ModifyRequestOptions(options => {
-                    options.ExecutionTimeout = TimeSpan.FromSeconds(30);
+                    options.ExecutionTimeout = TimeSpan.FromMinutes(10);
                 });
 
             services.AddQuartz(q => {
