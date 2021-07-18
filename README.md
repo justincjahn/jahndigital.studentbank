@@ -24,7 +24,6 @@ and other applications in general.  This adds a little bit more complexity to ge
 database technologies being supported.
 
     cd jahndigital.studentbank.dal
-    dotnet ef migrations add -s ../jahndigital.studentbank.server -c SqliteDbContext -o Migrations/sqlite {NAME}
     dotnet ef migrations add -s ../jahndigital.studentbank.server -c AppDbContext -o Migrations/mssql {NAME}
 
 > *NOTE:* When running migrations, you may encounter an error declaring that `AppConfig__Secret` must be set.  It is safe to ignore this error during the migration generation process.

@@ -55,36 +55,15 @@ namespace jahndigital.studentbank.server
 
             services.Configure<AppConfig>(appConfig);
 
-            var connectionString = Configuration.GetConnectionString("Default");
             var tokenKey = Encoding.ASCII.GetBytes(appConfig.Get<AppConfig>().Secret);
 
-            if (appConfig.Get<AppConfig>().DbDriver == "sqlite") {
-                // services.AddPooledDbContextFactory<SqliteDbContext>(options => {
-                //     options.UseSqlite(connectionString);
-                //     options.UseLoggerFactory(Factory);
-                // });
-                // services.AddDbContext<AppDbContext, SqliteDbContext>(options => {
-                //     options.UseSqlite(Configuration.GetConnectionString("Default"));
-                //     options.UseLoggerFactory(Factory);
-                // });
-            } else {
-                SqlAuthenticationProvider.SetProvider(SqlAuthenticationMethod.ActiveDirectoryInteractive,
-                    new SqlAppAuthenticationProvider());
+            SqlAuthenticationProvider.SetProvider(SqlAuthenticationMethod.ActiveDirectoryInteractive,
+                new SqlAppAuthenticationProvider());
 
-                services.AddPooledDbContextFactory<AppDbContext>(options => {
-                    options.UseSqlServer(connectionString);
-                    options.UseLoggerFactory(Factory);
-                });
-
-                // services.AddPooledDbContextFactory<AppDbContext>(options => {
-                //     options.UseSqlServer(connectionString);
-                //     options.UseLoggerFactory(Factory);
-                // });
-                // services.AddDbContext<AppDbContext>(options => {
-                //     options.UseSqlServer(connectionString);
-                //     options.UseLoggerFactory(Factory);
-                // });
-            }
+            services.AddPooledDbContextFactory<AppDbContext>(options => {
+                options.UseSqlServer(Configuration.GetConnectionString("Default"));
+                options.UseLoggerFactory(Factory);
+            });
 
             services.AddHttpContextAccessor();
 
