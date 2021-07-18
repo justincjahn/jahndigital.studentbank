@@ -59,7 +59,16 @@ namespace jahndigital.studentbank.server.GraphQL
                     .WithMessage(error.Exception.Message);
             }
 
-            return error;
+            if (error.Exception is not null) {
+                var msg = error.Exception.Message;
+
+                return error
+                    .RemoveException()
+                    .WithMessage(msg);
+            }
+
+            return error
+                .WithMessage(error?.Exception?.Message ?? error?.Message ?? "An unknown error occurred.");
         }
     }
 }
