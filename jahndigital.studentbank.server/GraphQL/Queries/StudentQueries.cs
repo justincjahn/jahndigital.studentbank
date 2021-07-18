@@ -1,6 +1,7 @@
 using System.Linq;
 using HotChocolate;
 using HotChocolate.AspNetCore.Authorization;
+using HotChocolate.Data;
 using HotChocolate.Resolvers;
 using HotChocolate.Types;
 using HotChocolate.Types.Relay;
@@ -13,7 +14,7 @@ namespace jahndigital.studentbank.server.GraphQL.Queries
 {
     /// <summary>
     /// </summary>
-    [ExtendObjectType(Name = "Query")]
+    [ExtendObjectType("Query")]
     public class StudentQueries
     {
         /// <summary>
@@ -22,9 +23,9 @@ namespace jahndigital.studentbank.server.GraphQL.Queries
         /// <param name="context"></param>
         /// <param name="resolverContext"></param>
         /// <returns></returns>
-        [UseSelection]
+        [UseDbContext(typeof(AppDbContext)), UseProjection]
         public IQueryable<Student> GetCurrentStudent(
-            [Service] AppDbContext context,
+            [ScopedService] AppDbContext context,
             [Service] IResolverContext resolverContext
         )
         {
@@ -49,9 +50,12 @@ namespace jahndigital.studentbank.server.GraphQL.Queries
         /// <param name="studentId">The ID number of the student to fetch.</param>
         /// <param name="context"></param>
         /// <returns></returns>
-        [UseSelection,
+        [UseDbContext(typeof(AppDbContext)), UseProjection,
          Authorize(Policy = Constants.AuthPolicy.DataOwner + "<" + Constants.Privilege.PRIVILEGE_MANAGE_STUDENTS + ">")]
-        public IQueryable<Student> GetStudent(long studentId, [Service] AppDbContext context)
+        public IQueryable<Student> GetStudent(
+            long studentId,
+            [ScopedService] AppDbContext context
+        )
         {
             return context.Students.Where(x => x.Id == studentId && x.DateDeleted == null);
         }
@@ -61,9 +65,9 @@ namespace jahndigital.studentbank.server.GraphQL.Queries
         /// </summary>
         /// <param name="context"></param>
         /// <returns></returns>
-        [UsePaging, UseSelection, UseSorting, UseFiltering,
+        [UseDbContext(typeof(AppDbContext)), UsePaging, UseProjection, UseFiltering, UseSorting,
          Authorize(Policy = Constants.Privilege.PRIVILEGE_MANAGE_STUDENTS)]
-        public IQueryable<Student> GetStudents([Service] AppDbContext context)
+        public IQueryable<Student> GetStudents([ScopedService] AppDbContext context)
         {
             return context.Students.Where(x => x.DateDeleted == null);
         }
@@ -73,9 +77,9 @@ namespace jahndigital.studentbank.server.GraphQL.Queries
         /// </summary>
         /// <param name="context"></param>
         /// <returns></returns>
-        [UsePaging, UseSelection, UseSorting, UseFiltering,
+        [UseDbContext(typeof(AppDbContext)), UsePaging, UseProjection, UseFiltering, UseSorting,
          Authorize(Policy = Constants.Privilege.PRIVILEGE_MANAGE_STUDENTS)]
-        public IQueryable<Student> GetDeletedStudents([Service] AppDbContext context)
+        public IQueryable<Student> GetDeletedStudents([ScopedService] AppDbContext context)
         {
             return context.Students.Where(x => x.DateDeleted != null);
         }

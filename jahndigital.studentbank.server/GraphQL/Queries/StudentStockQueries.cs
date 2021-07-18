@@ -2,6 +2,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using HotChocolate;
 using HotChocolate.AspNetCore.Authorization;
+using HotChocolate.Data;
 using HotChocolate.Resolvers;
 using HotChocolate.Types;
 using HotChocolate.Types.Relay;
@@ -12,7 +13,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace jahndigital.studentbank.server.GraphQL.Queries
 {
-    [ExtendObjectType(Name = "Query")]
+    [ExtendObjectType("Query")]
     public class StudentStockQueries
     {
         /// <summary>
@@ -22,10 +23,11 @@ namespace jahndigital.studentbank.server.GraphQL.Queries
         /// <param name="context"></param>
         /// <param name="resolverContext"></param>
         /// <returns></returns>
-        [UsePaging, UseSelection, UseSorting, UseFiltering, Authorize]
+        [UseDbContext(typeof(AppDbContext)), UsePaging, UseProjection, UseFiltering, UseSorting,
+         Authorize]
         public async Task<IQueryable<StudentStock>> GetStudentStocksAsync(
             long studentId,
-            [Service] AppDbContext context,
+            [ScopedService] AppDbContext context,
             [Service] IResolverContext resolverContext
         )
         {
@@ -50,10 +52,11 @@ namespace jahndigital.studentbank.server.GraphQL.Queries
         /// <param name="context"></param>
         /// <param name="resolverContext"></param>
         /// <returns></returns>
-        [UsePaging, UseSelection, UseSorting, UseFiltering, Authorize]
+        [UseDbContext(typeof(AppDbContext)), UsePaging, UseProjection, UseFiltering, UseSorting,
+         Authorize]
         public async Task<IQueryable<StudentStockHistory>> GetStudentStockHistoryAsync(
             long studentStockId,
-            [Service] AppDbContext context,
+            [ScopedService] AppDbContext context,
             [Service] IResolverContext resolverContext
         )
         {

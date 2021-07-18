@@ -2,10 +2,8 @@ using System;
 using System.Linq;
 using System.Reflection;
 using System.Text;
-using HotChocolate;
-using HotChocolate.AspNetCore;
-using HotChocolate.Execution.Configuration;
 using HotChocolate.Types;
+using HotChocolate.Types.Pagination;
 using jahndigital.studentbank.dal.Contexts;
 using jahndigital.studentbank.server.GraphQL;
 using jahndigital.studentbank.server.GraphQL.Mutations;
@@ -57,74 +55,96 @@ namespace jahndigital.studentbank.server
 
             services.Configure<AppConfig>(appConfig);
 
+            var connectionString = Configuration.GetConnectionString("Default");
             var tokenKey = Encoding.ASCII.GetBytes(appConfig.Get<AppConfig>().Secret);
 
             if (appConfig.Get<AppConfig>().DbDriver == "sqlite") {
-                services.AddDbContext<AppDbContext, SqliteDbContext>(options => {
-                    options.UseSqlite(Configuration.GetConnectionString("Default"));
-                    options.UseLoggerFactory(Factory);
-                });
+                // services.AddPooledDbContextFactory<SqliteDbContext>(options => {
+                //     options.UseSqlite(connectionString);
+                //     options.UseLoggerFactory(Factory);
+                // });
+                // services.AddDbContext<AppDbContext, SqliteDbContext>(options => {
+                //     options.UseSqlite(Configuration.GetConnectionString("Default"));
+                //     options.UseLoggerFactory(Factory);
+                // });
             } else {
-                string connectionString = Configuration.GetConnectionString("Default");
                 SqlAuthenticationProvider.SetProvider(SqlAuthenticationMethod.ActiveDirectoryInteractive,
                     new SqlAppAuthenticationProvider());
-                services.AddDbContext<AppDbContext>(options => {
+
+                services.AddPooledDbContextFactory<AppDbContext>(options => {
                     options.UseSqlServer(connectionString);
                     options.UseLoggerFactory(Factory);
                 });
+
+                // services.AddPooledDbContextFactory<AppDbContext>(options => {
+                //     options.UseSqlServer(connectionString);
+                //     options.UseLoggerFactory(Factory);
+                // });
+                // services.AddDbContext<AppDbContext>(options => {
+                //     options.UseSqlServer(connectionString);
+                //     options.UseLoggerFactory(Factory);
+                // });
             }
 
             services.AddHttpContextAccessor();
 
             services.AddScoped<IDbInitializerService, DbInitializerService>();
 
-            services.AddGraphQL(
-                SchemaBuilder.New()
-                    .AddQueryType<QueryType>()
-                    .AddType<GroupQueries>()
-                    .AddType<InstanceQueries>()
-                    .AddType<ProductQueries>()
-                    .AddType<PurchaseQueries>()
-                    .AddType<ShareQueries>()
-                    .AddType<ShareTypeQueries>()
-                    .AddType<StockHistoryQueries>()
-                    .AddType<StockQueries>()
-                    .AddType<StockQueriesType>()
-                    .AddType<StudentQueries>()
-                    .AddType<StudentStockQueries>()
-                    .AddType<TransactionQueries>()
-                    .AddType<UserQueries>()
-                    .AddMutationType<MutationType>()
-                    .AddType<GroupMutations>()
-                    .AddType<InstanceMutations>()
-                    .AddType<ProductMutations>()
-                    .AddType<PurchaseMutations>()
-                    .AddType<ShareMutations>()
-                    .AddType<ShareTypeMutations>()
-                    .AddType<StockMutations>()
-                    .AddType<StudentMutations>()
-                    .AddType<StudentStockMutations>()
-                    .AddType<TransactionMutations>()
-                    .AddType<UserMutations>()
-                    .AddAuthorizeDirectiveType()
-                    .AddType<GroupType>()
-                    .AddType<InstanceType>()
-                    .AddType<ProductType>()
-                    .AddType<PurchaseType>()
-                    .AddType<ShareType>()
-                    .AddType<ShareTypeType>()
-                    .AddType<StockHistoryType>()
-                    .AddType<StockType>()
-                    .AddType<StudentType>()
-                    .AddType<TransactionTypes>()
-                    .AddType<UserTypes>()
-                    .AddType(new PaginationAmountType(100))
-                    .BindClrType<int, IntType>()
-                    .BindClrType<Money, MoneyType>()
-                    .BindClrType<Rate, RateType>()
-                    .Create(),
-                new QueryExecutionOptions {ForceSerialExecution = true}
-            );
+            services
+                .AddGraphQLServer()
+                .AddQueryType<QueryType>()
+                .AddType<GroupQueries>()
+                .AddType<InstanceQueries>()
+                .AddType<ProductQueries>()
+                .AddType<PurchaseQueries>()
+                .AddType<ShareQueries>()
+                .AddType<ShareTypeQueries>()
+                .AddType<StockHistoryQueries>()
+                .AddType<StockQueries>()
+                .AddType<StockQueriesType>()
+                .AddType<StudentQueries>()
+                .AddType<UserQueries>()
+                .AddType<StudentStockQueries>()
+                .AddType<TransactionQueries>()
+                .AddMutationType<MutationType>()
+                .AddType<GroupMutations>()
+                .AddType<InstanceMutations>()
+                .AddType<ProductMutations>()
+                .AddType<PurchaseMutations>()
+                .AddType<ShareMutations>()
+                .AddType<ShareTypeMutations>()
+                .AddType<StockMutations>()
+                .AddType<StudentMutations>()
+                .AddType<StudentStockMutations>()
+                .AddType<TransactionMutations>()
+                .AddType<UserMutations>()
+                .AddType<GroupType>()
+                .AddType<InstanceType>()
+                .AddType<ProductType>()
+                .AddType<PurchaseType>()
+                .AddType<ShareType>()
+                .AddType<ShareTypeType>()
+                .AddType<StockHistoryType>()
+                .AddType<StockType>()
+                .AddType<StudentType>()
+                .AddType<StudentStockType>()
+                .AddType<TransactionTypes>()
+                .AddType<UserTypes>()
+                .BindRuntimeType<int, IntType>()
+                .BindRuntimeType<Money, MoneyType>()
+                .BindRuntimeType<Rate, RateType>()
+                .AddProjections()
+                .AddSorting()
+                .AddFiltering()
+                .AddAuthorization()
+                .SetPagingOptions(new PagingOptions {
+                    MaxPageSize = 10000,
+                    DefaultPageSize = 100,
+                    IncludeTotalCount = true
+                })
+                .ModifyRequestOptions(options => {
+                    options.ExecutionTimeout = TimeSpan.FromSeconds(30);
+                });
 
             services.AddQuartz(q => {
                 q.SchedulerId = "jahndigital.studentbank.server";
@@ -180,9 +200,11 @@ namespace jahndigital.studentbank.server
             });
 
             services
-                .AddScoped<IUserService>(provider => new UserService(provider.GetService<AppDbContext>()!,
+                .AddScoped<IUserService>(provider => new UserService(
+                    provider.GetService<IDbContextFactory<AppDbContext>>() ?? throw new InvalidOperationException(),
                     appConfig.Get<AppConfig>().Secret, appConfig.Get<AppConfig>().TokenLifetime))
-                .AddScoped<IStudentService>(provider => new StudentService(provider.GetService<AppDbContext>()!,
+                .AddScoped<IStudentService>(provider => new StudentService(
+                    provider.GetService<IDbContextFactory<AppDbContext>>() ?? throw new InvalidOperationException(),
                     appConfig.Get<AppConfig>().Secret, appConfig.Get<AppConfig>().TokenLifetime))
                 .AddScoped<IRoleService, RoleService>()
                 .AddScoped<ITransactionService, TransactionService>()
@@ -262,7 +284,7 @@ namespace jahndigital.studentbank.server
 
             app.UseAuthorization();
 
-            app.UseGraphQL("/graphql");
+            app.UseEndpoints(x => x.MapGraphQL());
 
             app.UseEndpoints(endpoints => endpoints.MapControllers());
 

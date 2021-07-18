@@ -67,7 +67,8 @@ namespace jahndigital.studentbank.server.Permissions
                 return (bool) resolverContext.ScopedContextData[CTX_ISOWNER]!;
             }
 
-            var route = resolverContext.FieldSelection.Arguments;
+            // var route = resolverContext.FieldSelection.Arguments;
+            var route = resolverContext.Selection.SyntaxNode.Arguments;
 
             string userId = string.Empty;
             UserType? userType = null;

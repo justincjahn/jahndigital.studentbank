@@ -1,3 +1,5 @@
+using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -16,50 +18,47 @@ namespace jahndigital.studentbank.services
         /// <summary>
         ///     Cache requests so we don't need to pull data from the database on every authentication iteration.
         /// </summary>
-        private readonly Dictionary<string, Dictionary<string, bool>> _cache = new();
-
-        /// <summary>
-        ///     The database context to use when querying and updating the data store.
-        /// </summary>
-        private readonly AppDbContext _context;
+        private readonly ConcurrentDictionary<string, ConcurrentDictionary<string, bool>> _cache = new();
 
         /// <summary>
         ///     Cache for the roles.
         /// </summary>
-        private readonly Dictionary<string, long> _roleCache = new();
+        private readonly ConcurrentDictionary<string, long> _roleCache = new();
+
+        private readonly IDbContextFactory<AppDbContext> _factory;
 
         /// <summary>
-        ///     Initialize the instance with a database context.
+        ///     Initialize the instance with a database context factory.
         /// </summary>
-        /// <param name="context"></param>
-        public RoleService(AppDbContext context)
+        /// <param name="factory"></param>
+        public RoleService(IDbContextFactory<AppDbContext> factory)
         {
-            _context = context;
+            _factory = factory;
         }
 
         /// <inheritdoc />
         public async Task<bool> HasPermissionAsync(string role, string permission)
         {
+            await using var context = _factory.CreateDbContext();
+            
             if (!_cache.ContainsKey(role)) {
-                _cache.Add(role, new Dictionary<string, bool>());
+                _cache.TryAdd(role, new ConcurrentDictionary<string, bool>());
             }
 
-            ;
-
             if (!_cache[role].ContainsKey(permission)) {
-                var roleId = await GetRoleId(role);
+                var roleId = await GetRoleId(role, context);
 
                 if (!roleId.HasValue) {
                     return false;
                 }
 
-                var dbPermissions = await _context.RolePrivileges
+                var dbPermissions = await context.RolePrivileges
                     .Where(x => x.RoleId == roleId
                         && (x.Privilege.Name == permission
                             || x.Privilege.Name == Constants.Privilege.All.Name))
                     .SingleOrDefaultAsync();
 
-                _cache[role].Add(permission, dbPermissions != null);
+                _cache[role].TryAdd(permission, dbPermissions != null);
             }
 
             return _cache[role][permission];
@@ -68,8 +67,10 @@ namespace jahndigital.studentbank.services
         /// <inheritdoc />
         public async Task<bool> HasPermissionAsync(string role, IEnumerable<string> permissions)
         {
+            await using var context = _factory.CreateDbContext();
+            
             if (!_cache.ContainsKey(role)) {
-                _cache.Add(role, new Dictionary<string, bool>());
+                _cache.TryAdd(role, new ConcurrentDictionary<string, bool>());
             }
 
             ;
@@ -84,13 +85,13 @@ namespace jahndigital.studentbank.services
             var missing = permissions.Where(x => !_cache[role].Keys.Contains(x)).ToList();
 
             if (missing.Count > 0) {
-                var roleId = await GetRoleId(role);
+                var roleId = await GetRoleId(role, context);
 
                 if (!roleId.HasValue) {
                     return false;
                 }
 
-                var dbPermissions = await _context.RolePrivileges
+                var dbPermissions = await context.RolePrivileges
                     .Include(x => x.Privilege)
                     .Where(x => x.RoleId == roleId
                         && (missing.Contains(x.Privilege.Name)
@@ -104,9 +105,9 @@ namespace jahndigital.studentbank.services
                             || x.Privilege.Name == Constants.Privilege.PRIVILEGE_ALL
                         ).Any()
                     ) {
-                        _cache[role].Add(missingPrivilege, true);
+                        _cache[role].TryAdd(missingPrivilege, true);
                     } else {
-                        _cache[role].Add(missingPrivilege, false);
+                        _cache[role].TryAdd(missingPrivilege, false);
                     }
                 }
 
@@ -119,17 +120,18 @@ namespace jahndigital.studentbank.services
         /// <summary>
         /// </summary>
         /// <param name="role"></param>
+        /// <param name="context"></param>
         /// <returns></returns>
-        private async Task<long?> GetRoleId(string role)
+        private async Task<long?> GetRoleId(string role, AppDbContext context)
         {
             if (!_roleCache.ContainsKey(role)) {
-                var dbRole = await _context.Roles.SingleOrDefaultAsync(x => x.Name == role);
+                var dbRole = await context.Roles.SingleOrDefaultAsync(x => x.Name == role);
 
                 if (dbRole == null) {
                     return null;
                 }
 
-                _roleCache.Add(role, dbRole.Id);
+                _roleCache.TryAdd(role, dbRole.Id);
 
                 return dbRole.Id;
             }

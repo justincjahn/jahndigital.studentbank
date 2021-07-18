@@ -3,6 +3,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using HotChocolate;
 using HotChocolate.AspNetCore.Authorization;
+using HotChocolate.Data;
 using HotChocolate.Execution;
 using HotChocolate.Resolvers;
 using HotChocolate.Types;
@@ -21,7 +22,7 @@ namespace jahndigital.studentbank.server.GraphQL.Mutations
     /// <summary>
     ///     CRUD operations for <see cref="dal.Entities.User" /> entities.
     /// </summary>
-    [ExtendObjectType(Name = "Mutation")]
+    [ExtendObjectType("Mutation")]
     public class UserMutations : TokenManagerAbstract
     {
         /// <summary>
@@ -143,10 +144,10 @@ namespace jahndigital.studentbank.server.GraphQL.Mutations
         /// <param name="contextAccessor"></param>
         /// <param name="userService"></param>
         /// <returns></returns>
-        [UseSelection, Authorize]
+        [UseDbContext(typeof(AppDbContext)), UseProjection, Authorize]
         public async Task<IQueryable<User>> UpdateUserAsync(
             UpdateUserRequest input,
-            [Service] AppDbContext context,
+            [ScopedService] AppDbContext context,
             [Service] IResolverContext resolverContext,
             [Service] IHttpContextAccessor contextAccessor,
             [Service] IUserService userService
@@ -211,10 +212,11 @@ namespace jahndigital.studentbank.server.GraphQL.Mutations
         /// <param name="input"></param>
         /// <param name="context"></param>
         /// <returns></returns>
-        [Authorize(Policy = Constants.Privilege.PRIVILEGE_MANAGE_USERS)]
+        [UseDbContext(typeof(AppDbContext)),
+         Authorize(Policy = Constants.Privilege.PRIVILEGE_MANAGE_USERS)]
         public async Task<IQueryable<User>> NewUserAsync(
             NewUserRequest input,
-            [Service] AppDbContext context
+            [ScopedService] AppDbContext context
         )
         {
             var roleExists = await context.Roles.Where(x => x.Id == input.RoleId).AnyAsync();
@@ -252,10 +254,11 @@ namespace jahndigital.studentbank.server.GraphQL.Mutations
         /// <param name="context"></param>
         /// <param name="resolverContext"></param>
         /// <returns></returns>
-        [Authorize(Policy = Constants.Privilege.PRIVILEGE_MANAGE_USERS)]
+        [UseDbContext(typeof(AppDbContext)),
+         Authorize(Policy = Constants.Privilege.PRIVILEGE_MANAGE_USERS)]
         public async Task<bool> DeleteUserAsync(
             long id,
-            [Service] AppDbContext context,
+            [ScopedService] AppDbContext context,
             [Service] IResolverContext resolverContext
         )
         {

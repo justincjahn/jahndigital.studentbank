@@ -1,6 +1,7 @@
 using System.Linq;
 using HotChocolate;
 using HotChocolate.AspNetCore.Authorization;
+using HotChocolate.Data;
 using HotChocolate.Resolvers;
 using HotChocolate.Types;
 using HotChocolate.Types.Relay;
@@ -13,7 +14,7 @@ namespace jahndigital.studentbank.server.GraphQL.Queries
     /// <summary>
     ///     Allows students to list their purchases and admins to list all purchases.
     /// </summary>
-    [ExtendObjectType(Name = "Query")]
+    [ExtendObjectType("Query")]
     public class PurchaseQueries
     {
         /// <summary>
@@ -22,9 +23,10 @@ namespace jahndigital.studentbank.server.GraphQL.Queries
         /// <param name="context"></param>
         /// <param name="resolverContext"></param>
         /// <returns></returns>
-        [UsePaging, UseSelection, UseSorting, UseFiltering, Authorize]
+        [UsePaging, UseProjection, UseFiltering, UseSorting, Authorize]
+        [UseDbContext(typeof(AppDbContext))]
         public IQueryable<StudentPurchase> GetPurchases(
-            [Service] AppDbContext context,
+            [ScopedService] AppDbContext context,
             [Service] IResolverContext resolverContext
         )
         {

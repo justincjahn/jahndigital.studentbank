@@ -4,6 +4,6 @@ namespace jahndigital.studentbank.server.GraphQL.Queries
 {
     /// <summary>
     /// </summary>
-    [ExtendObjectType(Name = "Query")]
+    [ExtendObjectType("Query")]
     public class StockHistoryQueries { }
 }

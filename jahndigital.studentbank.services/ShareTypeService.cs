@@ -10,12 +10,11 @@ namespace jahndigital.studentbank.services
 {
     public class ShareTypeService : IShareTypeService
     {
-        private readonly AppDbContext _context;
+        private readonly IDbContextFactory<AppDbContext> _factory;
 
-        public ShareTypeService(AppDbContext context)
-        {
-            _context = context;
-        }
+        public ShareTypeService(IDbContextFactory<AppDbContext> factory)
+            => _factory = factory;
+
 
         /// <summary>
         ///     Reset the withdrawal limit of a given ShareType ID.
@@ -24,13 +23,15 @@ namespace jahndigital.studentbank.services
         /// <returns></returns>
         public async Task<bool> ResetWithdrawalLimit(long shareTypeId)
         {
-            var shareType = await _context.ShareTypes
+            await using var context = _factory.CreateDbContext();
+
+            var shareType = await context.ShareTypes
                     .Where(x => x.Id == shareTypeId)
                     .SingleOrDefaultAsync()
                 ?? throw new ShareTypeNotFoundException(shareTypeId);
 
-            var transaction = await _context.Database.BeginTransactionAsync();
-            var query = _context.Shares.Where(x => x.ShareTypeId == shareTypeId);
+            var transaction = await context.Database.BeginTransactionAsync();
+            var query = context.Shares.Where(x => x.ShareTypeId == shareTypeId);
             var count = await query.CountAsync();
 
             for (var i = 0; i < count; i += 100) {
@@ -41,7 +42,7 @@ namespace jahndigital.studentbank.services
                 }
 
                 try {
-                    await _context.SaveChangesAsync();
+                    await context.SaveChangesAsync();
                 } catch (Exception e) {
                     throw new DatabaseException(e.Message);
                 }
@@ -56,7 +57,7 @@ namespace jahndigital.studentbank.services
             shareType.WithdrawalLimitLastReset = DateTime.UtcNow;
 
             try {
-                await _context.SaveChangesAsync();
+                await context.SaveChangesAsync();
             } catch (Exception e) {
                 throw new DatabaseException(e.Message);
             }

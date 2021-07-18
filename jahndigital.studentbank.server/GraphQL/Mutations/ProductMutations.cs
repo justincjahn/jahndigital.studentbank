@@ -3,6 +3,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using HotChocolate;
 using HotChocolate.AspNetCore.Authorization;
+using HotChocolate.Data;
 using HotChocolate.Execution;
 using HotChocolate.Types;
 using jahndigital.studentbank.dal.Contexts;
@@ -16,7 +17,7 @@ namespace jahndigital.studentbank.server.GraphQL.Mutations
     /// <summary>
     ///     CRUD operations for <see cref="dal.Entities.Product" /> and <see cref="dal.Entities.ProductInstance" />
     /// </summary>
-    [ExtendObjectType(Name = "Mutation")]
+    [ExtendObjectType("Mutation")]
     public class ProductMutations
     {
         /// <summary>
@@ -26,10 +27,11 @@ namespace jahndigital.studentbank.server.GraphQL.Mutations
         /// <param name="context"></param>
         /// <param name="requestContext"></param>
         /// <returns></returns>
-        [Authorize(Policy = Constants.Privilege.PRIVILEGE_MANAGE_PURCHASES)]
+        [UseDbContext(typeof(AppDbContext)),
+         Authorize(Policy = Constants.Privilege.PRIVILEGE_MANAGE_PURCHASES)]
         public async Task<IQueryable<Product>> NewProductAsync(
             NewProductRequest input,
-            [Service] AppDbContext context,
+            [ScopedService] AppDbContext context,
             [Service] IRequestContext requestContext
         )
         {
@@ -63,10 +65,11 @@ namespace jahndigital.studentbank.server.GraphQL.Mutations
         /// <param name="input"></param>
         /// <param name="context"></param>
         /// <returns></returns>
-        [Authorize(Policy = Constants.Privilege.PRIVILEGE_MANAGE_PRODUCTS)]
+        [UseDbContext(typeof(AppDbContext)),
+         Authorize(Policy = Constants.Privilege.PRIVILEGE_MANAGE_PRODUCTS)]
         public async Task<IQueryable<Product>> UpdateProductAsync(
             UpdateProductRequest input,
-            [Service] AppDbContext context
+            [ScopedService] AppDbContext context
         )
         {
             var product = await context.Products
@@ -107,10 +110,11 @@ namespace jahndigital.studentbank.server.GraphQL.Mutations
         /// <param name="input"></param>
         /// <param name="context"></param>
         /// <returns></returns>
-        [UseSelection, Authorize(Policy = Constants.Privilege.PRIVILEGE_MANAGE_PRODUCTS)]
+        [UseDbContext(typeof(AppDbContext)), UseProjection,
+         Authorize(Policy = Constants.Privilege.PRIVILEGE_MANAGE_PRODUCTS)]
         public async Task<IQueryable<Product>> LinkProductAsync(
             LinkProductRequest input,
-            [Service] AppDbContext context
+            [ScopedService] AppDbContext context
         )
         {
             var hasLink = await context.ProductInstances
@@ -141,10 +145,11 @@ namespace jahndigital.studentbank.server.GraphQL.Mutations
         /// <param name="input"></param>
         /// <param name="context"></param>
         /// <returns></returns>
-        [UseSelection, Authorize(Policy = Constants.Privilege.PRIVILEGE_MANAGE_PRODUCTS)]
+        [UseDbContext(typeof(AppDbContext)), UseProjection,
+         Authorize(Policy = Constants.Privilege.PRIVILEGE_MANAGE_PRODUCTS)]
         public async Task<IQueryable<Product>> UnlinkProductAsync(
             LinkProductRequest input,
-            [Service] AppDbContext context
+            [ScopedService] AppDbContext context
         )
         {
             var link = await context.ProductInstances
@@ -168,8 +173,12 @@ namespace jahndigital.studentbank.server.GraphQL.Mutations
         /// <param name="id"></param>
         /// <param name="context"></param>
         /// <returns></returns>
-        [Authorize(Policy = Constants.Privilege.PRIVILEGE_MANAGE_PRODUCTS)]
-        public async Task<bool> DeleteProductAsync(long id, [Service] AppDbContext context)
+        [UseDbContext(typeof(AppDbContext)),
+         Authorize(Policy = Constants.Privilege.PRIVILEGE_MANAGE_PRODUCTS)]
+        public async Task<bool> DeleteProductAsync(
+            long id,
+            [ScopedService] AppDbContext context
+        )
         {
             var product = await context.Products.FindAsync(id)
                 ?? throw ErrorFactory.NotFound();
@@ -191,8 +200,12 @@ namespace jahndigital.studentbank.server.GraphQL.Mutations
         /// <param name="id"></param>
         /// <param name="context"></param>
         /// <returns></returns>
-        [UseSelection, Authorize(Policy = Constants.Privilege.PRIVILEGE_MANAGE_PRODUCTS)]
-        public async Task<IQueryable<Product>> RestoreProductAsync(long id, [Service] AppDbContext context)
+        [UseDbContext(typeof(AppDbContext)), UseProjection,
+         Authorize(Policy = Constants.Privilege.PRIVILEGE_MANAGE_PRODUCTS)]
+        public async Task<IQueryable<Product>> RestoreProductAsync(
+            long id,
+            [ScopedService] AppDbContext context
+        )
         {
             var product = await context.Products
                     .Where(x => x.Id == id && x.DateDeleted != null)

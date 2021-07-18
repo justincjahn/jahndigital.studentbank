@@ -2,6 +2,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using HotChocolate;
 using HotChocolate.AspNetCore.Authorization;
+using HotChocolate.Data;
 using HotChocolate.Resolvers;
 using HotChocolate.Types;
 using HotChocolate.Types.Relay;
@@ -14,7 +15,7 @@ namespace jahndigital.studentbank.server.GraphQL.Queries
 {
     /// <summary>
     /// </summary>
-    [ExtendObjectType(Name = "Query")]
+    [ExtendObjectType("Query")]
     public class TransactionQueries
     {
         /// <summary>
@@ -24,10 +25,11 @@ namespace jahndigital.studentbank.server.GraphQL.Queries
         /// <param name="context"></param>
         /// <param name="resolverContext"></param>
         /// <returns></returns>
-        [UsePaging, UseSorting, UseFiltering, Authorize]
+        [UseDbContext(typeof(AppDbContext)), UsePaging, UseFiltering, UseSorting,
+         Authorize]
         public async Task<IQueryable<Transaction>> GetTransactionsAsync(
             long shareId,
-            [Service] AppDbContext context,
+            [ScopedService] AppDbContext context,
             [Service] IResolverContext resolverContext
         )
         {

@@ -16,15 +16,15 @@ namespace jahndigital.studentbank.server.Jobs
     /// <summary>
     /// Runs daily tasks, such as withdrawal limit resets.
     /// </summary>
-    public class DailyJob : IJob
+    public class DailyJob : IJob, IDisposable
     {
         private readonly AppDbContext _dbContext;
         private readonly IShareTypeService _shareTypeService;
         private readonly ILogger<DailyJob> _logger;
 
-        public DailyJob(AppDbContext dbContext, IShareTypeService shareTypeService, ILogger<DailyJob> logger)
+        public DailyJob(IDbContextFactory<AppDbContext> factory, IShareTypeService shareTypeService, ILogger<DailyJob> logger)
         {
-            _dbContext = dbContext;
+            _dbContext = factory.CreateDbContext();
             _shareTypeService = shareTypeService;
             _logger = logger;
         }
@@ -134,6 +134,11 @@ namespace jahndigital.studentbank.server.Jobs
                     $"Running annual withdrawal reset for Share Type: {shareType.Id}:{shareType.Name}");
                 await _shareTypeService.ResetWithdrawalLimit(shareType.Id);
             }
+        }
+
+        public void Dispose()
+        {
+            _dbContext.Dispose();
         }
     }
 }

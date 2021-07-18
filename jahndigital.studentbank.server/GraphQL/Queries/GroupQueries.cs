@@ -1,6 +1,7 @@
 using System.Linq;
 using HotChocolate;
 using HotChocolate.AspNetCore.Authorization;
+using HotChocolate.Data;
 using HotChocolate.Types;
 using HotChocolate.Types.Relay;
 using jahndigital.studentbank.dal.Contexts;
@@ -12,7 +13,7 @@ namespace jahndigital.studentbank.server.GraphQL.Queries
     /// <summary>
     ///     Operations around querying groups.
     /// </summary>
-    [ExtendObjectType(Name = "Query")]
+    [ExtendObjectType("Query")]
     public class GroupQueries
     {
         /// <summary>
@@ -20,9 +21,9 @@ namespace jahndigital.studentbank.server.GraphQL.Queries
         /// </summary>
         /// <param name="context"></param>
         /// <returns></returns>
-        [UsePaging, UseSelection, UseSorting, UseFiltering,
+        [UseDbContext(typeof(AppDbContext)), UsePaging, UseProjection, UseFiltering, UseSorting,
          Authorize(Policy = Constants.Privilege.PRIVILEGE_MANAGE_GROUPS)]
-        public IQueryable<Group> GetGroups([Service] AppDbContext context)
+        public IQueryable<Group> GetGroups([ScopedService] AppDbContext context)
         {
             return context.Groups.Where(x => x.DateDeleted == null);
         }
@@ -32,9 +33,9 @@ namespace jahndigital.studentbank.server.GraphQL.Queries
         /// </summary>
         /// <param name="context"></param>
         /// <returns></returns>
-        [UsePaging, UseSelection, UseSorting, UseFiltering,
+        [UseDbContext(typeof(AppDbContext)), UsePaging, UseProjection, UseFiltering, UseSorting,
          Authorize(Policy = Constants.Privilege.PRIVILEGE_MANAGE_GROUPS)]
-        public IQueryable<Group> GetDeletedGroups([Service] AppDbContext context)
+        public IQueryable<Group> GetDeletedGroups([ScopedService] AppDbContext context)
         {
             return context.Groups.Where(x => x.DateDeleted != null);
         }

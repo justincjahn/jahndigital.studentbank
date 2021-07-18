@@ -16,9 +16,8 @@ namespace jahndigital.studentbank.services
     /// </summary>
     public class DbInitializerService : IDbInitializerService
     {
-        /// <summary>
-        /// </summary>
-        private readonly IServiceScopeFactory _scopeFactory;
+        private readonly IDbContextFactory<AppDbContext> _factory;
+
 
         /// <summary>
         ///     Cache the products in the system so we don't have to keep fetching it.
@@ -31,12 +30,12 @@ namespace jahndigital.studentbank.services
         private ShareType? _shareType;
 
         /// <summary>
-        ///     Pull in the services from dependency injection api.
+        /// 
         /// </summary>
-        /// <param name="scopeFactory"></param>
-        public DbInitializerService(IServiceScopeFactory scopeFactory)
+        /// <param name="factory"></param>
+        public DbInitializerService(IDbContextFactory<AppDbContext> factory)
         {
-            _scopeFactory = scopeFactory;
+            _factory = factory;
         }
 
         /// <summary>
@@ -44,13 +43,7 @@ namespace jahndigital.studentbank.services
         /// </summary>
         public void Initialize()
         {
-            using var serviceScope = _scopeFactory.CreateScope();
-            using var context = serviceScope.ServiceProvider.GetService<AppDbContext>();
-
-            if (context == null) {
-                throw new ArgumentNullException("Expected an AppDbContext.");
-            }
-
+            using var context = _factory.CreateDbContext();
             context.Database.Migrate();
         }
 
@@ -59,24 +52,18 @@ namespace jahndigital.studentbank.services
         /// </summary>
         public void SeedData()
         {
-            using var serviceScope = _scopeFactory.CreateScope();
-            using var context = serviceScope.ServiceProvider.GetService<AppDbContext>();
-
-            if (context == null) {
-                throw new ArgumentNullException("Expected an AppDbContext.");
-            }
+            using var context = _factory.CreateDbContext();
 
             SeedPrivileges(context);
             SeedRoles(context);
             SeedUsers(context);
 
             #if DEBUG
-
-            // Generates semi-random data for development and testing.
-            SeedShareTypes(context);
-            SeedProducts(context);
-            SeedStocks(context);
-            SeedGroups(context, SeedInstances(context));
+                // Generates semi-random data for development and testing.
+                SeedShareTypes(context);
+                SeedProducts(context);
+                SeedStocks(context);
+                SeedGroups(context, SeedInstances(context));
             #endif
         }
 

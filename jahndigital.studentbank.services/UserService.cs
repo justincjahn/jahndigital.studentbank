@@ -15,18 +15,15 @@ namespace jahndigital.studentbank.services
     /// </summary>
     public class UserService : IUserService
     {
-        /// <summary>
-        ///     The database context to use when querying and updating the data store.
-        /// </summary>
-        private readonly AppDbContext _context;
+        private readonly IDbContextFactory<AppDbContext> _factory;
 
         private readonly string _secret;
 
         private readonly int _tokenLifetime;
 
-        public UserService(AppDbContext context, string secret, int tokenLifetime)
+        public UserService(IDbContextFactory<AppDbContext> factory, string secret, int tokenLifetime)
         {
-            _context = context;
+            _factory = factory;
             _secret = secret;
             _tokenLifetime = tokenLifetime;
         }
@@ -34,7 +31,9 @@ namespace jahndigital.studentbank.services
         /// <inheritdoc />
         public async Task<AuthenticateResponse?> AuthenticateAsync(AuthenticateRequest model, string ipAddress)
         {
-            var user = await _context.Users
+            await using var context = _factory.CreateDbContext();
+
+            var user = await context.Users
                 .Include(x => x.Role)
                 .SingleOrDefaultAsync(
                     x => x.Email == model.Username.ToLower()
@@ -71,7 +70,7 @@ namespace jahndigital.studentbank.services
             var refresh = JwtTokenService.GenerateRefreshToken(ipAddress);
             user.RefreshTokens.Add(refresh);
 
-            await _context.SaveChangesAsync();
+            await context.SaveChangesAsync();
 
             return new AuthenticateResponse(user, token, refresh.Token);
         }
@@ -79,7 +78,9 @@ namespace jahndigital.studentbank.services
         /// <inheritdoc />
         public async Task<AuthenticateResponse?> RefreshTokenAsync(string token, string ipAddress)
         {
-            var user = await _context.Users
+            await using var context = _factory.CreateDbContext();
+
+            var user = await context.Users
                 .Include(x => x.Role)
                 .SingleOrDefaultAsync(u =>
                     u.RefreshTokens.Any(t => t.Token == token)
@@ -113,7 +114,7 @@ namespace jahndigital.studentbank.services
                 expires: _tokenLifetime
             );
 
-            await _context.SaveChangesAsync();
+            await context.SaveChangesAsync();
 
             return new AuthenticateResponse(user, jwtToken, newToken.Token);
         }
@@ -121,7 +122,9 @@ namespace jahndigital.studentbank.services
         /// <inheritdoc />
         public async Task<bool> RevokeTokenAsync(string token, string ipAddress)
         {
-            var user = await _context.Users.SingleOrDefaultAsync(
+            await using var context = _factory.CreateDbContext();
+
+            var user = await context.Users.SingleOrDefaultAsync(
                 u => u.RefreshTokens.Any(t => t.Token == token)
             );
 
@@ -141,7 +144,7 @@ namespace jahndigital.studentbank.services
 
             refreshToken.Revoked = DateTime.UtcNow;
             refreshToken.RevokedByIpAddress = ipAddress;
-            await _context.SaveChangesAsync();
+            await context.SaveChangesAsync();
 
             return true;
         }

@@ -2,6 +2,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using HotChocolate;
 using HotChocolate.AspNetCore.Authorization;
+using HotChocolate.Data;
 using HotChocolate.Resolvers;
 using HotChocolate.Types;
 using HotChocolate.Types.Relay;
@@ -11,7 +12,7 @@ using jahndigital.studentbank.utils;
 
 namespace jahndigital.studentbank.server.GraphQL.Queries
 {
-    [ExtendObjectType(Name = "Query")]
+    [ExtendObjectType("Query")]
     public class ShareQueries
     {
         /// <summary>
@@ -20,9 +21,10 @@ namespace jahndigital.studentbank.server.GraphQL.Queries
         /// <param name="context"></param>
         /// <param name="resolverContext"></param>
         /// <returns></returns>
-        [UsePaging, UseSelection, UseSorting, UseFiltering, Authorize]
+        [UseDbContext(typeof(AppDbContext)), UsePaging, UseProjection, UseFiltering, UseSorting,
+         Authorize]
         public async Task<IQueryable<Share>> GetShares(
-            [Service] AppDbContext context,
+            [ScopedService] AppDbContext context,
             [Service] IResolverContext resolverContext
         )
         {
@@ -48,9 +50,9 @@ namespace jahndigital.studentbank.server.GraphQL.Queries
         /// </summary>
         /// <param name="context"></param>
         /// <returns></returns>
-        [UsePaging, UseSelection, UseSorting, UseFiltering,
+        [UseDbContext(typeof(AppDbContext)), UsePaging, UseProjection, UseFiltering, UseSorting,
          Authorize(Policy = Constants.Privilege.PRIVILEGE_MANAGE_SHARES)]
-        public IQueryable<Share> GetDeletedShares([Service] AppDbContext context)
+        public IQueryable<Share> GetDeletedShares([ScopedService] AppDbContext context)
         {
             return context.Shares.Where(x => x.DateDeleted != null);
         }

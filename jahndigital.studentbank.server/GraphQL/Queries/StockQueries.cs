@@ -3,6 +3,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using HotChocolate;
 using HotChocolate.AspNetCore.Authorization;
+using HotChocolate.Data;
 using HotChocolate.Resolvers;
 using HotChocolate.Types;
 using HotChocolate.Types.Relay;
@@ -23,10 +24,11 @@ namespace jahndigital.studentbank.server.GraphQL.Queries
         /// <param name="context"></param>
         /// <param name="resolverContext"></param>
         /// <returns></returns>
-        [UsePaging, UseSelection, UseSorting, UseFiltering, Authorize]
+        [UseDbContext(typeof(AppDbContext)), UsePaging, UseProjection, UseFiltering, UseSorting,
+         Authorize]
         public async Task<IQueryable<Stock>> GetStocksAsync(
             IEnumerable<long>? instances,
-            [Service] AppDbContext context,
+            [ScopedService] AppDbContext context,
             [Service] IResolverContext resolverContext
         )
         {
@@ -71,10 +73,11 @@ namespace jahndigital.studentbank.server.GraphQL.Queries
         /// <param name="context"></param>
         /// <param name="resolverContext"></param>
         /// <returns></returns>
-        [UsePaging, UseSorting, UseFiltering, Authorize]
+        [UseDbContext(typeof(AppDbContext)), UsePaging, UseFiltering, UseSorting,
+         Authorize]
         public async Task<IQueryable<StockHistory>> GetStockHistoryAsync(
             long stockId,
-            [Service] AppDbContext context,
+            [ScopedService] AppDbContext context,
             [Service] IResolverContext resolverContext
         )
         {
@@ -115,9 +118,9 @@ namespace jahndigital.studentbank.server.GraphQL.Queries
         /// </summary>
         /// <param name="context"></param>
         /// <returns></returns>
-        [UsePaging, UseSelection, UseSorting, UseFiltering,
+        [UseDbContext(typeof(AppDbContext)), UsePaging, UseProjection, UseFiltering, UseSorting,
          Authorize(Policy = Constants.Privilege.PRIVILEGE_MANAGE_STOCKS)]
-        public IQueryable<Stock> GetDeletedStocks([Service] AppDbContext context)
+        public IQueryable<Stock> GetDeletedStocks([ScopedService] AppDbContext context)
         {
             return context.Stocks.Where(x => x.DateDeleted != null);
         }

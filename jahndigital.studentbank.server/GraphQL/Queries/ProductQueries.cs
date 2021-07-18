@@ -2,6 +2,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using HotChocolate;
 using HotChocolate.AspNetCore.Authorization;
+using HotChocolate.Data;
 using HotChocolate.Resolvers;
 using HotChocolate.Types;
 using HotChocolate.Types.Relay;
@@ -15,7 +16,7 @@ namespace jahndigital.studentbank.server.GraphQL.Queries
     /// <summary>
     ///     Allows students to view products assigned to their group and admins to list all products.
     /// </summary>
-    [ExtendObjectType(Name = "Query")]
+    [ExtendObjectType("Query")]
     public class ProductQueries
     {
         /// <summary>
@@ -24,9 +25,10 @@ namespace jahndigital.studentbank.server.GraphQL.Queries
         /// <param name="context"></param>
         /// <param name="resolverContext"></param>
         /// <returns></returns>
-        [UsePaging, UseSelection, UseSorting, UseFiltering, Authorize]
+        [UseDbContext(typeof(AppDbContext)), UsePaging, UseProjection, UseFiltering, UseSorting,
+         Authorize]
         public async Task<IQueryable<Product>> GetProductsAsync(
-            [Service] AppDbContext context,
+            [ScopedService] AppDbContext context,
             [Service] IResolverContext resolverContext
         )
         {
@@ -57,9 +59,9 @@ namespace jahndigital.studentbank.server.GraphQL.Queries
         /// </summary>
         /// <param name="context"></param>
         /// <returns></returns>
-        [UsePaging, UseSelection, UseSorting, UseFiltering,
+        [UseDbContext(typeof(AppDbContext)), UsePaging, UseProjection, UseFiltering, UseSorting,
          Authorize(Policy = Constants.Privilege.PRIVILEGE_MANAGE_PRODUCTS)]
-        public IQueryable<Product> GetDeletedProducts([Service] AppDbContext context)
+        public IQueryable<Product> GetDeletedProducts([ScopedService] AppDbContext context)
         {
             return context.Products.Where(x => x.DateDeleted != null);
         }

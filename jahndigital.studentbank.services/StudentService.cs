@@ -15,13 +15,13 @@ namespace jahndigital.studentbank.services
     /// </summary>
     public class StudentService : IStudentService
     {
-        private readonly AppDbContext _context;
+        private readonly IDbContextFactory<AppDbContext> _factory;
         private readonly string _secret;
         private readonly int _tokenLifetime;
 
-        public StudentService(AppDbContext context, string secret, int tokenLifetime)
+        public StudentService(IDbContextFactory<AppDbContext> factory, string secret, int tokenLifetime)
         {
-            _context = context;
+            _factory = factory;
             _secret = secret;
             _tokenLifetime = tokenLifetime;
         }
@@ -29,10 +29,12 @@ namespace jahndigital.studentbank.services
         /// <inheritdoc />
         public async Task<AuthenticateResponse?> AuthenticateAsync(AuthenticateRequest model, string ipAddress)
         {
-            // Only select students in the active instance
-            var activeInstances = await _context.Instances.Where(x => x.IsActive).ToListAsync();
+            await using var context = _factory.CreateDbContext();
 
-            var student = await _context.Students
+            // Only select students in the active instance
+            var activeInstances = await context.Instances.Where(x => x.IsActive).ToListAsync();
+
+            var student = await context.Students
                 .Include(x => x.Group)
                 .Where(x => activeInstances.Select(x => x.Id).Contains(x.Group.InstanceId))
                 .Where(x =>
@@ -73,7 +75,7 @@ namespace jahndigital.studentbank.services
             var refresh = JwtTokenService.GenerateRefreshToken(ipAddress);
             student.RefreshTokens.Add(refresh);
 
-            await _context.SaveChangesAsync();
+            await context.SaveChangesAsync();
 
             return new AuthenticateResponse(student, token, refresh.Token);
         }
@@ -82,13 +84,14 @@ namespace jahndigital.studentbank.services
         /// <exception cref="ArgumentException">If the Invite Code or account number is invalid.</exception>
         public async Task<string> AuthenticateInviteAsync(string inviteCode, string accountNumber)
         {
+            await using var context = _factory.CreateDbContext();
             /*
                 SELECT * FROM INSTANCES
                 WHERE
                     INSTANCES.INVITECODE = INVITECODE
                     AND INSTANCES.DATEDELETED = NULL
             */
-            var instance = await _context.Instances
+            var instance = await context.Instances
                     .Where(x => x.IsActive && x.InviteCode.ToUpper() == inviteCode.ToUpper())
                     .SingleOrDefaultAsync()
                 ?? throw new ArgumentException(
@@ -106,7 +109,7 @@ namespace jahndigital.studentbank.services
                     AND STUDENTS.DATEDELETED = NULL
 
             */
-            var student = await _context.Students
+            var student = await context.Students
                     .Include(x => x.Group)
                     .Where(x => x.Group.InstanceId == instance.Id)
                     .Where(x =>
@@ -137,7 +140,9 @@ namespace jahndigital.studentbank.services
         /// <inheritdoc />
         public async Task<AuthenticateResponse?> RefreshTokenAsync(string token, string ipAddress)
         {
-            var student = await _context.Students.SingleOrDefaultAsync(x =>
+            await using var context = _factory.CreateDbContext();
+
+            var student = await context.Students.SingleOrDefaultAsync(x =>
                 x.DateDeleted == null
                 && x.DateRegistered != null
                 && x.RefreshTokens.Any(t => t.Token == token)
@@ -159,7 +164,7 @@ namespace jahndigital.studentbank.services
             refreshToken.ReplacedByToken = newToken.Token;
 
             student.RefreshTokens.Add(newToken);
-            await _context.SaveChangesAsync();
+            await context.SaveChangesAsync();
 
             var jwtToken = JwtTokenService.GenerateToken(
                 _secret,
@@ -179,15 +184,13 @@ namespace jahndigital.studentbank.services
         /// <inheritdoc />
         public async Task<bool> RevokeTokenAsync(string token, string ipAddress)
         {
-            var student = await _context.Students.SingleOrDefaultAsync(
+            await using var context = _factory.CreateDbContext();
+
+            var student = await context.Students.SingleOrDefaultAsync(
                 u => u.RefreshTokens.Any(t => t.Token == token)
             );
 
-            if (student == null) {
-                return false;
-            }
-
-            var refreshToken = student.RefreshTokens.SingleOrDefault(x => x.Token == token);
+            var refreshToken = student?.RefreshTokens.SingleOrDefault(x => x.Token == token);
 
             if (refreshToken == null) {
                 return false;
@@ -199,7 +202,7 @@ namespace jahndigital.studentbank.services
 
             refreshToken.Revoked = DateTime.UtcNow;
             refreshToken.RevokedByIpAddress = ipAddress;
-            await _context.SaveChangesAsync();
+            await context.SaveChangesAsync();
 
             return true;
         }

@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Security.Claims;
@@ -81,7 +82,7 @@ namespace jahndigital.studentbank.server.GraphQL
         /// <param name="type"></param>
         public static IResolverContext SetUser(this IResolverContext context, long userId, UserType type)
         {
-            context.ScopedContextData = context.ScopedContextData.SetItems(new Dictionary<string, object> {
+            context.ScopedContextData = context.ScopedContextData.SetItems(new Dictionary<string, object?> {
                 {DataOwnerAuthorizationHandlerGraphQL.CTX_USER_ID, userId},
                 {DataOwnerAuthorizationHandlerGraphQL.CTX_USER_TYPE, type}
             });
@@ -95,9 +96,13 @@ namespace jahndigital.studentbank.server.GraphQL
         /// <param name="context"></param>
         public static HttpContext GetHttpContext(this IResolverContext context)
         {
-            var ctx = context.ContextData.FirstOrDefault(x => x.Value is HttpContext);
+            var (_, value) = context.ContextData.First(x => x.Value is HttpContext);
 
-            return (HttpContext) ctx.Value;
+            if (value is null) {
+                throw new ArgumentNullException(nameof(context));
+            }
+
+            return (HttpContext) value;
         }
     }
 }

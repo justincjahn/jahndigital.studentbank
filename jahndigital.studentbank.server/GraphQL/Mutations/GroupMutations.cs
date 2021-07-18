@@ -3,6 +3,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using HotChocolate;
 using HotChocolate.AspNetCore.Authorization;
+using HotChocolate.Data;
 using HotChocolate.Types;
 using jahndigital.studentbank.dal.Contexts;
 using jahndigital.studentbank.dal.Entities;
@@ -15,7 +16,7 @@ namespace jahndigital.studentbank.server.GraphQL.Mutations
     /// <summary>
     ///     CRUD operations for <see cref="dal.Entities.Group" /> entities..
     /// </summary>
-    [ExtendObjectType(Name = "Mutation")]
+    [ExtendObjectType("Mutation")]
     public class GroupMutations
     {
         /// <summary>
@@ -24,10 +25,11 @@ namespace jahndigital.studentbank.server.GraphQL.Mutations
         /// <param name="input"></param>
         /// <param name="context"></param>
         /// <returns></returns>
-        [UseSelection, Authorize(Policy = Constants.Privilege.PRIVILEGE_MANAGE_GROUPS)]
+        [UseDbContext(typeof(AppDbContext)), UseProjection,
+         Authorize(Policy = Constants.Privilege.PRIVILEGE_MANAGE_GROUPS)]
         public async Task<IQueryable<Group>> UpdateGroupAsync(
             UpdateGroupRequest input,
-            [Service] AppDbContext context
+            [ScopedService] AppDbContext context
         )
         {
             var group = await context.Groups.Where(x => x.Id == input.Id).SingleOrDefaultAsync()
@@ -77,10 +79,11 @@ namespace jahndigital.studentbank.server.GraphQL.Mutations
         /// <param name="input"></param>
         /// <param name="context"></param>
         /// <returns></returns>
-        [UseSelection, Authorize(Policy = Constants.Privilege.PRIVILEGE_MANAGE_GROUPS)]
+        [UseDbContext(typeof(AppDbContext)), UseProjection,
+         Authorize(Policy = Constants.Privilege.PRIVILEGE_MANAGE_GROUPS)]
         public async Task<IQueryable<Group>> NewGroupAsync(
             NewGroupRequest input,
-            [Service] AppDbContext context
+            [ScopedService] AppDbContext context
         )
         {
             var groupExists = await context.Groups.Where(x =>
@@ -122,9 +125,12 @@ namespace jahndigital.studentbank.server.GraphQL.Mutations
         /// <param name="id"></param>
         /// <param name="context"></param>
         /// <returns></returns>
-        [Authorize(Policy = Constants.Privilege.PRIVILEGE_MANAGE_GROUPS)]
-        public async Task<bool> DeleteGroupAsync(long id, [Service] AppDbContext context)
-        {
+        [UseDbContext(typeof(AppDbContext)),
+         Authorize(Policy = Constants.Privilege.PRIVILEGE_MANAGE_GROUPS)]
+        public async Task<bool> DeleteGroupAsync(
+            long id,
+            [ScopedService] AppDbContext context
+        ) {
             var hasStudents = await context.Students.Where(x => x.GroupId == id).AnyAsync();
 
             if (hasStudents) {
@@ -155,9 +161,12 @@ namespace jahndigital.studentbank.server.GraphQL.Mutations
         /// <param name="id"></param>
         /// <param name="context"></param>
         /// <returns></returns>
-        [UseSelection, Authorize(Policy = Constants.Privilege.PRIVILEGE_MANAGE_GROUPS)]
-        public async Task<IQueryable<Group>> RestoreGroupAsync(long id, [Service] AppDbContext context)
-        {
+        [UseDbContext(typeof(AppDbContext)), UseProjection,
+         Authorize(Policy = Constants.Privilege.PRIVILEGE_MANAGE_GROUPS)]
+        public async Task<IQueryable<Group>> RestoreGroupAsync(
+            long id,
+            [ScopedService] AppDbContext context
+        ) {
             var group = await context.Groups
                     .Where(x => x.Id == id && x.DateDeleted != null)
                     .SingleOrDefaultAsync()

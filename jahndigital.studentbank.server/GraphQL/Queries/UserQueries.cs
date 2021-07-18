@@ -2,6 +2,7 @@ using System;
 using System.Linq;
 using HotChocolate;
 using HotChocolate.AspNetCore.Authorization;
+using HotChocolate.Data;
 using HotChocolate.Resolvers;
 using HotChocolate.Types;
 using jahndigital.studentbank.dal.Contexts;
@@ -13,7 +14,7 @@ namespace jahndigital.studentbank.server.GraphQL.Queries
 {
     /// <summary>
     /// </summary>
-    [ExtendObjectType(Name = "Query")]
+    [ExtendObjectType("Query")]
     public class UserQueries
     {
         /// <summary>
@@ -22,9 +23,10 @@ namespace jahndigital.studentbank.server.GraphQL.Queries
         /// <param name="context"></param>
         /// <param name="resolverContext"></param>
         /// <returns></returns>
-        [Authorize, UseSelection]
+        [UseDbContext(typeof(AppDbContext)), UseProjection,
+        Authorize]
         public IQueryable<User> GetCurrentUser(
-            [Service] AppDbContext context,
+            [ScopedService] AppDbContext context,
             [Service] IResolverContext resolverContext
         )
         {

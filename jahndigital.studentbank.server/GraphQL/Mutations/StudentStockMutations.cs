@@ -2,6 +2,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using HotChocolate;
 using HotChocolate.AspNetCore.Authorization;
+using HotChocolate.Data;
 using HotChocolate.Resolvers;
 using HotChocolate.Types;
 using jahndigital.studentbank.dal.Contexts;
@@ -16,7 +17,7 @@ namespace jahndigital.studentbank.server.GraphQL.Mutations
     /// <summary>
     ///     CRUD operations for stock purchases.
     /// </summary>
-    [ExtendObjectType(Name = "Mutation")]
+    [ExtendObjectType("Mutation")]
     public class StudentStockMutations
     {
         /// <summary>
@@ -27,10 +28,10 @@ namespace jahndigital.studentbank.server.GraphQL.Mutations
         /// <param name="transactionService"></param>
         /// <param name="resolverContext"></param>
         /// <returns></returns>
-        [UseSelection, Authorize]
+        [UseDbContext(typeof(AppDbContext)), UseProjection, Authorize]
         public async Task<IQueryable<StudentStock>> NewStockPurchaseAsync(
             PurchaseStockRequest input,
-            [Service] AppDbContext context,
+            [ScopedService] AppDbContext context,
             [Service] ITransactionService transactionService,
             [Service] IResolverContext resolverContext
         )

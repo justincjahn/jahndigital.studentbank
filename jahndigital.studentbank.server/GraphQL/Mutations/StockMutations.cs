@@ -3,6 +3,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using HotChocolate;
 using HotChocolate.AspNetCore.Authorization;
+using HotChocolate.Data;
 using HotChocolate.Types;
 using jahndigital.studentbank.dal.Contexts;
 using jahndigital.studentbank.dal.Entities;
@@ -15,7 +16,7 @@ namespace jahndigital.studentbank.server.GraphQL.Mutations
     /// <summary>
     ///     CRUD operations for <see cref="dal.Entities.Stock" /> entities.
     /// </summary>
-    [ExtendObjectType(Name = "Mutation")]
+    [ExtendObjectType("Mutation")]
     public class StockMutations
     {
         /// <summary>
@@ -24,10 +25,11 @@ namespace jahndigital.studentbank.server.GraphQL.Mutations
         /// <param name="input"></param>
         /// <param name="context"></param>
         /// <returns></returns>
-        [UseSelection, Authorize(Policy = Constants.Privilege.PRIVILEGE_MANAGE_STOCKS)]
+        [UseDbContext(typeof(AppDbContext)), UseProjection,
+         Authorize(Policy = Constants.Privilege.PRIVILEGE_MANAGE_STOCKS)]
         public async Task<IQueryable<Stock>> NewStockAsync(
             NewStockRequest input,
-            [Service] AppDbContext context
+            [ScopedService] AppDbContext context
         )
         {
             var hasStock = await context.Stocks.AnyAsync(x => x.Symbol == input.Symbol);
@@ -67,10 +69,11 @@ namespace jahndigital.studentbank.server.GraphQL.Mutations
         /// <param name="input"></param>
         /// <param name="context"></param>
         /// <returns></returns>
-        [UseSelection, Authorize(Policy = Constants.Privilege.PRIVILEGE_MANAGE_STOCKS)]
+        [UseDbContext(typeof(AppDbContext)), UseProjection,
+         Authorize(Policy = Constants.Privilege.PRIVILEGE_MANAGE_STOCKS)]
         public async Task<IQueryable<Stock>> UpdateStockAsync(
             UpdateStockRequest input,
-            [Service] AppDbContext context
+            [ScopedService] AppDbContext context
         )
         {
             var stock = await context.Stocks.FindAsync(input.Id)
@@ -138,10 +141,11 @@ namespace jahndigital.studentbank.server.GraphQL.Mutations
         /// <param name="input"></param>
         /// <param name="context"></param>
         /// <returns></returns>
-        [UseSelection, Authorize(Policy = Constants.Privilege.PRIVILEGE_MANAGE_STOCKS)]
+        [UseDbContext(typeof(AppDbContext)), UseProjection,
+         Authorize(Policy = Constants.Privilege.PRIVILEGE_MANAGE_STOCKS)]
         public async Task<IQueryable<Stock>> LinkStockAsync(
             LinkStockRequest input,
-            [Service] AppDbContext context
+            [ScopedService] AppDbContext context
         )
         {
             var hasInstance = await context.Instances.AnyAsync(x => x.Id == input.InstanceId);
@@ -185,10 +189,11 @@ namespace jahndigital.studentbank.server.GraphQL.Mutations
         /// <param name="input"></param>
         /// <param name="context"></param>
         /// <returns></returns>
-        [UseSelection, Authorize(Policy = Constants.Privilege.PRIVILEGE_MANAGE_STOCKS)]
+        [UseDbContext(typeof(AppDbContext)), UseProjection,
+         Authorize(Policy = Constants.Privilege.PRIVILEGE_MANAGE_STOCKS)]
         public async Task<IQueryable<Stock>> UnlinkStockAsync(
             LinkStockRequest input,
-            [Service] AppDbContext context
+            [ScopedService] AppDbContext context
         )
         {
             var hasInstance = await context.Instances.AnyAsync(x => x.Id == input.InstanceId);
@@ -244,8 +249,12 @@ namespace jahndigital.studentbank.server.GraphQL.Mutations
         /// <param name="id"></param>
         /// <param name="context"></param>
         /// <returns></returns>
-        [Authorize(Policy = Constants.Privilege.PRIVILEGE_MANAGE_STOCKS)]
-        public async Task<bool> DeleteStockAsync(long id, [Service] AppDbContext context)
+        [UseDbContext(typeof(AppDbContext)),
+         Authorize(Policy = Constants.Privilege.PRIVILEGE_MANAGE_STOCKS)]
+        public async Task<bool> DeleteStockAsync(
+            long id,
+            [ScopedService] AppDbContext context
+        )
         {
             var stock = await context.Stocks.SingleOrDefaultAsync(x => x.Id == id)
                 ?? throw ErrorFactory.NotFound();
@@ -281,8 +290,12 @@ namespace jahndigital.studentbank.server.GraphQL.Mutations
         /// <param name="id"></param>
         /// <param name="context"></param>
         /// <returns></returns>
-        [UseSelection, Authorize(Policy = Constants.Privilege.PRIVILEGE_MANAGE_STOCKS)]
-        public async Task<IQueryable<Stock>> RestoreStockAsync(long id, [Service] AppDbContext context)
+        [UseDbContext(typeof(AppDbContext)),
+         UseProjection, Authorize(Policy = Constants.Privilege.PRIVILEGE_MANAGE_STOCKS)]
+        public async Task<IQueryable<Stock>> RestoreStockAsync(
+            long id,
+            [ScopedService] AppDbContext context
+        )
         {
             var stock = await context.Stocks.SingleOrDefaultAsync(x => x.Id == id && x.DateDeleted != null)
                 ?? throw ErrorFactory.NotFound();

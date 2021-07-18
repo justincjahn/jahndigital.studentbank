@@ -1,6 +1,7 @@
 using System.Linq;
 using HotChocolate;
 using HotChocolate.AspNetCore.Authorization;
+using HotChocolate.Data;
 using HotChocolate.Types;
 using HotChocolate.Types.Relay;
 using jahndigital.studentbank.dal.Contexts;
@@ -12,7 +13,7 @@ namespace jahndigital.studentbank.server.GraphQL.Queries
     /// <summary>
     ///     Queries involving <see cname="dal.Entities.Instance" /> objects.
     /// </summary>
-    [ExtendObjectType(Name = "Query")]
+    [ExtendObjectType("Query")]
     public class InstanceQueries
     {
         /// <summary>
@@ -20,9 +21,9 @@ namespace jahndigital.studentbank.server.GraphQL.Queries
         /// </summary>
         /// <param name="context"></param>
         /// <returns></returns>
-        [UsePaging, UseSelection, UseSorting, UseFiltering,
+        [UseDbContext(typeof(AppDbContext)), UsePaging, UseProjection, UseFiltering, UseSorting,
          Authorize(Policy = Constants.Privilege.PRIVILEGE_MANAGE_INSTANCES)]
-        public IQueryable<Instance> GetInstances([Service] AppDbContext context)
+        public IQueryable<Instance> GetInstances([ScopedService] AppDbContext context)
         {
             return context.Instances.Where(x => x.DateDeleted == null);
         }
@@ -32,9 +33,9 @@ namespace jahndigital.studentbank.server.GraphQL.Queries
         /// </summary>
         /// <param name="context"></param>
         /// <returns></returns>
-        [UsePaging, UseSelection, UseSorting, UseFiltering,
+        [UseDbContext(typeof(AppDbContext)), UsePaging, UseProjection, UseFiltering, UseSorting,
          Authorize(Policy = Constants.Privilege.PRIVILEGE_MANAGE_INSTANCES)]
-        public IQueryable<Instance> GetDeletedInstances([Service] AppDbContext context)
+        public IQueryable<Instance> GetDeletedInstances([ScopedService] AppDbContext context)
         {
             return context.Instances.Where(x => x.DateDeleted != null);
         }

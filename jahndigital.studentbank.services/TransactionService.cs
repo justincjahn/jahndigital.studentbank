@@ -17,19 +17,11 @@ namespace jahndigital.studentbank.services
     /// </summary>
     public class TransactionService : ITransactionService
     {
-        /// <summary>
-        ///     The database context to use when querying and updating the data store.
-        /// </summary>
-        private readonly AppDbContext _context;
+        private readonly IDbContextFactory<AppDbContext> _factory;
 
-        /// <summary>
-        ///     Initialize the instance with the database context.
-        /// </summary>
-        /// <param name="context"></param>
-        public TransactionService(AppDbContext context)
-        {
-            _context = context;
-        }
+        private AppDbContext? _sharedContext = null;
+
+        public TransactionService(IDbContextFactory<AppDbContext> factory) => _factory = factory;
 
         /// <inheritdoc />
         /// <exception cref="WithdrawalLimitExceededException"></exception>
@@ -45,6 +37,9 @@ namespace jahndigital.studentbank.services
             bool withdrawalLimit = true
         )
         {
+            await using var newCtx = _factory.CreateDbContext();
+            var context = _sharedContext ?? newCtx;
+
             if (type == null) {
                 if (amount == Money.FromCurrency(0.0m)) {
                     type = "C";
@@ -53,7 +48,7 @@ namespace jahndigital.studentbank.services
                 }
             }
 
-            var share = await _context.Shares
+            var share = await context.Shares
                     .Include(x => x.Student)
                     .Include(x => x.ShareType)
                     .Where(x => x.Id == shareId && x.Student.DateDeleted == null)
@@ -61,15 +56,15 @@ namespace jahndigital.studentbank.services
                 ?? throw new ShareNotFoundException(shareId);
 
             if (withdrawalLimit && type == "W") {
-                _assessWithdrawalLimit(share);
+                _assessWithdrawalLimit(share, context);
             }
 
             if (amount < Money.FromCurrency(0.0m) && share.Balance < amount && !takeNegative) {
                 var exception = new NonsufficientFundsException(share, amount);
-                _context.Add(exception.Transaction);
+                context.Add(exception.Transaction);
 
                 try {
-                    await _context.SaveChangesAsync();
+                    await context.SaveChangesAsync();
                 } finally {
                     throw exception;
                 }
@@ -87,10 +82,10 @@ namespace jahndigital.studentbank.services
                 Comment = comment ?? string.Empty
             };
 
-            _context.Add(transaction);
+            context.Add(transaction);
 
             try {
-                await _context.SaveChangesAsync();
+                await context.SaveChangesAsync();
             } catch (Exception e) {
                 throw new DatabaseException(e.Message);
             }
@@ -108,8 +103,11 @@ namespace jahndigital.studentbank.services
             bool withdrawalLimit = true
         )
         {
+            await using var context = _factory.CreateDbContext();
+            _sharedContext = context;
+
             var postedTransactions = new List<Transaction>();
-            var dbTransaction = await _context.Database.BeginTransactionAsync();
+            var dbTransaction = await context.Database.BeginTransactionAsync();
 
             foreach (var transaction in transactions) {
                 try {
@@ -123,6 +121,7 @@ namespace jahndigital.studentbank.services
                 } catch (NonsufficientFundsException e) {
                     if (stopOnException) {
                         await dbTransaction.RollbackAsync();
+                        _sharedContext = null;
 
                         // TODO: Log this exception instead of just re-throwing it.
                         throw;
@@ -131,11 +130,13 @@ namespace jahndigital.studentbank.services
                     postedTransactions.Add(e.Transaction);
                 } catch (DatabaseException) {
                     await dbTransaction.RollbackAsync();
+                    _sharedContext = null;
 
                     // TODO: Log this exception instead of just re-throwing it.
                     throw;
                 } catch (Exception e) {
                     await dbTransaction.RollbackAsync();
+                    _sharedContext = null;
 
                     throw new DatabaseException(e.Message);
                 }
@@ -144,6 +145,7 @@ namespace jahndigital.studentbank.services
             try {
                 await dbTransaction.CommitAsync();
             } catch (Exception e) {
+                _sharedContext = null;
                 throw new DatabaseException(e.Message);
             }
 
@@ -169,6 +171,8 @@ namespace jahndigital.studentbank.services
             bool withdrawalLimit = true
         )
         {
+            await using var context = _factory.CreateDbContext();
+            
             if (amount < Money.FromCurrency(0.0m)) {
                 throw new ArgumentOutOfRangeException(
                     nameof(amount),
@@ -176,7 +180,7 @@ namespace jahndigital.studentbank.services
                 );
             }
 
-            var sourceShare = await _context.Shares
+            var sourceShare = await context.Shares
                     .Include(x => x.Student)
                     .ThenInclude(x => x.Group)
                     .Include(x => x.ShareType)
@@ -184,7 +188,7 @@ namespace jahndigital.studentbank.services
                     .FirstOrDefaultAsync()
                 ?? throw new ShareNotFoundException(sourceShareId);
 
-            var destinationShare = await _context.Shares
+            var destinationShare = await context.Shares
                     .Include(x => x.Student)
                     .ThenInclude(x => x.Group)
                     .Where(x => x.Id == destinationShareId && x.Student.DateDeleted == null)
@@ -199,7 +203,7 @@ namespace jahndigital.studentbank.services
             }
 
             if (withdrawalLimit) {
-                _assessWithdrawalLimit(sourceShare);
+                _assessWithdrawalLimit(sourceShare, context);
             }
 
             if (sourceShare.Balance < amount && !takeNegative) {
@@ -241,11 +245,11 @@ namespace jahndigital.studentbank.services
                 Comment = tranComment
             };
 
-            _context.Add(sourceTransaction);
-            _context.Add(destinationTransaction);
+            context.Add(sourceTransaction);
+            context.Add(destinationTransaction);
 
             try {
-                await _context.SaveChangesAsync();
+                await context.SaveChangesAsync();
             } catch (Exception e) {
                 throw new DatabaseException(e.Message);
             }
@@ -263,6 +267,8 @@ namespace jahndigital.studentbank.services
         /// <exception cref="DatabaseException">If a database error occurs.</exception>
         public async Task<StudentPurchase> PurchaseAsync(PurchaseRequest input)
         {
+            await using var context = _factory.CreateDbContext();
+
             // Validate that the items don't contain negative or zero quantities
             if (input.Items.Any(x => x.Count < 1)) {
                 throw new ArgumentOutOfRangeException(
@@ -272,7 +278,7 @@ namespace jahndigital.studentbank.services
             }
 
             // Get the share's Student ID and Instance ID for later use
-            var share = await _context.Shares
+            var share = await context.Shares
                     .Include(x => x.Student)
                     .ThenInclude(x => x.Group)
                     .ThenInclude(x => x.Instance)
@@ -288,7 +294,7 @@ namespace jahndigital.studentbank.services
 
             // Pull the list of requested products to validate cost and quantity
             var productIds = input.Items.Select(x => x.ProductId).ToList();
-            var products = await _context.ProductInstances
+            var products = await context.ProductInstances
                 .Include(x => x.Product)
                 .Where(x =>
                     x.InstanceId == share.InstanceId
@@ -324,10 +330,10 @@ namespace jahndigital.studentbank.services
             }
 
             purchase.TotalCost = total;
-            _context.Add(purchase);
+            context.Add(purchase);
 
             try {
-                await _context.SaveChangesAsync();
+                await context.SaveChangesAsync();
             } catch (Exception e) {
                 throw new DatabaseException(e.Message);
             }
@@ -343,13 +349,13 @@ namespace jahndigital.studentbank.services
                         product.Quantity += item.Quantity;
                     }
 
-                    _context.Remove(item);
+                    context.Remove(item);
                 }
 
-                _context.Remove(purchase);
+                context.Remove(purchase);
 
                 try {
-                    await _context.SaveChangesAsync();
+                    await context.SaveChangesAsync();
                 } catch (Exception e2) {
                     throw new AggregateException(e, e2);
                 }
@@ -377,14 +383,16 @@ namespace jahndigital.studentbank.services
         /// <exception cref="DatabaseException">If a database error occurs.</exception>
         public async Task<StudentStock> PurchaseStockAsync(PurchaseStockRequest input)
         {
-            var stockExists = await _context.Stocks.Where(x => x.Id == input.StockId).AnyAsync();
+            await using var context = _factory.CreateDbContext();
+
+            var stockExists = await context.Stocks.Where(x => x.Id == input.StockId).AnyAsync();
 
             if (!stockExists) {
                 throw new StockNotFoundException(input.StockId);
             }
 
             // Get the share's Student ID and Instance ID for later use
-            var share = await _context.Shares
+            var share = await context.Shares
                     .Include(x => x.Student)
                     .ThenInclude(x => x.Group)
                     .ThenInclude(x => x.Instance)
@@ -402,7 +410,7 @@ namespace jahndigital.studentbank.services
                 ?? throw new ShareNotFoundException(input.ShareId);
 
             // Get the stock provided it is included in the instance of the share
-            var stock = await _context.Stocks
+            var stock = await context.Stocks
                     .Include(x => x.StockInstances)
                     .Where(x =>
                         x.Id == input.StockId
@@ -416,7 +424,7 @@ namespace jahndigital.studentbank.services
             }
 
             // Fetch or create the StudentStock entity
-            var studentStock = await _context.StudentStocks
+            var studentStock = await context.StudentStocks
                 .Where(x => x.StudentId == share.StudentId && x.StockId == stock.Id)
                 .SingleOrDefaultAsync();
 
@@ -428,7 +436,7 @@ namespace jahndigital.studentbank.services
                     NetContribution = Money.FromCurrency(0m)
                 };
 
-                _context.Add(studentStock);
+                context.Add(studentStock);
             }
 
             // If the student is selling stock, make sure they have enough shares
@@ -458,7 +466,7 @@ namespace jahndigital.studentbank.services
             studentStock.NetContribution += (transaction.Amount * -1);
 
             try {
-                await _context.SaveChangesAsync();
+                await context.SaveChangesAsync();
             } catch (Exception e) {
                 try {
                     await PostAsync(share.Id, -totalCost,
@@ -480,7 +488,9 @@ namespace jahndigital.studentbank.services
         /// <exception cref="DatabaseException">If any database error(s) occurred during the posting.</exception>
         public async Task<bool> PostDividendsAsync(PostDividendsRequest input)
         {
-            var shareType = await _context.ShareTypes
+            await using var context = _factory.CreateDbContext();
+
+            var shareType = await context.ShareTypes
                     .Where(x => x.Id == input.ShareTypeId)
                     .SingleOrDefaultAsync()
                 ?? throw new ShareTypeNotFoundException(input.ShareTypeId);
@@ -492,7 +502,7 @@ namespace jahndigital.studentbank.services
                 );
             }
 
-            var instances = await _context.Instances
+            var instances = await context.Instances
                 .Where(x => input.Instances.Contains(x.Id))
                 .CountAsync();
 
@@ -503,10 +513,10 @@ namespace jahndigital.studentbank.services
                 );
             }
 
-            var transaction = await _context.Database.BeginTransactionAsync();
+            var transaction = await context.Database.BeginTransactionAsync();
 
             foreach (var instance in input.Instances) {
-                var query = _context.Shares
+                var query = context.Shares
                     .Include(x => x.Student)
                     .ThenInclude(x => x.Group)
                     .Where(x =>
@@ -523,7 +533,7 @@ namespace jahndigital.studentbank.services
                         var dividendAmount = share.Balance * shareType.DividendRate;
                         var newBalance = share.Balance += dividendAmount;
 
-                        _context.Add(new Transaction {
+                        context.Add(new Transaction {
                             Amount = dividendAmount,
                             EffectiveDate = DateTime.UtcNow,
                             NewBalance = newBalance,
@@ -538,7 +548,7 @@ namespace jahndigital.studentbank.services
                     }
 
                     try {
-                        await _context.SaveChangesAsync();
+                        await context.SaveChangesAsync();
                     } catch (Exception e) {
                         throw new DatabaseException(e.Message);
                     }
@@ -558,8 +568,9 @@ namespace jahndigital.studentbank.services
         ///     Assess the withdrawal limit for the transaction.
         /// </summary>
         /// <param name="share"></param>
+        /// <param name="context"></param>
         /// <returns></returns>
-        private void _assessWithdrawalLimit(Share share)
+        private void _assessWithdrawalLimit(Share share, AppDbContext context)
         {
             var shareType = share.ShareType;
 
@@ -579,7 +590,7 @@ namespace jahndigital.studentbank.services
                 // Charge a fee for the withdrawal instead of denying it
                 share.Balance -= shareType.WithdrawalLimitFee;
 
-                _context.Add(new Transaction {
+                context.Add(new Transaction {
                     Amount = shareType.WithdrawalLimitFee,
                     NewBalance = share.Balance,
                     TargetShare = share,

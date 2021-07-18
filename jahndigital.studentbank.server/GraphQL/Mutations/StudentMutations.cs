@@ -5,6 +5,7 @@ using System.Security.Claims;
 using System.Threading.Tasks;
 using HotChocolate;
 using HotChocolate.AspNetCore.Authorization;
+using HotChocolate.Data;
 using HotChocolate.Execution;
 using HotChocolate.Resolvers;
 using HotChocolate.Types;
@@ -23,7 +24,7 @@ namespace jahndigital.studentbank.server.GraphQL.Mutations
     /// <summary>
     ///     CRUD operations for <see cref="dal.Entities.Student" /> entities.
     /// </summary>
-    [ExtendObjectType(Name = "Mutation")]
+    [ExtendObjectType("Mutation")]
     public class StudentMutations : TokenManagerAbstract
     {
         /// <summary>
@@ -34,9 +35,10 @@ namespace jahndigital.studentbank.server.GraphQL.Mutations
         /// <param name="studentService"></param>
         /// <param name="contextAccessor"></param>
         /// <returns></returns>
+        [UseDbContext(typeof(AppDbContext))]
         public async Task<AuthenticateResponse> StudentLoginAsync(
             AuthenticateRequest input,
-            [Service] AppDbContext context,
+            [ScopedService] AppDbContext context,
             [Service] IStudentService studentService,
             [Service] IHttpContextAccessor contextAccessor
         )
@@ -79,9 +81,10 @@ namespace jahndigital.studentbank.server.GraphQL.Mutations
         /// <param name="studentService"></param>
         /// <param name="contextAccessor"></param>
         /// <returns></returns>
+        [UseDbContext(typeof(AppDbContext))]
         public async Task<AuthenticateResponse> StudentRefreshTokenAsync(
             string? token,
-            [Service] AppDbContext context,
+            [ScopedService] AppDbContext context,
             [Service] IStudentService studentService,
             [Service] IHttpContextAccessor contextAccessor
         )
@@ -120,14 +123,12 @@ namespace jahndigital.studentbank.server.GraphQL.Mutations
         ///     Revoke a refresh token.
         /// </summary>
         /// <param name="token">The refresh token to revoke.</param>
-        /// <param name="context"></param>
         /// <param name="studentService"></param>
         /// <param name="contextAccessor"></param>
         /// <returns></returns>
         [Authorize]
         public async Task<bool> StudentRevokeRefreshTokenAsync(
             string? token,
-            [Service] AppDbContext context,
             [Service] IStudentService studentService,
             [Service] IHttpContextAccessor contextAccessor
         )
@@ -191,10 +192,11 @@ namespace jahndigital.studentbank.server.GraphQL.Mutations
         /// <param name="context"></param>
         /// <param name="httpContext"></param>
         /// <returns>True if registration is successful, otherwise an error message.</returns>
-        [Authorize(Policy = AuthPolicy.Preauthorization)]
+        [UseDbContext(typeof(AppDbContext)),
+         Authorize(Policy = AuthPolicy.Preauthorization)]
         public async Task<bool> StudentRegistrationAsync(
             StudentRegisterRequest input,
-            [Service] AppDbContext context,
+            [ScopedService] AppDbContext context,
             [Service] IHttpContextAccessor httpContext
         )
         {
@@ -259,10 +261,10 @@ namespace jahndigital.studentbank.server.GraphQL.Mutations
         /// <param name="studentService"></param>
         /// <param name="contextAccessor"></param>
         /// <returns></returns>
-        [UseSelection, Authorize]
+        [UseDbContext(typeof(AppDbContext)), UseProjection,Authorize]
         public async Task<IQueryable<Student>> UpdateStudentAsync(
             UpdateStudentRequest input,
-            [Service] AppDbContext context,
+            [ScopedService] AppDbContext context,
             [Service] IResolverContext resolverContext,
             [Service] IStudentService studentService,
             [Service] IHttpContextAccessor contextAccessor
@@ -338,10 +340,11 @@ namespace jahndigital.studentbank.server.GraphQL.Mutations
         /// <param name="input"></param>
         /// <param name="context"></param>
         /// <returns></returns>
-        [UseSelection, Authorize(Policy = Constants.Privilege.PRIVILEGE_MANAGE_STUDENTS)]
+        [UseDbContext(typeof(AppDbContext)), UseProjection,
+         Authorize(Policy = Constants.Privilege.PRIVILEGE_MANAGE_STUDENTS)]
         public async Task<IQueryable<Student>> UpdateBulkStudentAsync(
             IEnumerable<UpdateStudentRequest> input,
-            [Service] AppDbContext context
+            [ScopedService] AppDbContext context
         )
         {
             var ids = input.Select(x => x.Id);
@@ -401,10 +404,11 @@ namespace jahndigital.studentbank.server.GraphQL.Mutations
         /// <param name="input"></param>
         /// <param name="context"></param>
         /// <returns></returns>
-        [UseSelection, Authorize(Policy = Constants.Privilege.PRIVILEGE_MANAGE_STUDENTS)]
+        [UseDbContext(typeof(AppDbContext)), UseProjection,
+         Authorize(Policy = Constants.Privilege.PRIVILEGE_MANAGE_STUDENTS)]
         public async Task<IQueryable<Student>> NewStudentAsync(
             NewStudentRequest input,
-            [Service] AppDbContext context
+            [ScopedService] AppDbContext context
         )
         {
             var groupExists = await context.Groups.Where(x => x.Id == input.GroupId).AnyAsync();
@@ -449,8 +453,12 @@ namespace jahndigital.studentbank.server.GraphQL.Mutations
         /// <param name="id"></param>
         /// <param name="context"></param>
         /// <returns></returns>
-        [Authorize(Policy = Constants.Privilege.PRIVILEGE_MANAGE_STUDENTS)]
-        public async Task<bool> DeleteStudentAsync(long id, [Service] AppDbContext context)
+        [UseDbContext(typeof(AppDbContext)),
+         Authorize(Policy = Constants.Privilege.PRIVILEGE_MANAGE_STUDENTS)]
+        public async Task<bool> DeleteStudentAsync(
+            long id,
+            [ScopedService] AppDbContext context
+        )
         {
             var student = await context.Students.FindAsync(id);
 
@@ -476,8 +484,12 @@ namespace jahndigital.studentbank.server.GraphQL.Mutations
         /// <param name="id"></param>
         /// <param name="context"></param>
         /// <returns></returns>
-        [UseSelection, Authorize(Policy = Constants.Privilege.PRIVILEGE_MANAGE_STUDENTS)]
-        public async Task<IQueryable<Student>> RestoreStudentAsync(long id, [Service] AppDbContext context)
+        [UseDbContext(typeof(AppDbContext)), UseProjection,
+         Authorize(Policy = Constants.Privilege.PRIVILEGE_MANAGE_STUDENTS)]
+        public async Task<IQueryable<Student>> RestoreStudentAsync(
+            long id,
+            [ScopedService] AppDbContext context
+        )
         {
             var student = await context.Students
                     .Where(x => x.Id == id && x.DateDeleted != null)

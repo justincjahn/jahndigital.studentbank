@@ -3,6 +3,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using HotChocolate;
 using HotChocolate.AspNetCore.Authorization;
+using HotChocolate.Data;
 using HotChocolate.Types;
 using jahndigital.studentbank.dal.Contexts;
 using jahndigital.studentbank.dal.Entities;
@@ -16,7 +17,7 @@ namespace jahndigital.studentbank.server.GraphQL.Mutations
     /// <summary>
     ///     CRUD operations for <see cref="dal.Entities.Instance" /> entities.
     /// </summary>
-    [ExtendObjectType(Name = "Mutation")]
+    [ExtendObjectType("Mutation")]
     public class InstanceMutations
     {
         /// <summary>
@@ -25,10 +26,11 @@ namespace jahndigital.studentbank.server.GraphQL.Mutations
         /// <param name="input"></param>
         /// <param name="context"></param>
         /// <returns></returns>
-        [Authorize(Policy = Constants.Privilege.PRIVILEGE_MANAGE_INSTANCES)]
+        [UseDbContext(typeof(AppDbContext)),
+         Authorize(Policy = Constants.Privilege.PRIVILEGE_MANAGE_INSTANCES)]
         public async Task<IQueryable<Instance>> UpdateInstanceAsync(
             UpdateInstanceRequest input,
-            [Service] AppDbContext context
+            [ScopedService] AppDbContext context
         )
         {
             var instance = await context.Instances.FindAsync(input.Id)
@@ -75,10 +77,11 @@ namespace jahndigital.studentbank.server.GraphQL.Mutations
         /// <param name="context"></param>
         /// <param name="configuration"></param>
         /// <returns></returns>
-        [Authorize(Policy = Constants.Privilege.PRIVILEGE_MANAGE_INSTANCES)]
+        [UseDbContext(typeof(AppDbContext)),
+         Authorize(Policy = Constants.Privilege.PRIVILEGE_MANAGE_INSTANCES)]
         public async Task<Instance> NewInstanceAsync(
             NewInstanceRequest input,
-            [Service] AppDbContext context,
+            [ScopedService] AppDbContext context,
             [Service] IConfiguration configuration
         )
         {
@@ -118,9 +121,12 @@ namespace jahndigital.studentbank.server.GraphQL.Mutations
         /// <param name="id"></param>
         /// <param name="context"></param>
         /// <returns></returns>
-        [Authorize(Policy = Constants.Privilege.PRIVILEGE_MANAGE_INSTANCES)]
-        public async Task<bool> DeleteInstanceAsync(long id, [Service] AppDbContext context)
-        {
+        [UseDbContext(typeof(AppDbContext)),
+         Authorize(Policy = Constants.Privilege.PRIVILEGE_MANAGE_INSTANCES)]
+        public async Task<bool> DeleteInstanceAsync(
+            long id,
+            [ScopedService] AppDbContext context
+        ) {
             var instance = await context.Instances.FindAsync(id);
 
             if (instance == null) {
@@ -151,9 +157,12 @@ namespace jahndigital.studentbank.server.GraphQL.Mutations
         /// <param name="id"></param>
         /// <param name="context"></param>
         /// <returns></returns>
-        [UseSelection, Authorize(Policy = Constants.Privilege.PRIVILEGE_MANAGE_INSTANCES)]
-        public async Task<IQueryable<Instance>> RestoreInstanceAsync(long id, [Service] AppDbContext context)
-        {
+        [UseDbContext(typeof(AppDbContext)),
+         UseProjection, Authorize(Policy = Constants.Privilege.PRIVILEGE_MANAGE_INSTANCES)]
+        public async Task<IQueryable<Instance>> RestoreInstanceAsync(
+            long id,
+            [ScopedService] AppDbContext context
+        ) {
             var instance = await context.Instances
                     .Where(x => x.Id == id && x.DateDeleted != null)
                     .SingleOrDefaultAsync()
