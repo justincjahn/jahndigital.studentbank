@@ -32,7 +32,7 @@ namespace jahndigital.studentbank.services.Exceptions
                         NewBalance = Share?.Balance ?? Money.FromCurrency(0.0m),
                         TargetShare = Share ?? new Share {Id = -1},
                         TargetShareId = Share?.Id ?? -1,
-                        TransactionType = "NSF",
+                        TransactionType = "N",
                         EffectiveDate = DateTime.UtcNow,
                         Comment = Message
                     };
