@@ -109,6 +109,7 @@ namespace jahndigital.studentbank.server
                 .AddType<StudentStockType>()
                 .AddType<TransactionTypes>()
                 .AddType<UserTypes>()
+                .AddType<AuthenticateResponseType>()
                 .BindRuntimeType<int, IntType>()
                 .BindRuntimeType<Money, MoneyType>()
                 .BindRuntimeType<Rate, RateType>()
