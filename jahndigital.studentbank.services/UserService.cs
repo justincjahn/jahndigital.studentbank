@@ -92,8 +92,7 @@ namespace jahndigital.studentbank.services
 
             user.DateLastLogin = DateTime.UtcNow;
 
-            var refreshToken = user.RefreshTokens.Single(x => x.Token == token);
-
+            var refreshToken = user.RefreshTokens.SingleOrDefault(x => x.Token == token);
             if (refreshToken == null) {
                 return null;
             }

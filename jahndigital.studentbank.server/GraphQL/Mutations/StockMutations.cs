@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using HotChocolate;
@@ -133,6 +134,38 @@ namespace jahndigital.studentbank.server.GraphQL.Mutations
             }
 
             return context.Stocks.Where(x => x.Id == stock.Id);
+        }
+
+        /// <summary>
+        /// Purge stock history for a given stock to a given date.
+        /// </summary>
+        /// <param name="input"></param>
+        /// <param name="context"></param>
+        /// <returns></returns>
+        /// <exception cref="QueryException"></exception>
+        [UseDbContext(typeof(AppDbContext)),
+         Authorize(Policy = Constants.Privilege.PRIVILEGE_MANAGE_STOCKS)]
+        public async Task<IEnumerable<StockHistory>> PurgeStockHistoryAsync(
+            PurgeStockRequest input,
+            [ScopedService] AppDbContext context
+        )
+        {
+            var stock = await context.Stocks.FindAsync(input.StockId)
+                ?? throw ErrorFactory.NotFound();
+
+            var history = await context.StockHistory
+                .Where(x => x.StockId == stock.Id && x.DateChanged < input.Date)
+                .ToListAsync();
+
+            context.StockHistory.RemoveRange(history);
+
+            try {
+                await context.SaveChangesAsync();
+            } catch (Exception e) {
+                throw ErrorFactory.QueryFailed(e.Message);
+            }
+
+            return history;
         }
 
         /// <summary>
