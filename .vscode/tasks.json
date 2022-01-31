@@ -7,7 +7,7 @@
             "type": "process",
             "args": [
                 "build",
-                "${workspaceFolder}/jahndigital.studentbank.server/jahndigital.studentbank.server.csproj",
+                "${workspaceFolder}/src/jahndigital.studentbank.server/jahndigital.studentbank.server.csproj",
                 "/property:GenerateFullPaths=true",
                 "/consoleloggerparameters:NoSummary"
             ],
@@ -19,7 +19,7 @@
             "type": "process",
             "args": [
                 "publish",
-                "${workspaceFolder}/jahndigital.studentbank.server/jahndigital.studentbank.server.csproj",
+                "${workspaceFolder}/src/jahndigital.studentbank.server/jahndigital.studentbank.server.csproj",
                 "/property:GenerateFullPaths=true",
                 "/consoleloggerparameters:NoSummary"
             ],
@@ -32,9 +32,9 @@
             "args": [
                 "watch",
                 "--project",
-                "${workspaceFolder}/jahndigital.studentbank.server/jahndigital.studentbank.server.csproj",
+                "${workspaceFolder}/src/jahndigital.studentbank.server/jahndigital.studentbank.server.csproj",
                 "run",
-                "${workspaceFolder}/jahndigital.studentbank.server/jahndigital.studentbank.server.csproj",
+                "${workspaceFolder}/src/jahndigital.studentbank.server/jahndigital.studentbank.server.csproj",
                 "/property:GenerateFullPaths=true",
                 "/consoleloggerparameters:NoSummary"
             ],

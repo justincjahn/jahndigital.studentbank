@@ -10,28 +10,19 @@
             "request": "launch",
             "preLaunchTask": "build",
             // If you have changed target frameworks, make sure to update the program path.
-            "program": "${workspaceFolder}/jahndigital.studentbank.server/bin/Debug/net5.0/jahndigital.studentbank.server.dll",
+            "program": "${workspaceFolder}/src/jahndigital.studentbank.server/bin/Debug/net5.0/jahndigital.studentbank.server.dll",
             "args": [],
-            "cwd": "${workspaceFolder}/jahndigital.studentbank.server",
+            "cwd": "${workspaceFolder}/src/jahndigital.studentbank.server",
             "stopAtEntry": false,
             // Enable launching a web browser when ASP.NET Core starts. For more information: https://aka.ms/VSCode-CS-LaunchJson-WebBrowser
             "serverReadyAction": {
                 "action": "openExternally",
-                "pattern": "\\bNow listening on:\\s+(https?://\\S+)"
-            },
-            "env": {
-                "ASPNETCORE_ENVIRONMENT": "Development",
-                "AppConfig__Secret": "92e73181-0d8c-44e8-9e7a-ebeeb2f212b8-3425faa6-a74a-458b-91f2-b978ed89a1f0"
+                "pattern": "\\bNow listening on:\\s+(https?://\\S+)",
+                "uriFormat": "%s/graphql"
             },
             "sourceFileMap": {
                 "/Views": "${workspaceFolder}/Views"
             }
-        },
-        {
-            "name": ".NET Core Attach",
-            "type": "coreclr",
-            "request": "attach",
-            "processId": "${command:pickProcess}"
         }
     ]
 }
