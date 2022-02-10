@@ -1,4 +1,5 @@
 ﻿using FluentValidation.Results;
+using JahnDigital.StudentBank.Domain.Exceptions;
 
 namespace JahnDigital.StudentBank.Application.Common.Exceptions;
 

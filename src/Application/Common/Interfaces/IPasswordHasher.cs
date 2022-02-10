@@ -12,5 +12,5 @@ public interface IPasswordHasher
     /**
      * Validate that the provided <paramref name="hashedPassword"/> matches the provided <paramref name="password"/>.
      */
-    public bool Validate(String hashedPassword, String password);
+    public Task<bool> ValidateAsync(String hashedPassword, String password);
 }

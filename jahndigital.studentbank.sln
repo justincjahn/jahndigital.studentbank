@@ -7,10 +7,6 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{5F972D62-C90
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "jahndigital.studentbank.server", "src\jahndigital.studentbank.server\jahndigital.studentbank.server.csproj", "{249C3674-36AF-4180-BE13-2F3C543B5D53}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "jahndigital.studentbank.services", "src\jahndigital.studentbank.services\jahndigital.studentbank.services.csproj", "{140B015A-8A46-45C6-A562-B87D36FBCAD2}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "jahndigital.studentbank.utils", "src\jahndigital.studentbank.utils\jahndigital.studentbank.utils.csproj", "{30697115-2E8C-482C-9F5D-DFC6208D0DE6}"
-EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Domain", "src\Domain\Domain.csproj", "{5F4C4485-EAB0-4FF2-B4AE-5013E3810023}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Application", "src\Application\Application.csproj", "{3AE1F79B-D948-4071-9420-442AA0190B4A}"
@@ -30,14 +26,6 @@ Global
 		{249C3674-36AF-4180-BE13-2F3C543B5D53}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{249C3674-36AF-4180-BE13-2F3C543B5D53}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{249C3674-36AF-4180-BE13-2F3C543B5D53}.Release|Any CPU.Build.0 = Release|Any CPU
-		{140B015A-8A46-45C6-A562-B87D36FBCAD2}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{140B015A-8A46-45C6-A562-B87D36FBCAD2}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{140B015A-8A46-45C6-A562-B87D36FBCAD2}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{140B015A-8A46-45C6-A562-B87D36FBCAD2}.Release|Any CPU.Build.0 = Release|Any CPU
-		{30697115-2E8C-482C-9F5D-DFC6208D0DE6}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{30697115-2E8C-482C-9F5D-DFC6208D0DE6}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{30697115-2E8C-482C-9F5D-DFC6208D0DE6}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{30697115-2E8C-482C-9F5D-DFC6208D0DE6}.Release|Any CPU.Build.0 = Release|Any CPU
 		{5F4C4485-EAB0-4FF2-B4AE-5013E3810023}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{5F4C4485-EAB0-4FF2-B4AE-5013E3810023}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{5F4C4485-EAB0-4FF2-B4AE-5013E3810023}.Release|Any CPU.ActiveCfg = Release|Any CPU
@@ -53,8 +41,6 @@ Global
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
 		{249C3674-36AF-4180-BE13-2F3C543B5D53} = {5F972D62-C90A-4C32-B2E4-AC61C57C28EF}
-		{140B015A-8A46-45C6-A562-B87D36FBCAD2} = {5F972D62-C90A-4C32-B2E4-AC61C57C28EF}
-		{30697115-2E8C-482C-9F5D-DFC6208D0DE6} = {5F972D62-C90A-4C32-B2E4-AC61C57C28EF}
 		{5F4C4485-EAB0-4FF2-B4AE-5013E3810023} = {5F972D62-C90A-4C32-B2E4-AC61C57C28EF}
 		{3AE1F79B-D948-4071-9420-442AA0190B4A} = {5F972D62-C90A-4C32-B2E4-AC61C57C28EF}
 		{F58E71D3-1860-4DB8-A9D0-EDE6820B581F} = {5F972D62-C90A-4C32-B2E4-AC61C57C28EF}

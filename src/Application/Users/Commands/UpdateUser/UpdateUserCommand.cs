@@ -23,7 +23,7 @@ public class UpdateUserCommandHandler : IRequestHandler<UpdateUserCommand, User>
         User user = await _context.Users.FindAsync(request.Id, cancellationToken)
             ?? throw new NotFoundException(nameof(User), request.Id);
 
-        if (request.Password is not null && !_hasher.Validate(user.Password, request.Password))
+        if (request.Password is not null)
         {
             user.Password = _hasher.HashPassword(request.Password);
         }
