@@ -15,6 +15,14 @@ namespace JahnDigital.StudentBank.Infrastructure.Authentication.Services;
 /// </summary>
 public class JwtTokenService : IJwtTokenGenerator
 {
+    private readonly string _secret;
+    private readonly int _tokenLifetime;
+
+    public JwtTokenService(string secret, int tokenLifetime)
+    {
+        _secret = secret;
+        _tokenLifetime = tokenLifetime;
+    }
     
     public string Generate(JwtTokenRequest request)
     {

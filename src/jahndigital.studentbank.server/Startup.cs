@@ -1,10 +1,12 @@
 using System;
 using System.Linq;
-using System.Reflection;
 using System.Text;
 using HotChocolate.Types;
 using HotChocolate.Types.Pagination;
-using jahndigital.studentbank.dal.Contexts;
+using JahnDigital.StudentBank.Application;
+using JahnDigital.StudentBank.Domain.ValueObjects;
+using JahnDigital.StudentBank.Infrastructure;
+using JahnDigital.StudentBank.Infrastructure.Persistence;
 using jahndigital.studentbank.server.GraphQL;
 using jahndigital.studentbank.server.GraphQL.Mutations;
 using jahndigital.studentbank.server.GraphQL.ObjectTypes;
@@ -12,29 +14,22 @@ using jahndigital.studentbank.server.GraphQL.Queries;
 using jahndigital.studentbank.server.GraphQL.Types;
 using jahndigital.studentbank.server.Jobs;
 using jahndigital.studentbank.server.Permissions;
-using jahndigital.studentbank.services;
-using jahndigital.studentbank.services.Interfaces;
-using jahndigital.studentbank.utils;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.Data.SqlClient;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.IdentityModel.Tokens;
-using Microsoft.OpenApi.Models;
 using Quartz;
-using Path = System.IO.Path;
 
 namespace jahndigital.studentbank.server
 {
     public class Startup
     {
-        public static readonly ILoggerFactory Factory = LoggerFactory.Create(builder => { builder.AddConsole(); });
+        private static readonly ILoggerFactory LoggerFactory = Microsoft.Extensions.Logging.LoggerFactory.Create(builder => { builder.AddConsole(); });
 
         private IConfiguration Configuration { get; }
 
@@ -46,30 +41,23 @@ namespace jahndigital.studentbank.server
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
-            IConfigurationSection? appConfig = Configuration.GetSection("AppConfig");
+            services
+                .AddApplication()
+                .AddInfrastructure(Configuration, LoggerFactory);
+            
+            AppConfig appConfig = Configuration.GetRequiredSection("AppConfig").Get<AppConfig>();
 
-            if (string.IsNullOrEmpty(appConfig.Get<AppConfig>().Secret))
+            #if !DEBUG
+            if (string.IsNullOrEmpty(appConfig.Secret))
             {
                 throw new ArgumentNullException(nameof(appConfig),
                     "AppConfig__Secret must be provided as an environment variable.");
             }
+            #endif
 
-            services.Configure<AppConfig>(appConfig);
-
-            byte[]? tokenKey = Encoding.ASCII.GetBytes(appConfig.Get<AppConfig>().Secret);
-
-            SqlAuthenticationProvider.SetProvider(SqlAuthenticationMethod.ActiveDirectoryInteractive,
-                new SqlAppAuthenticationProvider());
-
-            services.AddPooledDbContextFactory<AppDbContext>(options =>
-            {
-                options.UseSqlServer(Configuration.GetConnectionString("Default"));
-                options.UseLoggerFactory(Factory);
-            });
+            byte[]? tokenKey = Encoding.ASCII.GetBytes(appConfig.Secret);
 
             services.AddHttpContextAccessor();
-
-            services.AddScoped<IDbInitializerService, DbInitializerService>();
 
             services
                 .AddGraphQLServer()
@@ -187,54 +175,7 @@ namespace jahndigital.studentbank.server
                     .Build();
             });
 
-            services
-                .AddScoped<IUserService>(provider => new UserService(
-                    provider.GetService<IDbContextFactory<AppDbContext>>() ?? throw new InvalidOperationException(),
-                    appConfig.Get<AppConfig>().Secret, appConfig.Get<AppConfig>().TokenLifetime))
-                .AddScoped<IStudentService>(provider => new StudentService(
-                    provider.GetService<IDbContextFactory<AppDbContext>>() ?? throw new InvalidOperationException(),
-                    appConfig.Get<AppConfig>().Secret, appConfig.Get<AppConfig>().TokenLifetime))
-                .AddScoped<IRoleService, RoleService>()
-                .AddScoped<ITransactionService, TransactionService>()
-                .AddScoped<IShareTypeService, ShareTypeService>();
-
             services.AddErrorFilter<ErrorFilter>();
-
-            #if DEBUG
-            services.AddSwaggerGen(options =>
-            {
-                options.SwaggerDoc("v1",
-                    new OpenApiInfo
-                    {
-                        Title = "Student Bank API", Description = "API for Student Bank", Version = "v1"
-                    });
-
-                OpenApiSecurityScheme securityDefinition = new()
-                {
-                    Name = "Bearer",
-                    BearerFormat = "JWT",
-                    Scheme = "bearer",
-                    Description = "Specify the authorization token.",
-                    In = ParameterLocation.Header,
-                    Type = SecuritySchemeType.Http
-                };
-
-                options.AddSecurityDefinition("jwt_auth", securityDefinition);
-
-                OpenApiSecurityScheme securityScheme = new()
-                {
-                    Reference = new OpenApiReference { Id = "jwt_auth", Type = ReferenceType.SecurityScheme }
-                };
-
-                OpenApiSecurityRequirement securityRequirements = new() { { securityScheme, new string[] { } } };
-
-                options.AddSecurityRequirement(securityRequirements);
-
-                string? fileName = $"{Assembly.GetExecutingAssembly().GetName().Name}.xml";
-                string? filePath = Path.Combine(AppContext.BaseDirectory, fileName);
-                options.IncludeXmlComments(filePath);
-            });
-            #endif
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -263,11 +204,6 @@ namespace jahndigital.studentbank.server
             app.UseRouting();
 
             app.UseAuthentication();
-
-            #if DEBUG
-            app.UseSwagger();
-            app.UseSwaggerUI(options => { options.SwaggerEndpoint("/swagger/v1/swagger.json", "Student Bank API"); });
-            #endif
 
             app.UseAuthorization();
 
