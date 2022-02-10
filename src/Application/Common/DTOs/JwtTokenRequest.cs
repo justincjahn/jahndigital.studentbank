@@ -43,11 +43,11 @@ public record JwtTokenRequest
     /// User's surname
     /// </summary>
     public string? LastName { get; init; }
-    
+
     /// <summary>
     /// Number of minutes before the token expires.
     /// </summary>
-    public int? Expires { get; init; }
+    public int? Expires { get; init; } = null;
 
     /// <summary>
     /// If the preauthorization claim should be set on the token.

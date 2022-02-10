@@ -1,6 +1,6 @@
 <Project Sdk="Microsoft.NET.Sdk.Web">
     <PropertyGroup>
-        <TargetFramework>net5.0</TargetFramework>
+        <TargetFramework>net6.0</TargetFramework>
         <Nullable>enable</Nullable>
         <AssemblyVersion>0.0.3</AssemblyVersion>
         <FileVersion>0.0.3</FileVersion>
@@ -8,31 +8,23 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <PackageReference Include="HotChocolate.AspNetCore" Version="11.3.5"/>
-        <PackageReference Include="HotChocolate.AspNetCore.Authorization" Version="11.3.5"/>
-        <PackageReference Include="HotChocolate.Data.EntityFramework" Version="11.3.5"/>
-        <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="5.0.9"/>
-        <PackageReference Include="Microsoft.Azure.Services.AppAuthentication" Version="1.6.1"/>
-        <PackageReference Include="Microsoft.EntityFrameworkCore" Version="5.0.9"/>
-        <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="5.0.9">
-            <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-            <PrivateAssets>all</PrivateAssets>
-        </PackageReference>
-        <PackageReference Include="Quartz.AspNetCore" Version="3.3.3"/>
-        <PackageReference Include="Quartz.Extensions.DependencyInjection" Version="3.3.3"/>
-        <PackageReference Include="Swashbuckle.AspNetCore" Version="6.1.5"/>
-        <PackageReference Include="System.IdentityModel.Tokens.Jwt" Version="6.12.2"/>
+        <PackageReference Include="HotChocolate.AspNetCore" Version="11.3.5" />
+        <PackageReference Include="HotChocolate.AspNetCore.Authorization" Version="11.3.5" />
+        <PackageReference Include="HotChocolate.Data.EntityFramework" Version="11.3.5" />
+        <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="6.0.2" />
+        <PackageReference Include="Microsoft.Azure.Services.AppAuthentication" Version="1.6.2" />
+        <PackageReference Include="Quartz.AspNetCore" Version="3.3.3" />
+        <PackageReference Include="Quartz.Extensions.DependencyInjection" Version="3.3.3" />
+        <PackageReference Include="System.IdentityModel.Tokens.Jwt" Version="6.15.1" />
     </ItemGroup>
     <ItemGroup>
-        <None Remove="db.sqlite3-shm"/>
-        <None Remove="db.sqlite3-shm"/>
-        <None Remove="db.sqlite3-wal"/>
-        <None Remove="db.sqlite3-wal"/>
+        <None Remove="db.sqlite3-shm" />
+        <None Remove="db.sqlite3-shm" />
+        <None Remove="db.sqlite3-wal" />
+        <None Remove="db.sqlite3-wal" />
     </ItemGroup>
     <ItemGroup>
-        <ProjectReference Include="..\jahndigital.studentbank.services\jahndigital.studentbank.services.csproj"/>
-        <ProjectReference Include="..\jahndigital.studentbank.utils\jahndigital.studentbank.utils.csproj"/>
-        <ProjectReference Include="..\jahndigital.studentbank.dal\jahndigital.studentbank.dal.csproj"/>
+      <ProjectReference Include="..\Infrastructure\Infrastructure.csproj" />
     </ItemGroup>
     <PropertyGroup>
         <GenerateDocumentationFile>true</GenerateDocumentationFile>
