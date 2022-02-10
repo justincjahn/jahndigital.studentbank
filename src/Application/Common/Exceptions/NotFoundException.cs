@@ -1,4 +1,6 @@
-﻿namespace JahnDigital.StudentBank.Application.Common.Exceptions;
+﻿using JahnDigital.StudentBank.Domain.Exceptions;
+
+namespace JahnDigital.StudentBank.Application.Common.Exceptions;
 
 public class NotFoundException : BaseException
 {

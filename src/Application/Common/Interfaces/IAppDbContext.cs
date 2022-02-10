@@ -1,5 +1,6 @@
 ﻿using JahnDigital.StudentBank.Domain.Entities;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Infrastructure;
 
 namespace JahnDigital.StudentBank.Application.Common.Interfaces;
 
@@ -46,6 +47,8 @@ public interface IAppDbContext
     DbSet<ProductInstance> ProductInstances { get; }
     
     DbSet<ProductImage> ProductImages { get; }
-    
+
+    DatabaseFacade Database { get; }
+
     Task<int> SaveChangesAsync(CancellationToken cancellationToken = default);
 }
