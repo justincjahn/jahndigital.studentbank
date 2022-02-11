@@ -4,12 +4,13 @@ using HotChocolate;
 using HotChocolate.Data;
 using HotChocolate.Resolvers;
 using HotChocolate.Types;
-using HotChocolate.Types.Relay;
-using jahndigital.studentbank.dal.Contexts;
-using jahndigital.studentbank.dal.Entities;
-using jahndigital.studentbank.utils;
+using JahnDigital.StudentBank.Application.Common;
+using JahnDigital.StudentBank.Domain.Entities;
+using JahnDigital.StudentBank.Domain.Enums;
+using JahnDigital.StudentBank.Infrastructure.Persistence;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.EntityFrameworkCore;
+using Privilege = JahnDigital.StudentBank.Domain.Enums.Privilege;
 
 namespace jahndigital.studentbank.server.GraphQL.Queries
 {
@@ -32,11 +33,11 @@ namespace jahndigital.studentbank.server.GraphQL.Queries
         )
         {
             long id = resolverContext.GetUserId() ?? throw ErrorFactory.NotFound();
-            Constants.UserType? type = resolverContext.GetUserType() ?? throw ErrorFactory.NotFound();
+            UserType? type = resolverContext.GetUserType() ?? throw ErrorFactory.NotFound();
             resolverContext.SetUser(studentId, type);
 
             AuthorizationResult? auth = await resolverContext
-                .AuthorizeAsync($"{Constants.AuthPolicy.DataOwner}<{Constants.Privilege.ManageStocks}>");
+                .AuthorizeAsync($"{Constants.AuthPolicy.DataOwner}<{Privilege.ManageStocks}>");
 
             if (!auth.Succeeded)
             {
@@ -61,7 +62,7 @@ namespace jahndigital.studentbank.server.GraphQL.Queries
             [Service] IResolverContext resolverContext
         )
         {
-            Constants.UserType? type = resolverContext.GetUserType() ?? throw ErrorFactory.NotFound();
+            UserType? type = resolverContext.GetUserType() ?? throw ErrorFactory.NotFound();
 
             StudentStock? studentStock = await context.StudentStocks
                     .Where(x => x.Id == studentStockId)
@@ -71,7 +72,7 @@ namespace jahndigital.studentbank.server.GraphQL.Queries
             resolverContext.SetUser(studentStock.StudentId, type);
 
             AuthorizationResult? auth = await resolverContext
-                .AuthorizeAsync($"{Constants.AuthPolicy.DataOwner}<{Constants.Privilege.ManageStocks}>");
+                .AuthorizeAsync($"{Constants.AuthPolicy.DataOwner}<{Privilege.ManageStocks}>");
 
             if (!auth.Succeeded)
             {

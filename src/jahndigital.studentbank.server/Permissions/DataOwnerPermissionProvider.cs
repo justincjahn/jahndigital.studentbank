@@ -1,5 +1,5 @@
 using System.Threading.Tasks;
-using jahndigital.studentbank.utils;
+using JahnDigital.StudentBank.Application.Common;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.Extensions.Options;
 

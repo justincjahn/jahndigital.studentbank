@@ -5,12 +5,13 @@ using HotChocolate;
 using HotChocolate.AspNetCore.Authorization;
 using HotChocolate.Data;
 using HotChocolate.Types;
-using jahndigital.studentbank.dal.Contexts;
-using jahndigital.studentbank.dal.Entities;
-using jahndigital.studentbank.dal.Enums;
+using JahnDigital.StudentBank.Domain.Entities;
+using JahnDigital.StudentBank.Domain.Enums;
+using JahnDigital.StudentBank.Domain.ValueObjects;
+using JahnDigital.StudentBank.Infrastructure.Persistence;
 using jahndigital.studentbank.server.Models;
-using jahndigital.studentbank.utils;
 using Microsoft.EntityFrameworkCore;
+using Privilege = JahnDigital.StudentBank.Domain.Enums.Privilege;
 
 namespace jahndigital.studentbank.server.GraphQL.Mutations
 {
@@ -27,7 +28,7 @@ namespace jahndigital.studentbank.server.GraphQL.Mutations
         /// <param name="context"></param>
         /// <returns></returns>
         [UseDbContext(typeof(AppDbContext)), UseProjection,
-         Authorize(Policy = Constants.Privilege.PRIVILEGE_MANAGE_SHARE_TYPES)]
+         Authorize(Policy = Privilege.PRIVILEGE_MANAGE_SHARE_TYPES)]
         public async Task<IQueryable<ShareType>> NewShareTypeAsync(
             NewShareTypeRequest input,
             [ScopedService] AppDbContext context
@@ -71,7 +72,7 @@ namespace jahndigital.studentbank.server.GraphQL.Mutations
         /// <param name="context"></param>
         /// <returns></returns>
         [UseDbContext(typeof(AppDbContext)), UseProjection,
-         Authorize(Policy = Constants.Privilege.PRIVILEGE_MANAGE_SHARE_TYPES)]
+         Authorize(Policy = Privilege.PRIVILEGE_MANAGE_SHARE_TYPES)]
         public async Task<IQueryable<ShareType>> UpdateShareTypeAsync(
             UpdateShareTypeRequest input,
             [ScopedService] AppDbContext context
@@ -116,13 +117,13 @@ namespace jahndigital.studentbank.server.GraphQL.Mutations
         }
 
         /// <summary>
-        ///     Link a <see cref="dal.Entities.ShareType" /> to an <see cref="dal.Entities.Instance" />.<see langword="abstract" />
+        ///     Link a <see cref="dal.Entities.ShareType" /> to an <see cref="Instance" />.<see langword="abstract" />
         /// </summary>
         /// <param name="input"></param>
         /// <param name="context"></param>
         /// <returns></returns>
         [UseDbContext(typeof(AppDbContext)), UseProjection,
-         Authorize(Policy = Constants.Privilege.PRIVILEGE_MANAGE_SHARE_TYPES)]
+         Authorize(Policy = Privilege.PRIVILEGE_MANAGE_SHARE_TYPES)]
         public async Task<IQueryable<ShareType>> LinkShareTypeAsync(
             LinkShareTypeRequest input,
             [ScopedService] AppDbContext context
@@ -168,13 +169,13 @@ namespace jahndigital.studentbank.server.GraphQL.Mutations
         }
 
         /// <summary>
-        ///     Unlink a <see cref="dal.Entities.ShareType" /> from an <see cref="dal.Entities.Instance" />.
+        ///     Unlink a <see cref="dal.Entities.ShareType" /> from an <see cref="Instance" />.
         /// </summary>
         /// <param name="input"></param>
         /// <param name="context"></param>
         /// <returns></returns>
         [UseDbContext(typeof(AppDbContext)), UseProjection,
-         Authorize(Policy = Constants.Privilege.PRIVILEGE_MANAGE_SHARE_TYPES)]
+         Authorize(Policy = Privilege.PRIVILEGE_MANAGE_SHARE_TYPES)]
         public async Task<IQueryable<ShareType>> UnlinkShareTypeAsync(
             LinkShareTypeRequest input,
             [ScopedService] AppDbContext context
@@ -239,7 +240,7 @@ namespace jahndigital.studentbank.server.GraphQL.Mutations
         /// <param name="context"></param>
         /// <returns></returns>
         [UseDbContext(typeof(AppDbContext)),
-         Authorize(Policy = Constants.Privilege.PRIVILEGE_MANAGE_SHARE_TYPES)]
+         Authorize(Policy = Privilege.PRIVILEGE_MANAGE_SHARE_TYPES)]
         public async Task<bool> DeleteShareTypeAsync(
             long id,
             [ScopedService] AppDbContext context
@@ -276,7 +277,7 @@ namespace jahndigital.studentbank.server.GraphQL.Mutations
         /// <param name="context"></param>
         /// <returns></returns>
         [UseDbContext(typeof(AppDbContext)),
-         Authorize(Policy = Constants.Privilege.PRIVILEGE_MANAGE_SHARE_TYPES)]
+         Authorize(Policy = Privilege.PRIVILEGE_MANAGE_SHARE_TYPES)]
         public async Task<IQueryable<ShareType>> RestoreShareTypeAsync(
             long id,
             [ScopedService] AppDbContext context

@@ -6,11 +6,11 @@ using HotChocolate.AspNetCore.Authorization;
 using HotChocolate.Data;
 using HotChocolate.Resolvers;
 using HotChocolate.Types;
-using HotChocolate.Types.Relay;
-using jahndigital.studentbank.dal.Contexts;
-using jahndigital.studentbank.dal.Entities;
-using jahndigital.studentbank.utils;
+using JahnDigital.StudentBank.Domain.Entities;
+using JahnDigital.StudentBank.Domain.Enums;
+using JahnDigital.StudentBank.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
+using Privilege = JahnDigital.StudentBank.Domain.Enums.Privilege;
 
 namespace jahndigital.studentbank.server.GraphQL.Queries
 {
@@ -33,11 +33,11 @@ namespace jahndigital.studentbank.server.GraphQL.Queries
             [Service] IResolverContext resolverContext
         )
         {
-            Constants.UserType? userType = resolverContext.GetUserType() ?? throw ErrorFactory.Unauthorized();
+            UserType? userType = resolverContext.GetUserType() ?? throw ErrorFactory.Unauthorized();
             long userId = resolverContext.GetUserId() ?? throw ErrorFactory.Unauthorized();
             resolverContext.SetUser(userId, userType);
 
-            if (userType == Constants.UserType.User)
+            if (userType == UserType.User)
             {
                 return context.Products.Where(x => x.DateDeleted == null);
             }
@@ -62,7 +62,7 @@ namespace jahndigital.studentbank.server.GraphQL.Queries
         /// <param name="context"></param>
         /// <returns></returns>
         [UseDbContext(typeof(AppDbContext)), UsePaging, UseProjection, UseFiltering, UseSorting,
-         Authorize(Policy = Constants.Privilege.PRIVILEGE_MANAGE_PRODUCTS)]
+         Authorize(Policy = Privilege.PRIVILEGE_MANAGE_PRODUCTS)]
         public IQueryable<Product> GetDeletedProducts([ScopedService] AppDbContext context)
         {
             return context.Products.Where(x => x.DateDeleted != null);

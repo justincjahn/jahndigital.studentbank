@@ -37,7 +37,7 @@ public class RoleService : IRoleService
     }
 
     /// <inheritdoc />
-    public async Task<bool> HasPermissionAsync(string role, string permission, CancellationToken cancellationToken)
+    public async Task<bool> HasPermissionAsync(string role, string permission, CancellationToken cancellationToken = new())
     {
         await using AppDbContext? context = await _factory.CreateDbContextAsync(cancellationToken: cancellationToken);
 
@@ -48,7 +48,7 @@ public class RoleService : IRoleService
 
         if (!_cache[role].ContainsKey(permission))
         {
-            long? roleId = await GetRoleId(role, context);
+            long? roleId = await GetRoleId(role, context, cancellationToken);
 
             if (!roleId.HasValue)
             {
@@ -68,7 +68,7 @@ public class RoleService : IRoleService
     }
 
     /// <inheritdoc />
-    public async Task<bool> HasPermissionAsync(string role, IEnumerable<string> permissions, CancellationToken cancellationToken)
+    public async Task<bool> HasPermissionAsync(string role, IEnumerable<string> permissions, CancellationToken cancellationToken = new())
     {
         await using AppDbContext? context = await _factory.CreateDbContextAsync(cancellationToken);
 
@@ -89,7 +89,7 @@ public class RoleService : IRoleService
 
         if (missing.Count > 0)
         {
-            long? roleId = await GetRoleId(role, context);
+            long? roleId = await GetRoleId(role, context, cancellationToken);
 
             if (!roleId.HasValue)
             {
@@ -124,12 +124,13 @@ public class RoleService : IRoleService
     /// </summary>
     /// <param name="role"></param>
     /// <param name="context"></param>
+    /// <param name="cancellationToken"></param>
     /// <returns></returns>
-    private async Task<long?> GetRoleId(string role, AppDbContext context)
+    private async Task<long?> GetRoleId(string role, AppDbContext context, CancellationToken cancellationToken)
     {
         if (!_roleCache.ContainsKey(role))
         {
-            Role? dbRole = await context.Roles.SingleOrDefaultAsync(x => x.Name == role);
+            Role? dbRole = await context.Roles.SingleOrDefaultAsync(x => x.Name == role, cancellationToken: cancellationToken);
 
             if (dbRole == null)
             {

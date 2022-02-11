@@ -5,34 +5,35 @@ using HotChocolate;
 using HotChocolate.AspNetCore.Authorization;
 using HotChocolate.Data;
 using HotChocolate.Types;
-using jahndigital.studentbank.dal.Contexts;
-using jahndigital.studentbank.dal.Entities;
+using JahnDigital.StudentBank.Domain.Entities;
+using Privilege = JahnDigital.StudentBank.Domain.Enums.Privilege;
+using JahnDigital.StudentBank.Domain.ValueObjects;
+using JahnDigital.StudentBank.Infrastructure.Persistence;
 using jahndigital.studentbank.server.Models;
-using jahndigital.studentbank.utils;
 using Microsoft.EntityFrameworkCore;
 
 namespace jahndigital.studentbank.server.GraphQL.Mutations
 {
     /// <summary>
-    ///     CRUD operations for <see cref="dal.Entities.Share" /> entities.
+    ///     CRUD operations for <see cref="Share" /> entities.
     /// </summary>
     [ExtendObjectType("Mutation")]
     public class ShareMutations
     {
         /// <summary>
-        ///     Create a new <see cref="dal.Entities.Share" /> .
+        ///     Create a new <see cref="Share" /> .
         /// </summary>
         /// <param name="input"></param>
         /// <param name="context"></param>
         /// <returns></returns>
         [UseDbContext(typeof(AppDbContext)), UseProjection,
-         Authorize(Policy = Constants.Privilege.PRIVILEGE_MANAGE_SHARES)]
+         Authorize(Policy = Privilege.PRIVILEGE_MANAGE_SHARES)]
         public async Task<IQueryable<Share>> NewShareAsync(
             NewShareRequest input,
             [ScopedService] AppDbContext context
         )
         {
-            Student? student = await context.Students
+            Student student = await context.Students
                     .Include(x => x.Group)
                     .ThenInclude(x => x.Instance)
                     .ThenInclude(x => x.ShareTypeInstances)
@@ -67,13 +68,13 @@ namespace jahndigital.studentbank.server.GraphQL.Mutations
         }
 
         /// <summary>
-        ///     Update a <see cref="dal.Entities.Share" /> .
+        ///     Update a <see cref="Share" /> .
         /// </summary>
         /// <param name="input"></param>
         /// <param name="context"></param>
         /// <returns></returns>
         [UseDbContext(typeof(AppDbContext)), UseProjection,
-         Authorize(Policy = Constants.Privilege.PRIVILEGE_MANAGE_SHARES)]
+         Authorize(Policy = Privilege.PRIVILEGE_MANAGE_SHARES)]
         public async Task<IQueryable<Share>> UpdateShareAsync(
             UpdateShareRequest input,
             [ScopedService] AppDbContext context
@@ -114,12 +115,12 @@ namespace jahndigital.studentbank.server.GraphQL.Mutations
         }
 
         /// <summary>
-        ///     Soft-delete a <see cref="dal.Entities.Share" /> .
+        ///     Soft-delete a <see cref="Share" /> .
         /// </summary>
         /// <param name="id"></param>
         /// <param name="context"></param>
         /// <returns></returns>
-        [Authorize(Policy = Constants.Privilege.PRIVILEGE_MANAGE_SHARES)]
+        [Authorize(Policy = Privilege.PRIVILEGE_MANAGE_SHARES)]
         public async Task<bool> DeleteShareAsync(long id, [Service] AppDbContext context)
         {
             Share? share = await context.Shares
@@ -149,13 +150,13 @@ namespace jahndigital.studentbank.server.GraphQL.Mutations
         }
 
         /// <summary>
-        ///     Restore a soft-deleted <see cref="dal.Entities.Share" />.
+        ///     Restore a soft-deleted <see cref="Share" />.
         /// </summary>
         /// <param name="id"></param>
         /// <param name="context"></param>
         /// <returns></returns>
         [UseDbContext(typeof(AppDbContext)), UseProjection,
-         Authorize(Policy = Constants.Privilege.PRIVILEGE_MANAGE_SHARES)]
+         Authorize(Policy = Privilege.PRIVILEGE_MANAGE_SHARES)]
         public async Task<IQueryable<Share>> RestoreShareAsync(long id, [ScopedService] AppDbContext context)
         {
             Share? share = await context.Shares

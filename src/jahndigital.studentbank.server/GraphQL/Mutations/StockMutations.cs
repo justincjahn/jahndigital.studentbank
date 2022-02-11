@@ -7,16 +7,16 @@ using HotChocolate.AspNetCore.Authorization;
 using HotChocolate.Data;
 using HotChocolate.Execution;
 using HotChocolate.Types;
-using jahndigital.studentbank.dal.Contexts;
-using jahndigital.studentbank.dal.Entities;
+using JahnDigital.StudentBank.Domain.Entities;
+using Privilege = JahnDigital.StudentBank.Domain.Enums.Privilege;
+using JahnDigital.StudentBank.Infrastructure.Persistence;
 using jahndigital.studentbank.server.Models;
-using jahndigital.studentbank.utils;
 using Microsoft.EntityFrameworkCore;
 
 namespace jahndigital.studentbank.server.GraphQL.Mutations
 {
     /// <summary>
-    ///     CRUD operations for <see cref="dal.Entities.Stock" /> entities.
+    ///     CRUD operations for <see cref="Stock" /> entities.
     /// </summary>
     [ExtendObjectType("Mutation")]
     public class StockMutations
@@ -28,7 +28,7 @@ namespace jahndigital.studentbank.server.GraphQL.Mutations
         /// <param name="context"></param>
         /// <returns></returns>
         [UseDbContext(typeof(AppDbContext)), UseProjection,
-         Authorize(Policy = Constants.Privilege.PRIVILEGE_MANAGE_STOCKS)]
+         Authorize(Policy = Privilege.PRIVILEGE_MANAGE_STOCKS)]
         public async Task<IQueryable<Stock>> NewStockAsync(
             NewStockRequest input,
             [ScopedService] AppDbContext context
@@ -68,13 +68,13 @@ namespace jahndigital.studentbank.server.GraphQL.Mutations
         }
 
         /// <summary>
-        ///     Update a <see cref="dal.Entities.Stock" />.
+        ///     Update a <see cref="Stock" />.
         /// </summary>
         /// <param name="input"></param>
         /// <param name="context"></param>
         /// <returns></returns>
         [UseDbContext(typeof(AppDbContext)), UseProjection,
-         Authorize(Policy = Constants.Privilege.PRIVILEGE_MANAGE_STOCKS)]
+         Authorize(Policy = Privilege.PRIVILEGE_MANAGE_STOCKS)]
         public async Task<IQueryable<Stock>> UpdateStockAsync(
             UpdateStockRequest input,
             [ScopedService] AppDbContext context
@@ -156,7 +156,7 @@ namespace jahndigital.studentbank.server.GraphQL.Mutations
         /// <returns></returns>
         /// <exception cref="QueryException"></exception>
         [UseDbContext(typeof(AppDbContext)),
-         Authorize(Policy = Constants.Privilege.PRIVILEGE_MANAGE_STOCKS)]
+         Authorize(Policy = Privilege.PRIVILEGE_MANAGE_STOCKS)]
         public async Task<IEnumerable<StockHistory>> PurgeStockHistoryAsync(
             PurgeStockRequest input,
             [ScopedService] AppDbContext context
@@ -184,13 +184,13 @@ namespace jahndigital.studentbank.server.GraphQL.Mutations
         }
 
         /// <summary>
-        ///     Link a <see cref="dal.Entities.Stock" /> to an <see cref="dal.Entities.Instance" />.
+        ///     Link a <see cref="Stock" /> to an <see cref="Instance" />.
         /// </summary>
         /// <param name="input"></param>
         /// <param name="context"></param>
         /// <returns></returns>
         [UseDbContext(typeof(AppDbContext)), UseProjection,
-         Authorize(Policy = Constants.Privilege.PRIVILEGE_MANAGE_STOCKS)]
+         Authorize(Policy = Privilege.PRIVILEGE_MANAGE_STOCKS)]
         public async Task<IQueryable<Stock>> LinkStockAsync(
             LinkStockRequest input,
             [ScopedService] AppDbContext context
@@ -235,13 +235,13 @@ namespace jahndigital.studentbank.server.GraphQL.Mutations
         }
 
         /// <summary>
-        ///     Unlink a <see cref="dal.Entities.Stock" /> from an <see cref="dal.Entities.Instance" />.
+        ///     Unlink a <see cref="Stock" /> from an <see cref="Instance" />.
         /// </summary>
         /// <param name="input"></param>
         /// <param name="context"></param>
         /// <returns></returns>
         [UseDbContext(typeof(AppDbContext)), UseProjection,
-         Authorize(Policy = Constants.Privilege.PRIVILEGE_MANAGE_STOCKS)]
+         Authorize(Policy = Privilege.PRIVILEGE_MANAGE_STOCKS)]
         public async Task<IQueryable<Stock>> UnlinkStockAsync(
             LinkStockRequest input,
             [ScopedService] AppDbContext context
@@ -308,7 +308,7 @@ namespace jahndigital.studentbank.server.GraphQL.Mutations
         /// <param name="context"></param>
         /// <returns></returns>
         [UseDbContext(typeof(AppDbContext)),
-         Authorize(Policy = Constants.Privilege.PRIVILEGE_MANAGE_STOCKS)]
+         Authorize(Policy = Privilege.PRIVILEGE_MANAGE_STOCKS)]
         public async Task<bool> DeleteStockAsync(
             long id,
             [ScopedService] AppDbContext context
@@ -354,7 +354,7 @@ namespace jahndigital.studentbank.server.GraphQL.Mutations
         /// <param name="context"></param>
         /// <returns></returns>
         [UseDbContext(typeof(AppDbContext)),
-         UseProjection, Authorize(Policy = Constants.Privilege.PRIVILEGE_MANAGE_STOCKS)]
+         UseProjection, Authorize(Policy = Privilege.PRIVILEGE_MANAGE_STOCKS)]
         public async Task<IQueryable<Stock>> RestoreStockAsync(
             long id,
             [ScopedService] AppDbContext context

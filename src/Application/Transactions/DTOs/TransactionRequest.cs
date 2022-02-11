@@ -10,16 +10,16 @@ public record TransactionRequest : IRequest<Transaction>
     /// The Share ID to post the transaction to.
     /// </summary>
     public long ShareId { get; init; }
-    
+
     /// <summary>
     /// The amount to post.
     /// </summary>
-    public Money Amount { get; init; }
+    public Money Amount { get; init; } = default!;
 
     /// <summary>
     /// An optional transaction comment.
     /// </summary>
-    public string? Comment { get; init; } = null;
+    public string? Comment { get; init; }
 
     /// <summary>
     /// An optional transaction type.
@@ -34,10 +34,10 @@ public record TransactionRequest : IRequest<Transaction>
     /// <summary>
     /// If the transaction is allowed to take the share negative.
     /// </summary>
-    public bool TakeNegative { get; init; } = false;
+    public bool? TakeNegative { get; init; } = false;
 
     /// <summary>
     /// If withdrawal limits should be assessed for this transaction.
     /// </summary>
-    public bool WithdrawalLimit { get; init; } = true;
+    public bool? WithdrawalLimit { get; init; } = true;
 }

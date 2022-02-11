@@ -5,9 +5,9 @@ using HotChocolate.AspNetCore.Authorization;
 using HotChocolate.Data;
 using HotChocolate.Resolvers;
 using HotChocolate.Types;
-using jahndigital.studentbank.dal.Contexts;
-using jahndigital.studentbank.dal.Entities;
-using jahndigital.studentbank.utils;
+using JahnDigital.StudentBank.Domain.Entities;
+using JahnDigital.StudentBank.Domain.Enums;
+using JahnDigital.StudentBank.Infrastructure.Persistence;
 using Microsoft.AspNetCore.Http;
 
 namespace jahndigital.studentbank.server.GraphQL.Queries
@@ -31,9 +31,9 @@ namespace jahndigital.studentbank.server.GraphQL.Queries
         )
         {
             long id = resolverContext.GetUserId() ?? throw ErrorFactory.NotFound();
-            Constants.UserType? type = resolverContext.GetUserType() ?? throw ErrorFactory.NotFound();
+            UserType? type = resolverContext.GetUserType() ?? throw ErrorFactory.NotFound();
 
-            if (type != Constants.UserType.User)
+            if (type != UserType.User)
             {
                 throw ErrorFactory.NotFound();
             }

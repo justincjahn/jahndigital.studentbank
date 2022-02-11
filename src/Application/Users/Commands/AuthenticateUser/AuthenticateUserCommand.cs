@@ -15,16 +15,12 @@ public class AuthenticateUserCommandHandler : IRequestHandler<AuthenticateUserCo
     private readonly IAppDbContext _context;
     private readonly IPasswordHasher _hasher;
     private readonly IJwtTokenGenerator _tokenGenerator;
-    private readonly string _secret;
-    private readonly int _tokenLifetime;
 
-    public AuthenticateUserCommandHandler(IAppDbContext context, IPasswordHasher hasher, IJwtTokenGenerator tokenGenerator, string secret, int tokenLifetime)
+    public AuthenticateUserCommandHandler(IAppDbContext context, IPasswordHasher hasher, IJwtTokenGenerator tokenGenerator)
     {
         _context = context;
         _hasher = hasher;
         _tokenGenerator = tokenGenerator;
-        _secret = secret;
-        _tokenLifetime = tokenLifetime;
     }
     
     public async Task<AuthenticateResponse> Handle(AuthenticateUserCommand request, CancellationToken cancellationToken)
@@ -34,7 +30,7 @@ public class AuthenticateUserCommandHandler : IRequestHandler<AuthenticateUserCo
                 .SingleOrDefaultAsync(
                     x => x.Email == request.Username.ToLower()
                         && x.DateDeleted == null
-                        && x.DateRegistered == null, cancellationToken: cancellationToken)
+                        && x.DateRegistered != null, cancellationToken: cancellationToken)
             ?? throw new NotFoundException($"Username or password is not correct.");
 
         var valid = await _hasher.ValidateAsync(user.Password, request.Password);
@@ -44,13 +40,11 @@ public class AuthenticateUserCommandHandler : IRequestHandler<AuthenticateUserCo
 
         var tokenRequest = new JwtTokenRequest()
         {
-            JwtSecret = _secret,
             Type = UserType.User,
             Id = user.Id,
             Username = user.Email,
             Role = user.Role.Name,
-            Email = user.Email,
-            Expires = _tokenLifetime
+            Email = user.Email
         };
 
         string? jwtToken = _tokenGenerator.Generate(tokenRequest);

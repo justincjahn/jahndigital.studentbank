@@ -4,11 +4,12 @@ using HotChocolate.AspNetCore.Authorization;
 using HotChocolate.Data;
 using HotChocolate.Resolvers;
 using HotChocolate.Types;
-using HotChocolate.Types.Relay;
-using jahndigital.studentbank.dal.Contexts;
-using jahndigital.studentbank.dal.Entities;
+using JahnDigital.StudentBank.Application.Common;
+using JahnDigital.StudentBank.Domain.Entities;
+using JahnDigital.StudentBank.Domain.Enums;
+using JahnDigital.StudentBank.Infrastructure.Persistence;
 using jahndigital.studentbank.server.Permissions;
-using jahndigital.studentbank.utils;
+using Privilege = JahnDigital.StudentBank.Domain.Enums.Privilege;
 
 namespace jahndigital.studentbank.server.GraphQL.Queries
 {
@@ -30,9 +31,9 @@ namespace jahndigital.studentbank.server.GraphQL.Queries
         )
         {
             long id = resolverContext.GetUserId() ?? throw ErrorFactory.NotFound();
-            Constants.UserType? type = resolverContext.GetUserType() ?? throw ErrorFactory.NotFound();
+            UserType? type = resolverContext.GetUserType() ?? throw ErrorFactory.NotFound();
 
-            if (type != Constants.UserType.Student)
+            if (type != UserType.Student)
             {
                 throw ErrorFactory.NotFound();
             }
@@ -52,7 +53,7 @@ namespace jahndigital.studentbank.server.GraphQL.Queries
         /// <param name="context"></param>
         /// <returns></returns>
         [UseDbContext(typeof(AppDbContext)), UseProjection,
-         Authorize(Policy = Constants.AuthPolicy.DataOwner + "<" + Constants.Privilege.PRIVILEGE_MANAGE_STUDENTS + ">")]
+         Authorize(Policy = Constants.AuthPolicy.DataOwner + "<" + Privilege.PRIVILEGE_MANAGE_STUDENTS + ">")]
         public IQueryable<Student> GetStudent(
             long studentId,
             [ScopedService] AppDbContext context
@@ -67,7 +68,7 @@ namespace jahndigital.studentbank.server.GraphQL.Queries
         /// <param name="context"></param>
         /// <returns></returns>
         [UseDbContext(typeof(AppDbContext)), UsePaging, UseProjection, UseFiltering, UseSorting,
-         Authorize(Policy = Constants.Privilege.PRIVILEGE_MANAGE_STUDENTS)]
+         Authorize(Policy = Privilege.PRIVILEGE_MANAGE_STUDENTS)]
         public IQueryable<Student> GetStudents([ScopedService] AppDbContext context)
         {
             return context.Students.Where(x => x.DateDeleted == null);
@@ -79,7 +80,7 @@ namespace jahndigital.studentbank.server.GraphQL.Queries
         /// <param name="context"></param>
         /// <returns></returns>
         [UseDbContext(typeof(AppDbContext)), UsePaging, UseProjection, UseFiltering, UseSorting,
-         Authorize(Policy = Constants.Privilege.PRIVILEGE_MANAGE_STUDENTS)]
+         Authorize(Policy = Privilege.PRIVILEGE_MANAGE_STUDENTS)]
         public IQueryable<Student> GetDeletedStudents([ScopedService] AppDbContext context)
         {
             return context.Students.Where(x => x.DateDeleted != null);

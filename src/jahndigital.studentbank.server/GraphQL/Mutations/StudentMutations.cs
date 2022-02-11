@@ -8,21 +8,30 @@ using HotChocolate.Data;
 using HotChocolate.Execution;
 using HotChocolate.Resolvers;
 using HotChocolate.Types;
-using jahndigital.studentbank.dal.Contexts;
-using jahndigital.studentbank.dal.Entities;
+using JahnDigital.StudentBank.Application.Common;
+using JahnDigital.StudentBank.Application.Common.DTOs;
+using JahnDigital.StudentBank.Application.Common.Exceptions;
+using JahnDigital.StudentBank.Application.Students.Commands.AdminUpdateStudent;
+using JahnDigital.StudentBank.Application.Students.Commands.AuthenticateStudent;
+using JahnDigital.StudentBank.Application.Students.Commands.AuthenticateStudentInvite;
+using JahnDigital.StudentBank.Application.Students.Commands.RefreshStudentToken;
+using JahnDigital.StudentBank.Application.Students.Commands.RegisterStudent;
+using JahnDigital.StudentBank.Application.Students.Commands.RevokeStudentToken;
+using JahnDigital.StudentBank.Application.Students.Commands.UpdateStudent;
+using JahnDigital.StudentBank.Domain.Entities;
+using JahnDigital.StudentBank.Domain.Enums;
+using JahnDigital.StudentBank.Infrastructure.Persistence;
 using jahndigital.studentbank.server.Models;
-using jahndigital.studentbank.services.DTOs;
-using jahndigital.studentbank.services.Interfaces;
-using jahndigital.studentbank.utils;
+using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
-using static jahndigital.studentbank.utils.Constants;
+using Privilege = JahnDigital.StudentBank.Domain.Enums.Privilege;
 
 namespace jahndigital.studentbank.server.GraphQL.Mutations
 {
     /// <summary>
-    ///     CRUD operations for <see cref="dal.Entities.Student" /> entities.
+    ///     CRUD operations for <see cref="Student" /> entities.
     /// </summary>
     [ExtendObjectType("Mutation")]
     public class StudentMutations : TokenManagerAbstract
@@ -32,14 +41,14 @@ namespace jahndigital.studentbank.server.GraphQL.Mutations
         /// </summary>
         /// <param name="input"></param>
         /// <param name="context"></param>
-        /// <param name="studentService"></param>
+        /// <param name="mediatr"></param>
         /// <param name="contextAccessor"></param>
         /// <returns></returns>
         [UseDbContext(typeof(AppDbContext))]
         public async Task<AuthenticateResponse> StudentLoginAsync(
             AuthenticateRequest input,
             [ScopedService] AppDbContext context,
-            [Service] IStudentService studentService,
+            [Service] ISender mediatr,
             [Service] IHttpContextAccessor contextAccessor
         )
         {
@@ -55,29 +64,19 @@ namespace jahndigital.studentbank.server.GraphQL.Mutations
 
             try
             {
-                AuthenticateResponse? response = await studentService.AuthenticateAsync(input, GetIp(contextAccessor));
-
-                if (response == null)
-                {
-                    throw new QueryException(
-                        ErrorBuilder.New()
-                            .SetMessage("Bad username or password.")
-                            .SetCode("LOGIN_FAIL")
-                            .Build()
-                    );
-                }
-
+                var command = new AuthenticateStudentCommand(input.Username, input.Password, GetIp(contextAccessor));
+                var response = await mediatr.Send(command);
                 SetTokenCookie(contextAccessor, response.RefreshToken);
-
                 return response;
-            }
-            catch (QueryException)
-            {
-                throw;
             }
             catch (Exception e)
             {
-                throw ErrorFactory.QueryFailed(e.Message);
+                throw new QueryException(
+                    ErrorBuilder.New()
+                        .SetMessage("Bad username or password.")
+                        .SetCode("LOGIN_FAIL")
+                        .Build()
+                );
             }
         }
 
@@ -86,14 +85,14 @@ namespace jahndigital.studentbank.server.GraphQL.Mutations
         /// </summary>
         /// <param name="token">The refresh token to use when obtaining a new JWT token. Must be valid and not expired.</param>
         /// <param name="context"></param>
-        /// <param name="studentService"></param>
+        /// <param name="mediatr"></param>
         /// <param name="contextAccessor"></param>
         /// <returns></returns>
         [UseDbContext(typeof(AppDbContext))]
         public async Task<AuthenticateResponse> StudentRefreshTokenAsync(
             string? token,
             [ScopedService] AppDbContext context,
-            [Service] IStudentService studentService,
+            [Service] ISender mediatr,
             [Service] IHttpContextAccessor contextAccessor
         )
         {
@@ -102,34 +101,24 @@ namespace jahndigital.studentbank.server.GraphQL.Mutations
                 ?? throw new QueryException(
                     ErrorBuilder.New()
                         .SetMessage("A token is required.")
-                        .SetCode(ErrorStrings.INVALID_REFRESH_TOKEN)
+                        .SetCode(Constants.ErrorStrings.INVALID_REFRESH_TOKEN)
                         .Build());
 
             try
             {
-                AuthenticateResponse? response = await studentService.RefreshTokenAsync(token, GetIp(contextAccessor));
-
-                if (response == null)
-                {
-                    throw new QueryException(
-                        ErrorBuilder.New()
-                            .SetMessage("Invalid refresh token.")
-                            .SetCode(ErrorStrings.INVALID_REFRESH_TOKEN)
-                            .Build()
-                    );
-                }
-
+                var command = new RefreshStudentTokenCommand(token, GetIp(contextAccessor));
+                var response = await mediatr.Send(command);
                 SetTokenCookie(contextAccessor, response.RefreshToken);
-
                 return response;
-            }
-            catch (QueryException)
-            {
-                throw;
             }
             catch (Exception e)
             {
-                throw new QueryException(e.Message);
+                throw new QueryException(
+                    ErrorBuilder.New()
+                        .SetMessage("Invalid refresh token.")
+                        .SetCode(Constants.ErrorStrings.INVALID_REFRESH_TOKEN)
+                        .Build()
+                );
             }
         }
 
@@ -137,13 +126,13 @@ namespace jahndigital.studentbank.server.GraphQL.Mutations
         ///     Revoke a refresh token.
         /// </summary>
         /// <param name="token">The refresh token to revoke.</param>
-        /// <param name="studentService"></param>
+        /// <param name="mediatr"></param>
         /// <param name="contextAccessor"></param>
         /// <returns></returns>
         [HotChocolate.AspNetCore.Authorization.Authorize]
         public async Task<bool> StudentRevokeRefreshTokenAsync(
             string? token,
-            [Service] IStudentService studentService,
+            [Service] ISender mediatr,
             [Service] IHttpContextAccessor contextAccessor
         )
         {
@@ -152,34 +141,24 @@ namespace jahndigital.studentbank.server.GraphQL.Mutations
                 ?? throw new QueryException(
                     ErrorBuilder.New()
                         .SetMessage("A token is required.")
-                        .SetCode(ErrorStrings.INVALID_REFRESH_TOKEN)
+                        .SetCode(Constants.ErrorStrings.INVALID_REFRESH_TOKEN)
                         .Build());
 
             try
             {
-                bool response = await studentService.RevokeTokenAsync(token, GetIp(contextAccessor));
-
-                if (!response)
-                {
-                    throw new QueryException(
-                        ErrorBuilder.New()
-                            .SetMessage("Token not found.")
-                            .SetCode(ErrorStrings.ERROR_NOT_FOUND)
-                            .Build()
-                    );
-                }
-
+                var command = new RevokeStudentTokenCommand(token, GetIp(contextAccessor));
+                await mediatr.Send(command);
                 ClearTokenCookie(contextAccessor);
-
-                return response;
-            }
-            catch (QueryException)
-            {
-                throw;
+                return true;
             }
             catch (Exception e)
             {
-                throw new QueryException(e.Message);
+                throw new QueryException(
+                    ErrorBuilder.New()
+                        .SetMessage("Token not found.")
+                        .SetCode(Constants.ErrorStrings.ERROR_NOT_FOUND)
+                        .Build()
+                );
             }
         }
 
@@ -187,26 +166,27 @@ namespace jahndigital.studentbank.server.GraphQL.Mutations
         ///     Attempt to generate a preauthorization token from the provided input.
         /// </summary>
         /// <param name="input"></param>
-        /// <param name="studentService"></param>
+        /// <param name="mediatr"></param>
         /// <returns>A temporary JWT token if preauthorization is successful.</returns>
         public async Task<string> StudentPreregistrationAsync(
             StudentPreauthenticationRequest input,
-            [Service] IStudentService studentService
+            [Service] ISender mediatr
         )
         {
             try
             {
-                string? response = await studentService.AuthenticateInviteAsync(input.InviteCode, input.AccountNumber);
-
+                var command = new AuthenticateStudentInviteCommand(input.InviteCode, input.AccountNumber);
+                var response = await mediatr.Send(command);
                 return response;
-            }
-            catch (ArgumentException)
-            {
-                throw ErrorFactory.Unauthorized();
             }
             catch (Exception e)
             {
-                throw ErrorFactory.QueryFailed(e.Message);
+                throw new QueryException(
+                    ErrorBuilder.New()
+                        .SetMessage("Invalid invite code or account number")
+                        .SetCode(Constants.ErrorStrings.ERROR_QUERY_FAILED)
+                        .Build()
+                );
             }
         }
 
@@ -216,13 +196,15 @@ namespace jahndigital.studentbank.server.GraphQL.Mutations
         /// <param name="input"></param>
         /// <param name="context"></param>
         /// <param name="httpContext"></param>
+        /// <param name="mediatr"></param>
         /// <returns>True if registration is successful, otherwise an error message.</returns>
         [UseDbContext(typeof(AppDbContext)),
-         HotChocolate.AspNetCore.Authorization.Authorize(Policy = AuthPolicy.Preauthorization)]
+         HotChocolate.AspNetCore.Authorization.Authorize(Policy = Constants.AuthPolicy.Preauthorization)]
         public async Task<bool> StudentRegistrationAsync(
             StudentRegisterRequest input,
             [ScopedService] AppDbContext context,
-            [Service] IHttpContextAccessor httpContext
+            [Service] IHttpContextAccessor httpContext,
+            [Service] ISender mediatr
         )
         {
             if (httpContext.HttpContext is null)
@@ -242,7 +224,7 @@ namespace jahndigital.studentbank.server.GraphQL.Mutations
             }
 
             Claim? userTypeClaim = httpContext.HttpContext.User.Claims
-                    .FirstOrDefault(x => x.Type == Auth.CLAIM_USER_TYPE)
+                    .FirstOrDefault(x => x.Type == Constants.Auth.CLAIM_USER_TYPE)
                 ?? throw ErrorFactory.Unauthorized();
 
             if (userTypeClaim.Value != UserType.Student.Name)
@@ -269,13 +251,11 @@ namespace jahndigital.studentbank.server.GraphQL.Mutations
                 throw ErrorFactory.QueryFailed("A student with that email address already exists.");
             }
 
-            student.Password = input.Password;
-            student.DateRegistered = DateTime.UtcNow;
-            student.Email = input.Email;
+            var command = new RegisterStudentCommand(student.Id, DateTime.UtcNow, input.Password, input.Email);
 
             try
             {
-                await context.SaveChangesAsync();
+                await mediatr.Send(command);
             }
             catch (Exception e)
             {
@@ -291,7 +271,7 @@ namespace jahndigital.studentbank.server.GraphQL.Mutations
         /// <param name="input"></param>
         /// <param name="context"></param>
         /// <param name="resolverContext"></param>
-        /// <param name="studentService"></param>
+        /// <param name="mediatr"></param>
         /// <param name="contextAccessor"></param>
         /// <returns></returns>
         [UseDbContext(typeof(AppDbContext)), UseProjection, HotChocolate.AspNetCore.Authorization.Authorize]
@@ -299,13 +279,13 @@ namespace jahndigital.studentbank.server.GraphQL.Mutations
             UpdateStudentRequest input,
             [ScopedService] AppDbContext context,
             [Service] IResolverContext resolverContext,
-            [Service] IStudentService studentService,
+            [Service] ISender mediatr,
             [Service] IHttpContextAccessor contextAccessor
         )
         {
             resolverContext.SetUser(input.Id, UserType.Student);
             AuthorizationResult? auth = await resolverContext.AuthorizeAsync(
-                $"{AuthPolicy.DataOwner}<{Constants.Privilege.ManageStudents}>"
+                $"{Constants.AuthPolicy.DataOwner}<{Privilege.ManageStudents}>"
             );
 
             if (!auth.Succeeded)
@@ -314,13 +294,9 @@ namespace jahndigital.studentbank.server.GraphQL.Mutations
             }
 
             Student student = await context.Students
-                .Where(x => x.Id == input.Id)
-                .SingleOrDefaultAsync();
-
-            if (student == null)
-            {
-                throw ErrorFactory.NotFound();
-            }
+                    .Where(x => x.Id == input.Id)
+                    .SingleOrDefaultAsync()
+                ?? throw ErrorFactory.NotFound();
 
             if (input.GroupId != null)
             {
@@ -344,14 +320,14 @@ namespace jahndigital.studentbank.server.GraphQL.Mutations
                     );
                 }
 
-                AuthenticateRequest? req = new AuthenticateRequest()
+                var authCommand = new AuthenticateStudentCommand(student.AccountNumber, input.CurrentPassword,
+                    GetIp(contextAccessor));
+
+                try
                 {
-                    Username = student.AccountNumber, Password = input.CurrentPassword
-                };
-
-                AuthenticateResponse? res = await studentService.AuthenticateAsync(req, GetIp(contextAccessor));
-
-                if (res is null)
+                    await mediatr.Send(authCommand);
+                }
+                catch
                 {
                     throw new QueryException(
                         ErrorBuilder.New()
@@ -362,19 +338,15 @@ namespace jahndigital.studentbank.server.GraphQL.Mutations
                 }
             }
 
-            _updateStudent(input, student);
+            var command = new UpdateStudentCommand(student.Id, input.Email, input.Password);
 
             try
             {
-                await context.SaveChangesAsync();
-            }
-            catch (DbUpdateException e)
-            {
-                throw ErrorFactory.QueryFailed(e.InnerException?.Message ?? e.Message);
+                await mediatr.Send(command);
             }
             catch (Exception e)
             {
-                throw ErrorFactory.QueryFailed(e.ToString());
+                throw ErrorFactory.QueryFailed(e.Message);
             }
 
             return context.Students.Where(x => x.Id == input.Id);
@@ -385,12 +357,14 @@ namespace jahndigital.studentbank.server.GraphQL.Mutations
         /// </summary>
         /// <param name="input"></param>
         /// <param name="context"></param>
+        /// <param name="mediatr"></param>
         /// <returns></returns>
         [UseDbContext(typeof(AppDbContext)), UseProjection,
-         HotChocolate.AspNetCore.Authorization.Authorize(Policy = Constants.Privilege.PRIVILEGE_MANAGE_STUDENTS)]
+         HotChocolate.AspNetCore.Authorization.Authorize(Policy = Privilege.PRIVILEGE_MANAGE_STUDENTS)]
         public async Task<IQueryable<Student>> UpdateBulkStudentAsync(
             IEnumerable<UpdateStudentRequest> input,
-            [ScopedService] AppDbContext context
+            [ScopedService] AppDbContext context,
+            [ScopedService] ISender mediatr
         )
         {
             IEnumerable<long>? ids = input.Select(x => x.Id);
@@ -416,42 +390,20 @@ namespace jahndigital.studentbank.server.GraphQL.Mutations
                     throw ErrorFactory.NotFound();
                 }
 
-                _updateStudent(request, student);
-            }
+                var command = new AdminUpdateStudentCommand(student.Id, request.AccountNumber, request.Email,
+                    request.FirstName, request.LastName, request.GroupId, request.Password);
 
-            try
-            {
-                await context.SaveChangesAsync();
-            }
-            catch (DbUpdateException e)
-            {
-                throw ErrorFactory.QueryFailed(e.InnerException?.Message ?? e.Message);
-            }
-            catch (Exception e)
-            {
-                throw ErrorFactory.QueryFailed(e.Message);
+                try
+                {
+                    await mediatr.Send(command);
+                }
+                catch (Exception e)
+                {
+                    throw ErrorFactory.QueryFailed(e.Message);
+                }
             }
 
             return context.Students.Where(x => ids.Contains(x.Id));
-        }
-
-        /// <summary>
-        ///     Update a student entity from the request parameters.
-        /// </summary>
-        /// <param name="request"></param>
-        /// <param name="student"></param>
-        private void _updateStudent(UpdateStudentRequest request, Student student)
-        {
-            student.AccountNumber = request.AccountNumber ?? student.AccountNumber;
-            student.Email = request.Email ?? student.Email;
-            student.FirstName = request.FirstName ?? student.FirstName;
-            student.LastName = request.LastName ?? student.LastName;
-            student.GroupId = request.GroupId ?? student.GroupId;
-
-            if (request.Password != null)
-            {
-                student.Password = request.Password;
-            }
         }
 
         /// <summary>
@@ -461,7 +413,7 @@ namespace jahndigital.studentbank.server.GraphQL.Mutations
         /// <param name="context"></param>
         /// <returns></returns>
         [UseDbContext(typeof(AppDbContext)), UseProjection,
-         HotChocolate.AspNetCore.Authorization.Authorize(Policy = Constants.Privilege.PRIVILEGE_MANAGE_STUDENTS)]
+         HotChocolate.AspNetCore.Authorization.Authorize(Policy = Privilege.PRIVILEGE_MANAGE_STUDENTS)]
         public async Task<IQueryable<Student>> NewStudentAsync(
             NewStudentRequest input,
             [ScopedService] AppDbContext context
@@ -516,7 +468,7 @@ namespace jahndigital.studentbank.server.GraphQL.Mutations
         /// <param name="context"></param>
         /// <returns></returns>
         [UseDbContext(typeof(AppDbContext)),
-         HotChocolate.AspNetCore.Authorization.Authorize(Policy = Constants.Privilege.PRIVILEGE_MANAGE_STUDENTS)]
+         HotChocolate.AspNetCore.Authorization.Authorize(Policy = Privilege.PRIVILEGE_MANAGE_STUDENTS)]
         public async Task<bool> DeleteStudentAsync(
             long id,
             [ScopedService] AppDbContext context
@@ -551,7 +503,7 @@ namespace jahndigital.studentbank.server.GraphQL.Mutations
         /// <param name="context"></param>
         /// <returns></returns>
         [UseDbContext(typeof(AppDbContext)), UseProjection,
-         HotChocolate.AspNetCore.Authorization.Authorize(Policy = Constants.Privilege.PRIVILEGE_MANAGE_STUDENTS)]
+         HotChocolate.AspNetCore.Authorization.Authorize(Policy = Privilege.PRIVILEGE_MANAGE_STUDENTS)]
         public async Task<IQueryable<Student>> RestoreStudentAsync(
             long id,
             [ScopedService] AppDbContext context

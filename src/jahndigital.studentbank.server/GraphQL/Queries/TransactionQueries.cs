@@ -4,12 +4,13 @@ using HotChocolate;
 using HotChocolate.Data;
 using HotChocolate.Resolvers;
 using HotChocolate.Types;
-using HotChocolate.Types.Relay;
-using jahndigital.studentbank.dal.Contexts;
-using jahndigital.studentbank.dal.Entities;
-using jahndigital.studentbank.utils;
+using JahnDigital.StudentBank.Application.Common;
+using JahnDigital.StudentBank.Domain.Entities;
+using JahnDigital.StudentBank.Domain.Enums;
+using JahnDigital.StudentBank.Infrastructure.Persistence;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.EntityFrameworkCore;
+using Privilege = JahnDigital.StudentBank.Domain.Enums.Privilege;
 
 namespace jahndigital.studentbank.server.GraphQL.Queries
 {
@@ -34,17 +35,17 @@ namespace jahndigital.studentbank.server.GraphQL.Queries
         )
         {
             long id = resolverContext.GetUserId() ?? throw ErrorFactory.NotFound();
-            Constants.UserType? type = resolverContext.GetUserType() ?? throw ErrorFactory.NotFound();
+            UserType? type = resolverContext.GetUserType() ?? throw ErrorFactory.NotFound();
 
             Share? share = await context.Shares
                     .Where(x => x.Id == shareId)
                     .FirstOrDefaultAsync()
                 ?? throw ErrorFactory.NotFound();
 
-            resolverContext.SetUser(share.StudentId, Constants.UserType.Student);
+            resolverContext.SetUser(share.StudentId, UserType.Student);
 
             AuthorizationResult? auth = await resolverContext
-                .AuthorizeAsync($"{Constants.AuthPolicy.DataOwner}<{Constants.Privilege.ManageTransactions}>");
+                .AuthorizeAsync($"{Constants.AuthPolicy.DataOwner}<{Privilege.ManageTransactions}>");
 
             if (!auth.Succeeded)
             {

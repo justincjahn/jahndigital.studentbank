@@ -1,6 +1,6 @@
 using System.Linq;
 using System.Threading.Tasks;
-using jahndigital.studentbank.utils;
+using JahnDigital.StudentBank.Domain.Enums;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.Extensions.Options;
 
@@ -30,7 +30,7 @@ namespace jahndigital.studentbank.server.Permissions
 
         public Task<AuthorizationPolicy?> GetPolicyAsync(string policyName)
         {
-            if (Constants.Privilege.Privileges.SingleOrDefault(x => x.Name == policyName) != null)
+            if (Privilege.Privileges.SingleOrDefault(x => x.Name == policyName) != null)
             {
                 AuthorizationPolicyBuilder? policy = new AuthorizationPolicyBuilder()
                     .AddRequirements(new PermissionRequirement(policyName));

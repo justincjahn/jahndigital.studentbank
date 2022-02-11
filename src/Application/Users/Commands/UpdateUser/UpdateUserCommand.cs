@@ -2,6 +2,7 @@
 using JahnDigital.StudentBank.Application.Common.Interfaces;
 using JahnDigital.StudentBank.Domain.Entities;
 using MediatR;
+using Microsoft.EntityFrameworkCore;
 
 namespace JahnDigital.StudentBank.Application.Users.Commands.UpdateUser;
 
@@ -20,7 +21,7 @@ public class UpdateUserCommandHandler : IRequestHandler<UpdateUserCommand, User>
 
     public async Task<User> Handle(UpdateUserCommand request, CancellationToken cancellationToken)
     {
-        User user = await _context.Users.FindAsync(request.Id, cancellationToken)
+        User user = await _context.Users.FirstOrDefaultAsync(x => x.Id == request.Id, cancellationToken)
             ?? throw new NotFoundException(nameof(User), request.Id);
 
         if (request.Password is not null)

@@ -1,6 +1,6 @@
 using System.Security.Claims;
 using System.Threading.Tasks;
-using jahndigital.studentbank.utils;
+using JahnDigital.StudentBank.Application.Common;
 using Microsoft.AspNetCore.Authorization;
 
 namespace jahndigital.studentbank.server.Permissions

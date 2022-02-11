@@ -2,7 +2,7 @@
 using HotChocolate;
 using HotChocolate.Language;
 using HotChocolate.Types;
-using jahndigital.studentbank.utils;
+using JahnDigital.StudentBank.Domain.ValueObjects;
 
 namespace jahndigital.studentbank.server.GraphQL.Types
 {

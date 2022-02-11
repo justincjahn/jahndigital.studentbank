@@ -1,6 +1,7 @@
 using HotChocolate.Types;
-using jahndigital.studentbank.dal.Entities;
-using jahndigital.studentbank.utils;
+using JahnDigital.StudentBank.Application.Common;
+using JahnDigital.StudentBank.Domain.Entities;
+using Privilege = JahnDigital.StudentBank.Domain.Enums.Privilege;
 
 namespace jahndigital.studentbank.server.GraphQL.ObjectTypes
 {
@@ -9,11 +10,11 @@ namespace jahndigital.studentbank.server.GraphQL.ObjectTypes
         protected override void Configure(IObjectTypeDescriptor<Instance> descriptor)
         {
             // Require the user to be a data owner or admin
-            descriptor.Authorize($"{Constants.AuthPolicy.DataOwner}<{Constants.Privilege.ManageInstances}>");
+            descriptor.Authorize($"{Constants.AuthPolicy.DataOwner}<{Privilege.ManageInstances}>");
 
             // Only administrators can pull in groups this way
             descriptor.Field(f => f.Groups)
-                .Authorize(Constants.Privilege.ManageGroups.Name);
+                .Authorize(Privilege.ManageGroups.Name);
 
             descriptor.Field(f => f.Description).Type<NonNullType<StringType>>();
         }

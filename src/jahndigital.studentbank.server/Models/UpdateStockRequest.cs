@@ -1,4 +1,4 @@
-using jahndigital.studentbank.utils;
+using JahnDigital.StudentBank.Domain.ValueObjects;
 
 namespace jahndigital.studentbank.server.Models
 {

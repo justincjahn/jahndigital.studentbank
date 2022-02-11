@@ -4,10 +4,11 @@ using System.Linq;
 using System.Security.Claims;
 using System.Threading.Tasks;
 using HotChocolate.Resolvers;
+using JahnDigital.StudentBank.Application.Common;
+using JahnDigital.StudentBank.Domain.Enums;
 using jahndigital.studentbank.server.Permissions;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
-using static jahndigital.studentbank.utils.Constants;
 
 namespace jahndigital.studentbank.server.GraphQL
 {
@@ -48,7 +49,7 @@ namespace jahndigital.studentbank.server.GraphQL
         public static UserType? GetUserType(this IResolverContext context)
         {
             Claim? type = context.GetHttpContext().User.Claims
-                .FirstOrDefault(x => x.Type == Auth.CLAIM_USER_TYPE);
+                .FirstOrDefault(x => x.Type == Constants.Auth.CLAIM_USER_TYPE);
 
             if (type != null)
             {

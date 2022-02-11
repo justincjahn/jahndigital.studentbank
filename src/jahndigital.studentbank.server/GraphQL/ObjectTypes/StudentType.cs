@@ -1,6 +1,7 @@
 using HotChocolate.Types;
-using jahndigital.studentbank.dal.Entities;
-using jahndigital.studentbank.utils;
+using JahnDigital.StudentBank.Application.Common;
+using JahnDigital.StudentBank.Domain.Entities;
+using Privilege = JahnDigital.StudentBank.Domain.Enums.Privilege;
 
 namespace jahndigital.studentbank.server.GraphQL.ObjectTypes
 {
@@ -8,14 +9,13 @@ namespace jahndigital.studentbank.server.GraphQL.ObjectTypes
     {
         protected override void Configure(IObjectTypeDescriptor<Student> descriptor)
         {
-            descriptor.Authorize($"{Constants.AuthPolicy.DataOwner}<{Constants.Privilege.ManageStudents}>");
+            descriptor.Authorize($"{Constants.AuthPolicy.DataOwner}<{Privilege.ManageStudents}>");
 
             descriptor.Field(f => f.Group)
-                .Authorize($"{Constants.AuthPolicy.DataOwner}<{Constants.Privilege.ManageGroups}>");
+                .Authorize($"{Constants.AuthPolicy.DataOwner}<{Privilege.ManageGroups}>");
 
             // Hide sensitive fields
             descriptor.Field(f => f.Password).Ignore();
-            descriptor.Field(f => f.ValidatePassword(default!)).Ignore();
         }
     }
 }
