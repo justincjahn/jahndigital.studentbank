@@ -1,5 +1,5 @@
-using jahndigital.studentbank.dal.Enums;
-using jahndigital.studentbank.utils;
+using JahnDigital.StudentBank.Domain.Enums;
+using JahnDigital.StudentBank.Domain.ValueObjects;
 
 namespace jahndigital.studentbank.server.Models
 {

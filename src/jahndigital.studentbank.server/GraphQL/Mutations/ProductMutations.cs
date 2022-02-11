@@ -6,29 +6,29 @@ using HotChocolate.AspNetCore.Authorization;
 using HotChocolate.Data;
 using HotChocolate.Execution;
 using HotChocolate.Types;
-using jahndigital.studentbank.dal.Contexts;
-using jahndigital.studentbank.dal.Entities;
+using JahnDigital.StudentBank.Domain.Entities;
+using Privilege = JahnDigital.StudentBank.Domain.Enums.Privilege;
+using JahnDigital.StudentBank.Infrastructure.Persistence;
 using jahndigital.studentbank.server.Models;
-using jahndigital.studentbank.utils;
 using Microsoft.EntityFrameworkCore;
 
 namespace jahndigital.studentbank.server.GraphQL.Mutations
 {
     /// <summary>
-    ///     CRUD operations for <see cref="dal.Entities.Product" /> and <see cref="dal.Entities.ProductInstance" />
+    ///     CRUD operations for <see cref="Product" /> and <see cref="ProductInstance" />
     /// </summary>
     [ExtendObjectType("Mutation")]
     public class ProductMutations
     {
         /// <summary>
-        ///     Create a new <see cref="dal.Entities.Product" />.
+        ///     Create a new <see cref="Product" />.
         /// </summary>
         /// <param name="input"></param>
         /// <param name="context"></param>
         /// <param name="requestContext"></param>
         /// <returns></returns>
         [UseDbContext(typeof(AppDbContext)),
-         Authorize(Policy = Constants.Privilege.PRIVILEGE_MANAGE_PURCHASES)]
+         Authorize(Policy = Privilege.PRIVILEGE_MANAGE_PURCHASES)]
         public async Task<IQueryable<Product>> NewProductAsync(
             NewProductRequest input,
             [ScopedService] AppDbContext context,
@@ -65,13 +65,13 @@ namespace jahndigital.studentbank.server.GraphQL.Mutations
         }
 
         /// <summary>
-        ///     Update a <see cref="dal.Entities.Product" />.
+        ///     Update a <see cref="Product" />.
         /// </summary>
         /// <param name="input"></param>
         /// <param name="context"></param>
         /// <returns></returns>
         [UseDbContext(typeof(AppDbContext)),
-         Authorize(Policy = Constants.Privilege.PRIVILEGE_MANAGE_PRODUCTS)]
+         Authorize(Policy = Privilege.PRIVILEGE_MANAGE_PRODUCTS)]
         public async Task<IQueryable<Product>> UpdateProductAsync(
             UpdateProductRequest input,
             [ScopedService] AppDbContext context
@@ -117,13 +117,13 @@ namespace jahndigital.studentbank.server.GraphQL.Mutations
         }
 
         /// <summary>
-        ///     Link a <see cref="dal.Entities.Product" /> with the provided <see cref="dal.Entities.Group" />.
+        ///     Link a <see cref="Product" /> with the provided <see cref="dal.Entities.Group" />.
         /// </summary>
         /// <param name="input"></param>
         /// <param name="context"></param>
         /// <returns></returns>
         [UseDbContext(typeof(AppDbContext)), UseProjection,
-         Authorize(Policy = Constants.Privilege.PRIVILEGE_MANAGE_PRODUCTS)]
+         Authorize(Policy = Privilege.PRIVILEGE_MANAGE_PRODUCTS)]
         public async Task<IQueryable<Product>> LinkProductAsync(
             LinkProductRequest input,
             [ScopedService] AppDbContext context
@@ -154,13 +154,13 @@ namespace jahndigital.studentbank.server.GraphQL.Mutations
         }
 
         /// <summary>
-        ///     Unlink a <see cref="dal.Entities.Product" /> from the provided <see cref="dal.Entities.Group" />.
+        ///     Unlink a <see cref="Product" /> from the provided <see cref="dal.Entities.Group" />.
         /// </summary>
         /// <param name="input"></param>
         /// <param name="context"></param>
         /// <returns></returns>
         [UseDbContext(typeof(AppDbContext)), UseProjection,
-         Authorize(Policy = Constants.Privilege.PRIVILEGE_MANAGE_PRODUCTS)]
+         Authorize(Policy = Privilege.PRIVILEGE_MANAGE_PRODUCTS)]
         public async Task<IQueryable<Product>> UnlinkProductAsync(
             LinkProductRequest input,
             [ScopedService] AppDbContext context
@@ -185,13 +185,13 @@ namespace jahndigital.studentbank.server.GraphQL.Mutations
         }
 
         /// <summary>
-        ///     Soft-delete a <see cref="dal.Entities.Product" />.
+        ///     Soft-delete a <see cref="Product" />.
         /// </summary>
         /// <param name="id"></param>
         /// <param name="context"></param>
         /// <returns></returns>
         [UseDbContext(typeof(AppDbContext)),
-         Authorize(Policy = Constants.Privilege.PRIVILEGE_MANAGE_PRODUCTS)]
+         Authorize(Policy = Privilege.PRIVILEGE_MANAGE_PRODUCTS)]
         public async Task<bool> DeleteProductAsync(
             long id,
             [ScopedService] AppDbContext context
@@ -215,13 +215,13 @@ namespace jahndigital.studentbank.server.GraphQL.Mutations
         }
 
         /// <summary>
-        ///     Restore a soft-deleted <see cref="dal.Entities.Product" />.
+        ///     Restore a soft-deleted <see cref="Product" />.
         /// </summary>
         /// <param name="id"></param>
         /// <param name="context"></param>
         /// <returns></returns>
         [UseDbContext(typeof(AppDbContext)), UseProjection,
-         Authorize(Policy = Constants.Privilege.PRIVILEGE_MANAGE_PRODUCTS)]
+         Authorize(Policy = Privilege.PRIVILEGE_MANAGE_PRODUCTS)]
         public async Task<IQueryable<Product>> RestoreProductAsync(
             long id,
             [ScopedService] AppDbContext context

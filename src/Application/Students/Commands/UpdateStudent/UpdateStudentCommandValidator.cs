@@ -1,24 +1,19 @@
 ﻿using FluentValidation;
 
-namespace JahnDigital.StudentBank.Application.Users.Commands.UpdateUser;
+namespace JahnDigital.StudentBank.Application.Students.Commands.UpdateStudent;
 
-public class UpdateUserCommandValidator : AbstractValidator<UpdateUserCommand>
+public class UpdateStudentCommandValidator : AbstractValidator<UpdateStudentCommand>
 {
-    public UpdateUserCommandValidator()
+    public UpdateStudentCommandValidator()
     {
         RuleFor(x => x.Id)
             .NotEmpty()
             .GreaterThan(0);
 
-        RuleFor(x => x.RoleId)
-            .NotEmpty()
-            .GreaterThan(0)
-            .When(x => x.RoleId.HasValue);
-
         RuleFor(x => x.Email)
             .EmailAddress()
             .When(x => !String.IsNullOrWhiteSpace(x.Email));
-
+        
         RuleFor(x => x.Password)
             .NotEmpty()
             .WithMessage("Password cannot be empty.")

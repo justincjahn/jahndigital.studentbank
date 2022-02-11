@@ -1,5 +1,5 @@
 using System.Threading.Tasks;
-using jahndigital.studentbank.utils;
+using JahnDigital.StudentBank.Application.Common;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Options;
@@ -17,6 +17,7 @@ namespace jahndigital.studentbank.server.Permissions
         private readonly PermissionPolicyProvider _permissionProvider;
 
         private readonly PreauthorizationProvider _preauthorizationProvider;
+
         private IHttpContextAccessor _httpContext;
 
         public AggregatePolicyProvider(

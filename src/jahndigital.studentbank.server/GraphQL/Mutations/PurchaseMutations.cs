@@ -4,18 +4,20 @@ using HotChocolate;
 using HotChocolate.Data;
 using HotChocolate.Resolvers;
 using HotChocolate.Types;
-using jahndigital.studentbank.dal.Contexts;
-using jahndigital.studentbank.dal.Entities;
-using jahndigital.studentbank.services.DTOs;
-using jahndigital.studentbank.services.Interfaces;
-using jahndigital.studentbank.utils;
+using JahnDigital.StudentBank.Application.Common;
+using JahnDigital.StudentBank.Application.Transactions.DTOs;
+using JahnDigital.StudentBank.Application.Transactions.Services;
+using JahnDigital.StudentBank.Domain.Entities;
+using JahnDigital.StudentBank.Domain.Enums;
+using JahnDigital.StudentBank.Infrastructure.Persistence;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.EntityFrameworkCore;
+using Privilege = JahnDigital.StudentBank.Domain.Enums.Privilege;
 
 namespace jahndigital.studentbank.server.GraphQL.Mutations
 {
     /// <summary>
-    ///     CRUD operations for <see cref="dal.Entities.StudentPurchase" /> entities.
+    ///     CRUD operations for <see cref="StudentPurchase" /> entities.
     /// </summary>
     [ExtendObjectType("Mutation")]
     public class PurchaseMutations
@@ -43,9 +45,9 @@ namespace jahndigital.studentbank.server.GraphQL.Mutations
                     .FirstOrDefaultAsync()
                 ?? throw ErrorFactory.NotFound();
 
-            resolverContext.SetUser(studentId, Constants.UserType.Student);
+            resolverContext.SetUser(studentId, UserType.Student);
             AuthorizationResult? auth = await resolverContext.AuthorizeAsync(
-                $"{Constants.AuthPolicy.DataOwner}<{Constants.Privilege.ManageStudents}>"
+                $"{Constants.AuthPolicy.DataOwner}<{Privilege.ManageStudents}>"
             );
 
             if (!auth.Succeeded)

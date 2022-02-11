@@ -50,6 +50,7 @@ public static class DependencyInjection
         });
         
         services
+            .AddScoped<IPasswordHasher, MsIdentityPasswordHasher>()
             .AddScoped<IDbInitializerService, DbInitializerService>()
             .AddScoped<IJwtTokenGenerator>(_ => new JwtTokenService(appConfig.Secret, appConfig.TokenLifetime))
             .AddScoped<IRoleService, RoleService>()

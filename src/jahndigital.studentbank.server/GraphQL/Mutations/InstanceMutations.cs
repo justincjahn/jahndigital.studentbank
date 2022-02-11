@@ -5,29 +5,31 @@ using HotChocolate;
 using HotChocolate.AspNetCore.Authorization;
 using HotChocolate.Data;
 using HotChocolate.Types;
-using jahndigital.studentbank.dal.Contexts;
-using jahndigital.studentbank.dal.Entities;
+using JahnDigital.StudentBank.Application;
+using JahnDigital.StudentBank.Application.Common.Utils;
+using JahnDigital.StudentBank.Domain.Entities;
+using JahnDigital.StudentBank.Infrastructure.Persistence;
 using jahndigital.studentbank.server.Models;
-using jahndigital.studentbank.utils;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
+using Privilege = JahnDigital.StudentBank.Domain.Enums.Privilege;
 
 namespace jahndigital.studentbank.server.GraphQL.Mutations
 {
     /// <summary>
-    ///     CRUD operations for <see cref="dal.Entities.Instance" /> entities.
+    ///     CRUD operations for <see cref="Instance" /> entities.
     /// </summary>
     [ExtendObjectType("Mutation")]
     public class InstanceMutations
     {
         /// <summary>
-        ///     Update an <see cref="dal.Entities.Instance" />.
+        ///     Update an <see cref="Instance" />.
         /// </summary>
         /// <param name="input"></param>
         /// <param name="context"></param>
         /// <returns></returns>
         [UseDbContext(typeof(AppDbContext)),
-         Authorize(Policy = Constants.Privilege.PRIVILEGE_MANAGE_INSTANCES)]
+         Authorize(Policy = Privilege.PRIVILEGE_MANAGE_INSTANCES)]
         public async Task<IQueryable<Instance>> UpdateInstanceAsync(
             UpdateInstanceRequest input,
             [ScopedService] AppDbContext context
@@ -80,14 +82,14 @@ namespace jahndigital.studentbank.server.GraphQL.Mutations
         }
 
         /// <summary>
-        ///     Create an <see cref="dal.Entities.Instance" />.
+        ///     Create an <see cref="Instance" />.
         /// </summary>
         /// <param name="input"></param>
         /// <param name="context"></param>
         /// <param name="configuration"></param>
         /// <returns></returns>
         [UseDbContext(typeof(AppDbContext)),
-         Authorize(Policy = Constants.Privilege.PRIVILEGE_MANAGE_INSTANCES)]
+         Authorize(Policy = Privilege.PRIVILEGE_MANAGE_INSTANCES)]
         public async Task<Instance> NewInstanceAsync(
             NewInstanceRequest input,
             [ScopedService] AppDbContext context,
@@ -127,13 +129,13 @@ namespace jahndigital.studentbank.server.GraphQL.Mutations
         }
 
         /// <summary>
-        ///     Soft-delete an <see cref="dal.Entities.Instance" />.
+        ///     Soft-delete an <see cref="Instance" />.
         /// </summary>
         /// <param name="id"></param>
         /// <param name="context"></param>
         /// <returns></returns>
         [UseDbContext(typeof(AppDbContext)),
-         Authorize(Policy = Constants.Privilege.PRIVILEGE_MANAGE_INSTANCES)]
+         Authorize(Policy = Privilege.PRIVILEGE_MANAGE_INSTANCES)]
         public async Task<bool> DeleteInstanceAsync(
             long id,
             [ScopedService] AppDbContext context
@@ -169,13 +171,13 @@ namespace jahndigital.studentbank.server.GraphQL.Mutations
         }
 
         /// <summary>
-        ///     Restore a soft-deleted <see cref="dal.Entities.Instance" />.
+        ///     Restore a soft-deleted <see cref="Instance" />.
         /// </summary>
         /// <param name="id"></param>
         /// <param name="context"></param>
         /// <returns></returns>
         [UseDbContext(typeof(AppDbContext)),
-         UseProjection, Authorize(Policy = Constants.Privilege.PRIVILEGE_MANAGE_INSTANCES)]
+         UseProjection, Authorize(Policy = Privilege.PRIVILEGE_MANAGE_INSTANCES)]
         public async Task<IQueryable<Instance>> RestoreInstanceAsync(
             long id,
             [ScopedService] AppDbContext context

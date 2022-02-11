@@ -6,12 +6,14 @@ using HotChocolate;
 using HotChocolate.Data;
 using HotChocolate.Resolvers;
 using HotChocolate.Types;
-using jahndigital.studentbank.dal.Contexts;
-using jahndigital.studentbank.dal.Entities;
+using JahnDigital.StudentBank.Application.Common;
+using JahnDigital.StudentBank.Application.Transactions.DTOs;
+using JahnDigital.StudentBank.Application.Transactions.Services;
+using JahnDigital.StudentBank.Domain.Entities;
+using JahnDigital.StudentBank.Domain.Enums;
+using JahnDigital.StudentBank.Infrastructure.Persistence;
 using jahndigital.studentbank.server.Models;
-using jahndigital.studentbank.services.DTOs;
-using jahndigital.studentbank.services.Interfaces;
-using jahndigital.studentbank.utils;
+using Privilege = JahnDigital.StudentBank.Domain.Enums.Privilege;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.EntityFrameworkCore;
 
@@ -27,20 +29,13 @@ namespace jahndigital.studentbank.server.GraphQL.Mutations
         ///     Post a <see cref="dal.Entities.Transaction" /> to the provided share, if authorized.
         /// </summary>
         /// <returns></returns>
-        [HotChocolate.AspNetCore.Authorization.Authorize(Policy = Constants.Privilege.PRIVILEGE_MANAGE_TRANSACTIONS)]
+        [HotChocolate.AspNetCore.Authorization.Authorize(Policy = Privilege.PRIVILEGE_MANAGE_TRANSACTIONS)]
         public async Task<Transaction> NewTransactionAsync(
-            NewTransactionRequest input,
+            TransactionRequest input,
             [Service] ITransactionService transactionService
         )
         {
-            Transaction? transaction = await transactionService.PostAsync(
-                input.ShareId,
-                input.Amount,
-                input.Comment,
-                takeNegative: input.TakeNegative ?? false,
-                withdrawalLimit: false
-            );
-
+            var transaction = await transactionService.PostAsync(input);
             return transaction;
         }
 
@@ -54,20 +49,23 @@ namespace jahndigital.studentbank.server.GraphQL.Mutations
         ///     while the <c>takeNegative</c> flag is set to <see langword="false" />.
         /// </param>
         /// <returns></returns>
-        [HotChocolate.AspNetCore.Authorization.Authorize(Policy = Constants.Privilege.PRIVILEGE_MANAGE_TRANSACTIONS)]
+        [HotChocolate.AspNetCore.Authorization.Authorize(Policy = Privilege.PRIVILEGE_MANAGE_TRANSACTIONS)]
         public async Task<IQueryable<Transaction>> NewBulkTransactionAsync(
             IEnumerable<NewTransactionRequest> input,
             [Service] ITransactionService transactionService,
             bool skipBelowNegative = false
         )
         {
-            IQueryable<Transaction>? transactions = await transactionService.PostAsync(
-                input,
-                !skipBelowNegative,
-                false
-            );
-
-            return transactions;
+            var transactions = input.Select(x => new TransactionRequest()
+            {
+                Amount = x.Amount,
+                Comment = x.Comment,
+                ShareId = x.ShareId,
+                TakeNegative = x.TakeNegative
+            });
+            
+            var result = await transactionService.PostAsync(transactions, !skipBelowNegative, false);
+            return result;
         }
 
         /// <summary>
@@ -93,9 +91,9 @@ namespace jahndigital.studentbank.server.GraphQL.Mutations
                     .FirstOrDefaultAsync()
                 ?? throw ErrorFactory.NotFound();
 
-            resolverContext.SetUser(studentId.Value, Constants.UserType.Student);
+            resolverContext.SetUser(studentId.Value, UserType.Student);
             AuthorizationResult? auth = await resolverContext.AuthorizeAsync(
-                $"{Constants.AuthPolicy.DataOwner}<{Constants.Privilege.ManageStudents}>"
+                $"{Constants.AuthPolicy.DataOwner}<{Privilege.ManageStudents}>"
             );
 
             if (!auth.Succeeded)
@@ -103,25 +101,26 @@ namespace jahndigital.studentbank.server.GraphQL.Mutations
                 throw ErrorFactory.Unauthorized();
             }
 
-            (Transaction, Transaction) transactions = await transactionService.TransferAsync(
-                input.SourceShareId,
-                input.DestinationShareId,
-                input.Amount,
-                input.Comment,
-                withdrawalLimit: resolverContext.GetUserType() != Constants.UserType.User
-            );
+            var transactions = await transactionService.TransferAsync(new TransferRequest()
+            {
+                Amount = input.Amount,
+                Comment = input.Comment,
+                WithdrawalLimit = resolverContext.GetUserType() != UserType.User,
+                DestinationShareId = input.DestinationShareId,
+                SourceShareId = input.SourceShareId
+            });
 
             return transactions.ToTuple();
         }
 
         /// <summary>
         ///     Post dividends for a specific <see cref="dal.Entities.ShareType" /> and a group
-        ///     of <see cref="dal.Entities.Instance" />.
+        ///     of <see cref="Instance" />.
         /// </summary>
         /// <param name="input"></param>
         /// <param name="transactionService"></param>
         /// <returns></returns>
-        [HotChocolate.AspNetCore.Authorization.Authorize(Policy = Constants.Privilege.PRIVILEGE_MANAGE_TRANSACTIONS)]
+        [HotChocolate.AspNetCore.Authorization.Authorize(Policy = Privilege.PRIVILEGE_MANAGE_TRANSACTIONS)]
         public async Task<bool> PostDividendsAsync(
             PostDividendsRequest input,
             [Service] ITransactionService transactionService

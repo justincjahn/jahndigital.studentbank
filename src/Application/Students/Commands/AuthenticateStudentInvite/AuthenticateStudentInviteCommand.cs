@@ -14,13 +14,11 @@ public class AuthenticateStudentInviteCommandHandler : IRequestHandler<Authentic
 {
     private readonly IAppDbContext _context;
     private readonly IJwtTokenGenerator _tokenGenerator;
-    private readonly string _secret;
 
-    public AuthenticateStudentInviteCommandHandler(IAppDbContext context, IJwtTokenGenerator tokenGenerator, string secret)
+    public AuthenticateStudentInviteCommandHandler(IAppDbContext context, IJwtTokenGenerator tokenGenerator)
     {
         _context = context;
         _tokenGenerator = tokenGenerator;
-        _secret = secret;
     }
 
     public async Task<string> Handle(AuthenticateStudentInviteCommand request, CancellationToken cancellationToken)
@@ -59,7 +57,6 @@ public class AuthenticateStudentInviteCommandHandler : IRequestHandler<Authentic
 
         var tokenRequest = new JwtTokenRequest()
         {
-            JwtSecret = _secret,
             Type = UserType.Student,
             Id = student.Id,
             Username = student.AccountNumber,

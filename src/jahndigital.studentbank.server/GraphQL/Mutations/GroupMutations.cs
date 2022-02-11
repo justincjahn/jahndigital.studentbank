@@ -5,11 +5,11 @@ using HotChocolate;
 using HotChocolate.AspNetCore.Authorization;
 using HotChocolate.Data;
 using HotChocolate.Types;
-using jahndigital.studentbank.dal.Contexts;
-using jahndigital.studentbank.dal.Entities;
+using JahnDigital.StudentBank.Domain.Entities;
+using JahnDigital.StudentBank.Infrastructure.Persistence;
 using jahndigital.studentbank.server.Models;
-using jahndigital.studentbank.utils;
 using Microsoft.EntityFrameworkCore;
+using Privilege = JahnDigital.StudentBank.Domain.Enums.Privilege;
 
 namespace jahndigital.studentbank.server.GraphQL.Mutations
 {
@@ -26,7 +26,7 @@ namespace jahndigital.studentbank.server.GraphQL.Mutations
         /// <param name="context"></param>
         /// <returns></returns>
         [UseDbContext(typeof(AppDbContext)), UseProjection,
-         Authorize(Policy = Constants.Privilege.PRIVILEGE_MANAGE_GROUPS)]
+         Authorize(Policy = Privilege.PRIVILEGE_MANAGE_GROUPS)]
         public async Task<IQueryable<Group>> UpdateGroupAsync(
             UpdateGroupRequest input,
             [ScopedService] AppDbContext context
@@ -89,7 +89,7 @@ namespace jahndigital.studentbank.server.GraphQL.Mutations
         /// <param name="context"></param>
         /// <returns></returns>
         [UseDbContext(typeof(AppDbContext)), UseProjection,
-         Authorize(Policy = Constants.Privilege.PRIVILEGE_MANAGE_GROUPS)]
+         Authorize(Policy = Privilege.PRIVILEGE_MANAGE_GROUPS)]
         public async Task<IQueryable<Group>> NewGroupAsync(
             NewGroupRequest input,
             [ScopedService] AppDbContext context
@@ -137,7 +137,7 @@ namespace jahndigital.studentbank.server.GraphQL.Mutations
         /// <param name="context"></param>
         /// <returns></returns>
         [UseDbContext(typeof(AppDbContext)),
-         Authorize(Policy = Constants.Privilege.PRIVILEGE_MANAGE_GROUPS)]
+         Authorize(Policy = Privilege.PRIVILEGE_MANAGE_GROUPS)]
         public async Task<bool> DeleteGroupAsync(
             long id,
             [ScopedService] AppDbContext context
@@ -179,7 +179,7 @@ namespace jahndigital.studentbank.server.GraphQL.Mutations
         /// <param name="context"></param>
         /// <returns></returns>
         [UseDbContext(typeof(AppDbContext)), UseProjection,
-         Authorize(Policy = Constants.Privilege.PRIVILEGE_MANAGE_GROUPS)]
+         Authorize(Policy = Privilege.PRIVILEGE_MANAGE_GROUPS)]
         public async Task<IQueryable<Group>> RestoreGroupAsync(
             long id,
             [ScopedService] AppDbContext context

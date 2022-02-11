@@ -13,7 +13,7 @@ public interface IRoleService
     /// <param name="permission">The name of the privilege. <see cref="Constants.Privilege" /></param>
     /// <param name="cancellationToken"></param>
     /// <returns>True if the provided role has the provided permission.</returns>
-    public Task<bool> HasPermissionAsync(string role, string permission, CancellationToken cancellationToken);
+    public Task<bool> HasPermissionAsync(string role, string permission, CancellationToken cancellationToken = new());
 
     /// <summary>
     ///     Determine if the provided role has any of the given permissions.
@@ -22,5 +22,5 @@ public interface IRoleService
     /// <param name="permissions"></param>
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
-    public Task<bool> HasPermissionAsync(string role, IEnumerable<string> permissions, CancellationToken cancellationToken);
+    public Task<bool> HasPermissionAsync(string role, IEnumerable<string> permissions, CancellationToken cancellationToken = new());
 }

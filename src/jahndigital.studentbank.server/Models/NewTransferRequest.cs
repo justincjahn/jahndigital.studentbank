@@ -1,4 +1,5 @@
-using jahndigital.studentbank.utils;
+using JahnDigital.StudentBank.Domain.Entities;
+using JahnDigital.StudentBank.Domain.ValueObjects;
 
 namespace jahndigital.studentbank.server.Models
 {
@@ -8,12 +9,12 @@ namespace jahndigital.studentbank.server.Models
     public class NewTransferRequest
     {
         /// <summary>
-        ///     The source <see cref="dal.Entities.Share" /> ID.
+        ///     The source <see cref="Share" /> ID.
         /// </summary>
         public long SourceShareId { get; set; } = default!;
 
         /// <summary>
-        ///     The destination <see cref="dal.Entities.Share" /> ID.
+        ///     The destination <see cref="Share" /> ID.
         /// </summary>
         public long DestinationShareId { get; set; } = default!;
 

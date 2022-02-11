@@ -2,11 +2,12 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using jahndigital.studentbank.dal.Contexts;
-using jahndigital.studentbank.dal.Entities;
-using jahndigital.studentbank.dal.Enums;
-using jahndigital.studentbank.services;
-using jahndigital.studentbank.services.Interfaces;
+using JahnDigital.StudentBank.Application.Common.Utils;
+using JahnDigital.StudentBank.Application.ShareTypes.Commands.ResetWithdrawalLimit;
+using JahnDigital.StudentBank.Domain.Entities;
+using JahnDigital.StudentBank.Domain.Enums;
+using JahnDigital.StudentBank.Infrastructure.Persistence;
+using MediatR;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Quartz;
@@ -19,14 +20,14 @@ namespace jahndigital.studentbank.server.Jobs
     public class DailyJob : IJob, IDisposable
     {
         private readonly AppDbContext _dbContext;
-        private readonly IShareTypeService _shareTypeService;
+        private readonly ISender _mediatr;
         private readonly ILogger<DailyJob> _logger;
 
-        public DailyJob(IDbContextFactory<AppDbContext> factory, IShareTypeService shareTypeService,
+        public DailyJob(IDbContextFactory<AppDbContext> factory, ISender mediatr,
             ILogger<DailyJob> logger)
         {
             _dbContext = factory.CreateDbContext();
-            _shareTypeService = shareTypeService;
+            _mediatr = mediatr;
             _logger = logger;
         }
 
@@ -55,7 +56,9 @@ namespace jahndigital.studentbank.server.Jobs
             {
                 _logger.LogInformation(
                     $"Running daily withdrawal reset for Share Type: {shareType.Id}:{shareType.Name}");
-                await _shareTypeService.ResetWithdrawalLimit(shareType.Id);
+
+                var command = new ResetWithdrawalLimitCommand(shareType.Id);
+                await _mediatr.Send(command);
             }
         }
 
@@ -76,7 +79,9 @@ namespace jahndigital.studentbank.server.Jobs
             {
                 _logger.LogInformation(
                     $"Running weekly withdrawal reset for Share Type: {shareType.Id}:{shareType.Name}");
-                await _shareTypeService.ResetWithdrawalLimit(shareType.Id);
+
+                var command = new ResetWithdrawalLimitCommand(shareType.Id);
+                await _mediatr.Send(command);
             }
         }
 
@@ -97,7 +102,9 @@ namespace jahndigital.studentbank.server.Jobs
             {
                 _logger.LogInformation(
                     $"Running monthly withdrawal reset for Share Type: {shareType.Id}:{shareType.Name}");
-                await _shareTypeService.ResetWithdrawalLimit(shareType.Id);
+
+                var command = new ResetWithdrawalLimitCommand(shareType.Id);
+                await _mediatr.Send(command);
             }
         }
 
@@ -118,7 +125,9 @@ namespace jahndigital.studentbank.server.Jobs
             {
                 _logger.LogInformation(
                     $"Running quarterly withdrawal reset for Share Type: {shareType.Id}:{shareType.Name}");
-                await _shareTypeService.ResetWithdrawalLimit(shareType.Id);
+
+                var command = new ResetWithdrawalLimitCommand(shareType.Id);
+                await _mediatr.Send(command);
             }
         }
 
@@ -139,7 +148,9 @@ namespace jahndigital.studentbank.server.Jobs
             {
                 _logger.LogInformation(
                     $"Running annual withdrawal reset for Share Type: {shareType.Id}:{shareType.Name}");
-                await _shareTypeService.ResetWithdrawalLimit(shareType.Id);
+
+                var command = new ResetWithdrawalLimitCommand(shareType.Id);
+                await _mediatr.Send(command);
             }
         }
 

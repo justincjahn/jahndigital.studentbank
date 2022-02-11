@@ -4,10 +4,11 @@ using System.Security.Claims;
 using System.Threading.Tasks;
 using HotChocolate.Language;
 using HotChocolate.Resolvers;
-using jahndigital.studentbank.services.Interfaces;
+using JahnDigital.StudentBank.Application.Common;
+using JahnDigital.StudentBank.Application.Roles.Services;
+using JahnDigital.StudentBank.Domain.Enums;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
-using static jahndigital.studentbank.utils.Constants;
 
 namespace jahndigital.studentbank.server.Permissions
 {
@@ -124,7 +125,7 @@ namespace jahndigital.studentbank.server.Permissions
                 return false;
             }
 
-            Claim? userTypeClaim = context.User.Claims.FirstOrDefault(x => x.Type == Auth.CLAIM_USER_TYPE);
+            Claim? userTypeClaim = context.User.Claims.FirstOrDefault(x => x.Type == Constants.Auth.CLAIM_USER_TYPE);
 
             if (userTypeClaim == null)
             {

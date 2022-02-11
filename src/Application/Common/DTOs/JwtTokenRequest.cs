@@ -5,11 +5,6 @@ namespace JahnDigital.StudentBank.Application.Common.DTOs;
 public record JwtTokenRequest
 {
     /// <summary>
-    /// The secret used to sign the JWT token.
-    /// </summary>
-    public string JwtSecret { get; init; }
-
-    /// <summary>
     /// The type of user the token is issued to.
     /// </summary>
     public UserType Type { get; init; }

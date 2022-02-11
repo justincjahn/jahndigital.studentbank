@@ -18,16 +18,16 @@ public class JwtTokenService : IJwtTokenGenerator
     private readonly string _secret;
     private readonly int _tokenLifetime;
 
-    public JwtTokenService(string secret, int tokenLifetime)
+    public JwtTokenService(string secret, int? tokenLifetime)
     {
         _secret = secret;
-        _tokenLifetime = tokenLifetime;
+        _tokenLifetime = tokenLifetime ?? Constants.Auth.DefaultExpirationMinutes;
     }
-    
+
     public string Generate(JwtTokenRequest request)
     {
         JwtSecurityTokenHandler handler = new();
-        byte[] key = Encoding.ASCII.GetBytes(request.JwtSecret);
+        byte[] key = Encoding.ASCII.GetBytes(_secret);
 
         List<Claim>? claims = new()
         {
@@ -50,7 +50,7 @@ public class JwtTokenService : IJwtTokenGenerator
         SecurityTokenDescriptor? descriptor = new SecurityTokenDescriptor
         {
             Issuer = Constants.Auth.Issuer,
-            Expires = DateTime.UtcNow.AddMinutes(request.Expires ?? Constants.Auth.DefaultExpirationMinutes),
+            Expires = DateTime.UtcNow.AddMinutes(_tokenLifetime),
             Subject = new ClaimsIdentity(claims),
             SigningCredentials = new SigningCredentials(
                 new SymmetricSecurityKey(key),

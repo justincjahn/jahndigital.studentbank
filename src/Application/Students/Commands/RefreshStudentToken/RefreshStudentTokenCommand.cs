@@ -14,16 +14,11 @@ public class RefreshStudentTokenCommandHandler : IRequestHandler<RefreshStudentT
 {
     private readonly IAppDbContext _context;
     private readonly IJwtTokenGenerator _tokenGenerator;
-    private readonly string _secret;
-    private readonly int _tokenLifetime;
 
-    public RefreshStudentTokenCommandHandler(IAppDbContext context, IJwtTokenGenerator tokenGenerator, string secret,
-        int tokenLifetime)
+    public RefreshStudentTokenCommandHandler(IAppDbContext context, IJwtTokenGenerator tokenGenerator)
     {
         _context = context;
         _tokenGenerator = tokenGenerator;
-        _secret = secret;
-        _tokenLifetime = tokenLifetime;
     }
     
     public async Task<AuthenticateResponse> Handle(RefreshStudentTokenCommand request, CancellationToken cancellationToken)
@@ -47,15 +42,13 @@ public class RefreshStudentTokenCommandHandler : IRequestHandler<RefreshStudentT
 
         var tokenRequest = new JwtTokenRequest()
         {
-            JwtSecret = _secret,
             Type = UserType.Student,
             Id = student.Id,
             Username = student.AccountNumber,
             Role = Role.Student.Name,
             Email = student.Email ?? "",
             FirstName = student.FirstName,
-            LastName = student.LastName,
-            Expires = _tokenLifetime
+            LastName = student.LastName
         };
 
         var jwtToken = _tokenGenerator.Generate(tokenRequest);

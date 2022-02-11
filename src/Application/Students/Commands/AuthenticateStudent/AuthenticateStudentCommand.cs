@@ -10,28 +10,22 @@ using Role = JahnDigital.StudentBank.Domain.Enums.Role;
 namespace JahnDigital.StudentBank.Application.Students.Commands.AuthenticateStudent;
 
 public record AuthenticateStudentCommand
-    (string Username, string Password, string IpAddress) : IRequest<AuthenticateResponse>;
+    (string Username, string Password, string IpAddress, int? tokenLifetime = null) : IRequest<AuthenticateResponse>;
 
 public class AuthenticateStudentCommandHandler : IRequestHandler<AuthenticateStudentCommand, AuthenticateResponse>
 {
     private readonly IAppDbContext _context;
     private readonly IPasswordHasher _hasher;
     private readonly IJwtTokenGenerator _tokenGenerator;
-    private readonly string _secret;
-    private readonly int _tokenLifetime;
 
     public AuthenticateStudentCommandHandler(
         IAppDbContext context,
         IPasswordHasher hasher,
-        IJwtTokenGenerator tokenGenerator,
-        string secret,
-        int tokenLifetime)
+        IJwtTokenGenerator tokenGenerator)
     {
         _context = context;
         _hasher = hasher;
         _tokenGenerator = tokenGenerator;
-        _secret = secret;
-        _tokenLifetime = tokenLifetime;
     }
     
     public async Task<AuthenticateResponse> Handle(AuthenticateStudentCommand request, CancellationToken cancellationToken)
@@ -55,7 +49,6 @@ public class AuthenticateStudentCommandHandler : IRequestHandler<AuthenticateStu
 
         var tokenRequest = new JwtTokenRequest()
         {
-            JwtSecret = _secret,
             Type = UserType.Student,
             Id = student.Id,
             Username = student.AccountNumber,
@@ -63,7 +56,6 @@ public class AuthenticateStudentCommandHandler : IRequestHandler<AuthenticateStu
             Email = student.Email ?? "",
             FirstName = student.FirstName,
             LastName = student.LastName,
-            Expires = _tokenLifetime
         };
 
         var jwtToken = _tokenGenerator.Generate(tokenRequest);

@@ -1,6 +1,6 @@
 using HotChocolate.Types;
-using jahndigital.studentbank.dal.Entities;
-using jahndigital.studentbank.utils;
+using JahnDigital.StudentBank.Domain.Entities;
+using Privilege = JahnDigital.StudentBank.Domain.Enums.Privilege;
 
 namespace jahndigital.studentbank.server.GraphQL.ObjectTypes
 {
@@ -10,7 +10,7 @@ namespace jahndigital.studentbank.server.GraphQL.ObjectTypes
         {
             // Only administrators can manage product groups
             descriptor.Field(f => f.ProductInstances)
-                .Authorize(Constants.Privilege.ManageProducts.Name);
+                .Authorize(Privilege.ManageProducts.Name);
         }
     }
 }

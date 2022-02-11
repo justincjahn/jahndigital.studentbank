@@ -17,6 +17,6 @@ namespace jahndigital.studentbank.server.Permissions
 
         /// <summary>
         /// </summary>
-        public IEnumerable<string> Permissions { get; } = new string[] { };
+        public IEnumerable<string> Permissions { get; } = System.Array.Empty<string>();
     }
 }

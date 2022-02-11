@@ -4,11 +4,11 @@ using HotChocolate;
 using HotChocolate.Data;
 using HotChocolate.Resolvers;
 using HotChocolate.Types;
-using HotChocolate.Types.Relay;
-using jahndigital.studentbank.dal.Contexts;
-using jahndigital.studentbank.dal.Entities;
-using jahndigital.studentbank.utils;
+using JahnDigital.StudentBank.Domain.Entities;
+using JahnDigital.StudentBank.Domain.Enums;
+using JahnDigital.StudentBank.Infrastructure.Persistence;
 using Microsoft.AspNetCore.Authorization;
+using Privilege = JahnDigital.StudentBank.Domain.Enums.Privilege;
 
 namespace jahndigital.studentbank.server.GraphQL.Queries
 {
@@ -28,13 +28,13 @@ namespace jahndigital.studentbank.server.GraphQL.Queries
             [Service] IResolverContext resolverContext
         )
         {
-            Constants.UserType? userType = resolverContext.GetUserType() ?? throw ErrorFactory.Unauthorized();
+            UserType? userType = resolverContext.GetUserType() ?? throw ErrorFactory.Unauthorized();
             long userId = resolverContext.GetUserId() ?? throw ErrorFactory.Unauthorized();
             resolverContext.SetUser(userId, userType);
 
-            if (userType == Constants.UserType.User)
+            if (userType == UserType.User)
             {
-                AuthorizationResult? auth = await resolverContext.AuthorizeAsync(Constants.Privilege.ManageShares.Name);
+                AuthorizationResult? auth = await resolverContext.AuthorizeAsync(Privilege.ManageShares.Name);
 
                 if (!auth.Succeeded)
                 {
@@ -53,7 +53,7 @@ namespace jahndigital.studentbank.server.GraphQL.Queries
         /// <param name="context"></param>
         /// <returns></returns>
         [UseDbContext(typeof(AppDbContext)), UsePaging, UseProjection, UseFiltering, UseSorting,
-         HotChocolate.AspNetCore.Authorization.Authorize(Policy = Constants.Privilege.PRIVILEGE_MANAGE_SHARES)]
+         HotChocolate.AspNetCore.Authorization.Authorize(Policy = Privilege.PRIVILEGE_MANAGE_SHARES)]
         public IQueryable<Share> GetDeletedShares([ScopedService] AppDbContext context)
         {
             return context.Shares.Where(x => x.DateDeleted != null);

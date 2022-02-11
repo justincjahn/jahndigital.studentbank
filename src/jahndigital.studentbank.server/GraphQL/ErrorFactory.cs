@@ -1,6 +1,6 @@
 using HotChocolate;
 using HotChocolate.Execution;
-using jahndigital.studentbank.utils;
+using JahnDigital.StudentBank.Application.Common;
 
 namespace jahndigital.studentbank.server.GraphQL
 {

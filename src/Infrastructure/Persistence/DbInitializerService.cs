@@ -1,10 +1,10 @@
 ﻿using System.Linq;
+using JahnDigital.StudentBank.Application.Common.Interfaces;
 using JahnDigital.StudentBank.Application.Common.Utils;
 using JahnDigital.StudentBank.Domain.Entities;
 using JahnDigital.StudentBank.Domain.Enums;
 using JahnDigital.StudentBank.Domain.ValueObjects;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.VisualBasic;
 using Privilege = JahnDigital.StudentBank.Domain.Entities.Privilege;
 using PrivilegeEnum = JahnDigital.StudentBank.Domain.Enums.Privilege;
 using Role = JahnDigital.StudentBank.Domain.Entities.Role;
@@ -18,6 +18,7 @@ namespace JahnDigital.StudentBank.Infrastructure.Persistence;
 public class DbInitializerService : IDbInitializerService
 {
     private readonly IDbContextFactory<AppDbContext> _factory;
+    private readonly IPasswordHasher _passwordHasher;
 
 
     /// <summary>
@@ -34,9 +35,10 @@ public class DbInitializerService : IDbInitializerService
     /// 
     /// </summary>
     /// <param name="factory"></param>
-    public DbInitializerService(IDbContextFactory<AppDbContext> factory)
+    public DbInitializerService(IDbContextFactory<AppDbContext> factory, IPasswordHasher passwordHasher)
     {
         _factory = factory;
+        _passwordHasher = passwordHasher;
     }
 
     /// <summary>
@@ -124,12 +126,14 @@ public class DbInitializerService : IDbInitializerService
         Role? superuser = context.Roles.FirstOrDefault(x => x.Name == RoleEnum.Superuser.Name)
             ?? throw new DbUpdateException("Unable to seed admin user- superuser role not found.");
 
-        if (!context.Users.Any())
+        var users = context.Users.ToList();
+        
+        if (context.Users.Count() == 0)
         {
             User? admin = new User
             {
                 Email = "admin@domain.tld",
-                Password = "admin",
+                Password = _passwordHasher.HashPassword("admin"),
                 Role = superuser,
                 DateRegistered = DateTime.UtcNow
             };
@@ -366,7 +370,7 @@ public class DbInitializerService : IDbInitializerService
                 {
                     AccountNumber = accountNumber,
                     Group = group,
-                    Password = "student",
+                    Password = _passwordHasher.HashPassword("student"),
                     Email = $"student{i}@group{group.Id}.domain.tld",
                     FirstName = "Student",
                     LastName = $"{i}",

@@ -1,18 +1,19 @@
 using HotChocolate.Types;
-using jahndigital.studentbank.utils;
+using JahnDigital.StudentBank.Domain.Enums;
+using ShareTypeEntity = JahnDigital.StudentBank.Domain.Entities.ShareType;
 
 namespace jahndigital.studentbank.server.GraphQL.ObjectTypes
 {
-    public class ShareTypeType : ObjectType<dal.Entities.ShareType>
+    public class ShareTypeType : ObjectType<ShareTypeEntity>
     {
-        protected override void Configure(IObjectTypeDescriptor<dal.Entities.ShareType> descriptor)
+        protected override void Configure(IObjectTypeDescriptor<ShareTypeEntity> descriptor)
         {
             // Require users to be authenticated to access this resource
             descriptor.Authorize();
 
             // Require admin rights to cascade to shares this way
             descriptor.Field(f => f.Shares)
-                .Authorize(Constants.Privilege.ManageShares.Name);
+                .Authorize(Privilege.ManageShares.Name);
         }
     }
 }

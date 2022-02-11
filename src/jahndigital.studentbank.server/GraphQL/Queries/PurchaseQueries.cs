@@ -4,10 +4,9 @@ using HotChocolate.AspNetCore.Authorization;
 using HotChocolate.Data;
 using HotChocolate.Resolvers;
 using HotChocolate.Types;
-using HotChocolate.Types.Relay;
-using jahndigital.studentbank.dal.Contexts;
-using jahndigital.studentbank.dal.Entities;
-using jahndigital.studentbank.utils;
+using JahnDigital.StudentBank.Domain.Entities;
+using JahnDigital.StudentBank.Domain.Enums;
+using JahnDigital.StudentBank.Infrastructure.Persistence;
 
 namespace jahndigital.studentbank.server.GraphQL.Queries
 {
@@ -23,17 +22,17 @@ namespace jahndigital.studentbank.server.GraphQL.Queries
         /// <param name="context"></param>
         /// <param name="resolverContext"></param>
         /// <returns></returns>
-        [UsePaging, UseProjection, UseFiltering, UseSorting, Authorize, UseDbContext(typeof(AppDbContext))]
+        [UseDbContext(typeof(AppDbContext)), UsePaging, UseProjection, UseFiltering, UseSorting, Authorize]
         public IQueryable<StudentPurchase> GetPurchases(
             [ScopedService] AppDbContext context,
             [Service] IResolverContext resolverContext
         )
         {
-            Constants.UserType? userType = resolverContext.GetUserType() ?? throw ErrorFactory.Unauthorized();
+            UserType? userType = resolverContext.GetUserType() ?? throw ErrorFactory.Unauthorized();
             long userId = resolverContext.GetUserId() ?? throw ErrorFactory.Unauthorized();
             resolverContext.SetUser(userId, userType);
 
-            if (userType == Constants.UserType.User)
+            if (userType == UserType.User)
             {
                 return context.StudentPurchases;
             }

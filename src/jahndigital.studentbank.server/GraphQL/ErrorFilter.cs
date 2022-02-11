@@ -1,7 +1,7 @@
 using System;
 using HotChocolate;
-using jahndigital.studentbank.services.Exceptions;
-using jahndigital.studentbank.utils;
+using JahnDigital.StudentBank.Application.Common;
+using JahnDigital.StudentBank.Domain.Exceptions;
 using Microsoft.AspNetCore.Http;
 
 namespace jahndigital.studentbank.server.GraphQL
