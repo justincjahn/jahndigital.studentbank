@@ -5,7 +5,7 @@ using JahnDigital.StudentBank.Application.Transactions.Services;
 using JahnDigital.StudentBank.Domain.Entities;
 using JahnDigital.StudentBank.Domain.Exceptions;
 using JahnDigital.StudentBank.Domain.ValueObjects;
-using JahnDigital.StudentBank.Infrastructure.Exceptions;
+using JahnDigital.StudentBank.Infrastructure.Common.Exceptions;
 using JahnDigital.StudentBank.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Storage;

@@ -1,6 +1,6 @@
 using JahnDigital.StudentBank.Domain.Exceptions;
 
-namespace JahnDigital.StudentBank.Infrastructure.Exceptions;
+namespace JahnDigital.StudentBank.Infrastructure.Common.Exceptions;
 
 public class DatabaseException : BaseException
 {

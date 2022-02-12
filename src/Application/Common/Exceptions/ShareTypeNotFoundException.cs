@@ -2,7 +2,7 @@ using JahnDigital.StudentBank.Domain.Exceptions;
 
 namespace JahnDigital.StudentBank.Application.Common.Exceptions
 {
-    public class ShareTypeNotFoundException : BaseException
+    public class ShareTypeNotFoundException : NotFoundException
     {
         public ShareTypeNotFoundException(long shareTypeId) : base(
             $"Share #{shareTypeId} not found."

@@ -46,4 +46,3 @@ public class WithdrawalLimitExceededException : BaseException
         set => _transaction = value;
     }
 }
-
