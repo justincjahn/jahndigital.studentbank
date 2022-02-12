@@ -5,7 +5,7 @@ VisualStudioVersion = 16.0.30114.105
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{5F972D62-C90A-4C32-B2E4-AC61C57C28EF}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "jahndigital.studentbank.server", "src\jahndigital.studentbank.server\jahndigital.studentbank.server.csproj", "{249C3674-36AF-4180-BE13-2F3C543B5D53}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WebApi", "src\WebApi\WebApi.csproj", "{249C3674-36AF-4180-BE13-2F3C543B5D53}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Domain", "src\Domain\Domain.csproj", "{5F4C4485-EAB0-4FF2-B4AE-5013E3810023}"
 EndProject
