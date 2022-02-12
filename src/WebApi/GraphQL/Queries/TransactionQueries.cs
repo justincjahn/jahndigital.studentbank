@@ -34,9 +34,6 @@ namespace JahnDigital.StudentBank.WebApi.GraphQL.Queries
             [Service] IResolverContext resolverContext
         )
         {
-            long id = resolverContext.GetUserId() ?? throw ErrorFactory.NotFound();
-            UserType? type = resolverContext.GetUserType() ?? throw ErrorFactory.NotFound();
-
             Share? share = await context.Shares
                     .Where(x => x.Id == shareId)
                     .FirstOrDefaultAsync()

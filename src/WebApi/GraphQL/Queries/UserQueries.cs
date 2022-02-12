@@ -30,15 +30,12 @@ namespace JahnDigital.StudentBank.WebApi.GraphQL.Queries
             [Service] IResolverContext resolverContext
         )
         {
-            long id = resolverContext.GetUserId() ?? throw ErrorFactory.NotFound();
-            UserType? type = resolverContext.GetUserType() ?? throw ErrorFactory.NotFound();
-
-            if (type != UserType.User)
+            if (resolverContext.GetUserType() != UserType.User)
             {
                 throw ErrorFactory.NotFound();
             }
 
-            return context.Users.Where(x => x.Id == id);
+            return context.Users.Where(x => x.Id == resolverContext.GetUserId());
         }
 
         /// <summary>

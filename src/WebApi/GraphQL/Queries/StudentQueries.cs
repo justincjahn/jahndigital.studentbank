@@ -30,20 +30,15 @@ namespace JahnDigital.StudentBank.WebApi.GraphQL.Queries
             [Service] IResolverContext resolverContext
         )
         {
-            long id = resolverContext.GetUserId() ?? throw ErrorFactory.NotFound();
-            UserType? type = resolverContext.GetUserType() ?? throw ErrorFactory.NotFound();
+            resolverContext.SetUser();
 
-            if (type != UserType.Student)
+            if (resolverContext.GetUserType() != UserType.Student)
             {
                 throw ErrorFactory.NotFound();
             }
 
-            resolverContext.SetUser(id, type);
-
-            resolverContext.ScopedContextData = resolverContext.ScopedContextData.SetItem(
-                DataOwnerAuthorizationHandlerGraphQL.CTX_ISOWNER, true);
-
-            return context.Students.Where(x => x.Id == id && x.DateDeleted == null);
+            resolverContext.SetAuthorized();
+            return context.Students.Where(x => x.Id == resolverContext.GetUserId() && x.DateDeleted == null);
         }
 
         /// <summary>

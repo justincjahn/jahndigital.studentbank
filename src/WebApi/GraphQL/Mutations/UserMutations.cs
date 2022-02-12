@@ -184,7 +184,7 @@ namespace JahnDigital.StudentBank.WebApi.GraphQL.Mutations
                 ?? throw ErrorFactory.NotFound();
 
             // If the account belongs to the user, they must provide their current password
-            if (user.Id == (resolverContext.GetUserId() ?? -1) && input.Password is not null)
+            if (user.Id == resolverContext.GetUserId() && input.Password is not null)
             {
                 if (input.CurrentPassword is null)
                 {
@@ -282,9 +282,7 @@ namespace JahnDigital.StudentBank.WebApi.GraphQL.Mutations
             User? user = await context.Users.FindAsync(id)
                 ?? throw ErrorFactory.NotFound();
 
-            long uid = resolverContext.GetUserId() ?? throw ErrorFactory.NotFound();
-
-            if (id == uid)
+            if (id == resolverContext.GetUserId())
             {
                 throw ErrorFactory.QueryFailed("Cannot delete yourself!");
             }

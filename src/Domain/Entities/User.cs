@@ -1,4 +1,3 @@
-using System.Text.Json.Serialization;
 using JahnDigital.StudentBank.Domain.Common;
 
 namespace JahnDigital.StudentBank.Domain.Entities;
@@ -41,13 +40,11 @@ public class User : SoftDeletableEntity
     /// <summary>
     ///     The encrypted credentials of the user.
     /// </summary>
-    [JsonIgnore]
     public string Password { get; set; } = default!;
 
     /// <summary>
     ///     A list of JWT refresh tokens for the user.
     /// </summary>
-    [JsonIgnore]
     public ICollection<RefreshToken> RefreshTokens { get; set; } = new HashSet<RefreshToken>();
 
     /// <summary>

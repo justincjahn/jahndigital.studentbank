@@ -28,16 +28,14 @@ namespace JahnDigital.StudentBank.WebApi.GraphQL.Queries
             [Service] IResolverContext resolverContext
         )
         {
-            UserType? userType = resolverContext.GetUserType() ?? throw ErrorFactory.Unauthorized();
-            long userId = resolverContext.GetUserId() ?? throw ErrorFactory.Unauthorized();
-            resolverContext.SetUser(userId, userType);
+            resolverContext.SetUser();
 
-            if (userType == UserType.User)
+            if (resolverContext.GetUserType() == UserType.User)
             {
                 return context.StudentPurchases;
             }
 
-            return context.StudentPurchases.Where(x => x.StudentId == userId);
+            return context.StudentPurchases.Where(x => x.StudentId == resolverContext.GetUserId());
         }
     }
 }

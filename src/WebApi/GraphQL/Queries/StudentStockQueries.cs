@@ -32,9 +32,7 @@ namespace JahnDigital.StudentBank.WebApi.GraphQL.Queries
             [Service] IResolverContext resolverContext
         )
         {
-            long id = resolverContext.GetUserId() ?? throw ErrorFactory.NotFound();
-            UserType? type = resolverContext.GetUserType() ?? throw ErrorFactory.NotFound();
-            resolverContext.SetUser(studentId, type);
+            resolverContext.SetUser();
 
             AuthorizationResult? auth = await resolverContext
                 .AuthorizeAsync($"{Constants.AuthPolicy.DataOwner}<{Privilege.ManageStocks}>");
