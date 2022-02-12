@@ -7,22 +7,22 @@ public record JwtTokenRequest
     /// <summary>
     /// The type of user the token is issued to.
     /// </summary>
-    public UserType Type { get; init; }
+    public UserType Type { get; init; } = default!;
 
     /// <summary>
     /// User or Student ID
     /// </summary>
     public long Id { get; init; }
-    
+
     /// <summary>
     /// Student account number or user email address.
     /// </summary>
-    public string Username { get; init; }
-    
+    public string Username { get; init; } = default!;
+
     /// <summary>
     /// The user's role
     /// </summary>
-    public string Role { get; init; }
+    public string Role { get; init; } = default!;
     
     /// <summary>
     /// Primary email address
@@ -42,10 +42,10 @@ public record JwtTokenRequest
     /// <summary>
     /// Number of minutes before the token expires.
     /// </summary>
-    public int? Expires { get; init; } = null;
+    public int? Expires { get; init; }
 
     /// <summary>
     /// If the preauthorization claim should be set on the token.
     /// </summary>
-    public bool Preauthorization { get; init; } = false;
+    public bool Preauthorization { get; init; }
 }

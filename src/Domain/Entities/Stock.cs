@@ -1,3 +1,4 @@
+using JahnDigital.StudentBank.Domain.Common;
 using JahnDigital.StudentBank.Domain.ValueObjects;
 
 namespace JahnDigital.StudentBank.Domain.Entities;
@@ -5,10 +6,10 @@ namespace JahnDigital.StudentBank.Domain.Entities;
 /// <summary>
 ///     Represents a stock.
 /// </summary>
-public class Stock
+public class Stock : SoftDeletableEntity
 {
     /// <summary>
-    ///     Unique ID of the stock.
+    ///     The unique ID number of the entity.
     /// </summary>
     public long Id { get; set; }
 
@@ -31,7 +32,7 @@ public class Stock
     /// <summary>
     ///     Total number of shares available to buy.
     /// </summary>
-    public long AvailableShares { get; set; } = 0;
+    public long AvailableShares { get; set; }
 
     /// <summary>
     ///     The raw database value representing the current value of the share.
@@ -62,14 +63,4 @@ public class Stock
     ///     Get or set a collection of instances this stock is linked to.
     /// </summary>
     public ICollection<StockInstance> StockInstances { get; set; } = new HashSet<StockInstance>();
-
-    /// <summary>
-    ///     Get the date that the stock was created.
-    /// </summary>
-    public DateTime DateCreated { get; set; } = DateTime.UtcNow;
-
-    /// <summary>
-    ///     Get or set the date that the stock was deleted.
-    /// </summary>
-    public DateTime? DateDeleted { get; set; } = null;
 }

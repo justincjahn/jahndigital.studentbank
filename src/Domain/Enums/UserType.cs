@@ -5,7 +5,7 @@
 ///     frontend users or students.  Backend users are consistent across all instances
 ///     where frontend users may only interact within their own instance.
 /// </summary>
-public class UserType
+public sealed class UserType
 {
     /// <summary>
     ///     Backing field for <see cref="UserTypes" />.

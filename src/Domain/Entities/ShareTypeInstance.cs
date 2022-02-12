@@ -1,9 +1,11 @@
+using JahnDigital.StudentBank.Domain.Common;
+
 namespace JahnDigital.StudentBank.Domain.Entities;
 
 /// <summary>
 ///     Table that joins one or more <see cref="ShareType" />s to one or more <see cref="Instance" />s.
 /// </summary>
-public class ShareTypeInstance
+public class ShareTypeInstance : EntityBase
 {
     /// <summary>
     ///     The ID number of the <see cref="ShareType" />

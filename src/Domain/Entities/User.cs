@@ -1,16 +1,16 @@
 using System.Text.Json.Serialization;
+using JahnDigital.StudentBank.Domain.Common;
 
 namespace JahnDigital.StudentBank.Domain.Entities;
 
 /// <summary>
 ///     Represents a backend user of the application (administrators)
 /// </summary>
-public class User
+public class User : SoftDeletableEntity
 {
     /// <summary>
-    ///     The unique ID of the user.
+    ///     The unique ID number of the entity.
     /// </summary>
-    /// <value></value>
     public long Id { get; set; }
 
     /// <summary>
@@ -53,20 +53,10 @@ public class User
     /// <summary>
     ///     Get or set the date the student last logged in.
     /// </summary>
-    public DateTime? DateLastLogin { get; set; } = null;
-
-    /// <summary>
-    ///     Get or set the date the user was created.
-    /// </summary>
-    public DateTime DateCreated { get; set; } = DateTime.UtcNow;
+    public DateTime? DateLastLogin { get; set; }
 
     /// <summary>
     ///     Get or set the date the user was registered.
     /// </summary>
-    public DateTime? DateRegistered { get; set; } = null;
-
-    /// <summary>
-    ///     Get or set the date the user was deleted.
-    /// </summary>
-    public DateTime? DateDeleted { get; set; } = null;
+    public DateTime? DateRegistered { get; set; }
 }

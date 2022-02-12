@@ -1,3 +1,5 @@
+using JahnDigital.StudentBank.Domain.Entities;
+
 namespace JahnDigital.StudentBank.Domain.Enums
 {
     /// <summary>

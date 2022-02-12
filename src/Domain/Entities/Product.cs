@@ -1,3 +1,4 @@
+using JahnDigital.StudentBank.Domain.Common;
 using JahnDigital.StudentBank.Domain.ValueObjects;
 
 namespace JahnDigital.StudentBank.Domain.Entities;
@@ -5,7 +6,7 @@ namespace JahnDigital.StudentBank.Domain.Entities;
 /// <summary>
 ///     A product offered to students for "purchase".
 /// </summary>
-public class Product
+public class Product : SoftDeletableEntity
 {
     /// <summary>
     ///     Backing field for <see cref="Quantity" />.
@@ -13,7 +14,7 @@ public class Product
     private int _quantity = -1;
 
     /// <summary>
-    ///     Get the product ID
+    ///     The unique ID number of the entity.
     /// </summary>
     public long Id { get; set; }
 
@@ -39,7 +40,7 @@ public class Product
     /// <summary>
     ///     Gets or sets if the quantity of this product is limited.
     /// </summary>
-    public bool IsLimitedQuantity { get; set; } = false;
+    public bool IsLimitedQuantity { get; set; }
 
     /// <summary>
     ///     Gets or sets the in-stock quantity of the product.
@@ -61,16 +62,6 @@ public class Product
     ///     Gets a list of <see cname="ProductInstance" /> objects linking this product to a group.
     /// </summary>
     public ICollection<ProductInstance> ProductInstances { get; set; } = new HashSet<ProductInstance>();
-
-    /// <summary>
-    ///     Get the date the product was created.
-    /// </summary>
-    public DateTime DateCreated { get; set; } = DateTime.UtcNow;
-
-    /// <summary>
-    ///     Get the date the product was deleted.
-    /// </summary>
-    public DateTime? DateDeleted { get; set; } = null;
 
     /// <summary>
     ///     Get or set the name of the product.

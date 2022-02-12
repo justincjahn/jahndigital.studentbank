@@ -1,3 +1,4 @@
+using JahnDigital.StudentBank.Domain.Common;
 using JahnDigital.StudentBank.Domain.ValueObjects;
 
 namespace JahnDigital.StudentBank.Domain.Entities;
@@ -5,10 +6,10 @@ namespace JahnDigital.StudentBank.Domain.Entities;
 /// <summary>
 ///     Represents an individual item on a purchase.
 /// </summary>
-public class StudentPurchaseItem
+public class StudentPurchaseItem : EntityBase
 {
     /// <summary>
-    ///     Get the unique key for this purchase item.
+    ///     The unique ID number of the entity.
     /// </summary>
     public long Id { get; set; }
 

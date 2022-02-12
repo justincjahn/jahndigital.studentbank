@@ -1,22 +1,23 @@
 using System.Text.Json.Serialization;
 using System.Text.RegularExpressions;
+using JahnDigital.StudentBank.Domain.Common;
 
 namespace JahnDigital.StudentBank.Domain.Entities;
 
 /// <summary>
 ///     Represents a student
 /// </summary>
-public class Student
+public class Student : SoftDeletableEntity
 {
-    /// <summary>
-    ///     The unique ID of the student.
-    /// </summary>
-    public long Id { get; set; }
-
     /// <summary>
     ///     Backing field for <see cref="AccountNumber" />.
     /// </summary>
     private string _accountNumber = null!;
+
+    /// <summary>
+    ///     The unique ID number of the entity.
+    /// </summary>
+    public long Id { get; set; }
 
     /// <summary>
     ///     Student's account number. Left-zero-fill to 10 characters.
@@ -100,17 +101,7 @@ public class Student
     public DateTime? DateLastLogin { get; set; }
 
     /// <summary>
-    ///     Get or set the date the student was created.
-    /// </summary>
-    public DateTime DateCreated { get; set; } = DateTime.UtcNow;
-
-    /// <summary>
     ///     Get or set the date the student was registered.
     /// </summary>
     public DateTime? DateRegistered { get; set; }
-
-    /// <summary>
-    ///     Get or set the date the student was deleted.
-    /// </summary>
-    public DateTime? DateDeleted { get; set; }
 }

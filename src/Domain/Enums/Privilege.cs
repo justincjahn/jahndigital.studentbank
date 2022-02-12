@@ -3,7 +3,7 @@
 /// <summary>
 ///     Built-in privileges.
 /// </summary>
-public class Privilege
+public sealed class Privilege
 {
     /// <summary>
     ///     Allow all actions.

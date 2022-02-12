@@ -1,3 +1,4 @@
+using JahnDigital.StudentBank.Domain.Common;
 using JahnDigital.StudentBank.Domain.ValueObjects;
 
 namespace JahnDigital.StudentBank.Domain.Entities;
@@ -5,7 +6,7 @@ namespace JahnDigital.StudentBank.Domain.Entities;
 /// <summary>
 ///     Represents stock buy/sells over time for a specific Student.
 /// </summary>
-public class StudentStockHistory
+public class StudentStockHistory : EntityBase
 {
     /// <summary>
     ///     The unique ID of this transaction.

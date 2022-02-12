@@ -1,9 +1,11 @@
+using JahnDigital.StudentBank.Domain.Common;
+
 namespace JahnDigital.StudentBank.Domain.Entities;
 
 /// <summary>
 ///     Links a <see cref="Product" /> to a specific <see cref="Instance" />.
 /// </summary>
-public class ProductInstance
+public class ProductInstance : EntityBase
 {
     /// <summary>
     ///     The ID number of the group.

@@ -1,3 +1,4 @@
+using JahnDigital.StudentBank.Domain.Common;
 using JahnDigital.StudentBank.Domain.ValueObjects;
 
 namespace JahnDigital.StudentBank.Domain.Entities;
@@ -5,7 +6,7 @@ namespace JahnDigital.StudentBank.Domain.Entities;
 /// <summary>
 ///     Represents a monetary transaction on a Share.
 /// </summary>
-public class Transaction
+public class Transaction : EntityBase
 {
     /// <summary>
     ///     Unique ID number for the transaction.

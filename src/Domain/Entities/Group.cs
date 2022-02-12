@@ -1,12 +1,14 @@
+using JahnDigital.StudentBank.Domain.Common;
+
 namespace JahnDigital.StudentBank.Domain.Entities;
 
 /// <summary>
 ///     A group represents a collection of Students, usually as classes.
 /// </summary>
-public class Group
+public class Group : SoftDeletableEntity
 {
     /// <summary>
-    ///     The unique ID number of the group.
+    ///     The unique ID number of the entity.
     /// </summary>
     public long Id { get; set; }
 
@@ -29,14 +31,4 @@ public class Group
     ///     Gets the list of students associated with this group.
     /// </summary>
     public ICollection<Student> Students { get; set; } = new HashSet<Student>();
-
-    /// <summary>
-    ///     Get the date the group was created.
-    /// </summary>
-    public DateTime DateCreated { get; set; } = DateTime.UtcNow;
-
-    /// <summary>
-    ///     Get or set the date the group was deleted.
-    /// </summary>
-    public DateTime? DateDeleted { get; set; } = null;
 }

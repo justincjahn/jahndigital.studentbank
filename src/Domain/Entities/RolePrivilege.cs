@@ -1,9 +1,11 @@
+using JahnDigital.StudentBank.Domain.Common;
+
 namespace JahnDigital.StudentBank.Domain.Entities;
 
 /// <summary>
 ///     Table that joins one or more roles to one or more privileges.
 /// </summary>
-public class RolePrivilege
+public class RolePrivilege : EntityBase
 {
     /// <summary>
     ///     Get or set the ID number of the role.

@@ -1,12 +1,14 @@
+using JahnDigital.StudentBank.Domain.Common;
+
 namespace JahnDigital.StudentBank.Domain.Entities;
 
 /// <summary>
 ///     Represents a security event/privilege in the system.
 /// </summary>
-public class Privilege
+public class Privilege : AuditableEntity
 {
     /// <summary>
-    ///     Unique ID of the privilege.
+    ///     The unique ID number of the entity.
     /// </summary>
     public long Id { get; set; }
 
@@ -24,9 +26,4 @@ public class Privilege
     ///     Gets the intermediate table that links a Privilege to a collection or roles.
     /// </summary>
     public ICollection<RolePrivilege> RolePrivileges { get; set; } = new HashSet<RolePrivilege>();
-
-    /// <summary>
-    ///     Get the date that the privilege was created.
-    /// </summary>
-    public DateTime DateCreated { get; set; } = DateTime.UtcNow;
 }
