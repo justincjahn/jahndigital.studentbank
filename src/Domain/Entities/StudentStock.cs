@@ -1,3 +1,4 @@
+using JahnDigital.StudentBank.Domain.Common;
 using JahnDigital.StudentBank.Domain.ValueObjects;
 
 namespace JahnDigital.StudentBank.Domain.Entities;
@@ -5,10 +6,10 @@ namespace JahnDigital.StudentBank.Domain.Entities;
 /// <summary>
 ///     Represents the Shares of a Stock owned by a specific student.
 /// </summary>
-public class StudentStock
+public class StudentStock : AuditableEntity
 {
     /// <summary>
-    ///     The unique ID of this entry.
+    ///     The unique ID number of the entity.
     /// </summary>
     public long Id { get; set; }
 
@@ -35,12 +36,12 @@ public class StudentStock
     /// <summary>
     ///     The number of shares this student currently owns.
     /// </summary>
-    public long SharesOwned { get; set; } = 0;
+    public long SharesOwned { get; set; }
 
     /// <summary>
     ///     Raw dollar amount of net contributions.
     /// </summary>
-    public long RawNetContribution { get; private set; } = 0;
+    public long RawNetContribution { get; private set; }
 
     /// <summary>
     ///     The dollar amount of net contributions.
@@ -60,9 +61,4 @@ public class StudentStock
     ///     Get or set the date that this stock was last purchased or sold.
     /// </summary>
     public DateTime DateLastActive { get; set; } = DateTime.UtcNow;
-
-    /// <summary>
-    ///     Get the date that the student originally acquired the stock.
-    /// </summary>
-    public DateTime DateCreated { get; set; } = DateTime.UtcNow;
 }

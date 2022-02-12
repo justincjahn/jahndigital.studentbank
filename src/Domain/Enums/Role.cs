@@ -3,7 +3,7 @@
 /// <summary>
 ///     Built-in roles.
 /// </summary>
-public class Role
+public sealed class Role
 {
     /// <summary>
     ///     Built-in role that represents the role with every permission.

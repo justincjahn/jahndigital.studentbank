@@ -1,3 +1,4 @@
+using JahnDigital.StudentBank.Domain.Common;
 using JahnDigital.StudentBank.Domain.Enums;
 using JahnDigital.StudentBank.Domain.ValueObjects;
 
@@ -6,10 +7,10 @@ namespace JahnDigital.StudentBank.Domain.Entities;
 /// <summary>
 ///     Represents a purchase for students.  One purchase can have multiple line items.
 /// </summary>
-public class StudentPurchase
+public class StudentPurchase : AuditableEntity
 {
     /// <summary>
-    ///     Gets the unique ID of the purchase.
+    ///     The unique ID number of the entity.
     /// </summary>
     public long Id { get; set; }
 
@@ -46,9 +47,4 @@ public class StudentPurchase
     ///     Get a list of line items on this purchase.
     /// </summary>
     public ICollection<StudentPurchaseItem> Items { get; set; } = new HashSet<StudentPurchaseItem>();
-
-    /// <summary>
-    ///     Get the date that the purchase was created.
-    /// </summary>
-    public DateTime DateCreated { get; set; } = DateTime.UtcNow;
 }

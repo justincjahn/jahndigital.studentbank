@@ -15,11 +15,11 @@ public class TransferRequest : IRequest<(Transaction, Transaction)>
     /// The destination <see cref="JahnDigital.StudentBank.Domain.Entities.Share"/> ID.
     /// </summary>
     public long DestinationShareId { get; init; }
-    
+
     /// <summary>
     /// The dollar amount to transfer.
     /// </summary>
-    public Money Amount { get; init; }
+    public Money Amount { get; init; } = Money.Zero;
 
     /// <summary>
     /// An optional transaction comment.

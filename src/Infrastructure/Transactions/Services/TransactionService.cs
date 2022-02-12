@@ -58,9 +58,9 @@ public class TransactionService : ITransactionService
             _assessWithdrawalLimit(share, context);
         }
 
-        if (request.Amount < Money.FromCurrency(0.0m) && share.Balance < request.Amount && !(request.TakeNegative ?? false))
+        if ((request?.Amount ?? Money.Zero) < Money.Zero && share.Balance < (request?.Amount ?? Money.Zero) && !(request?.TakeNegative ?? false))
         {
-            NonsufficientFundsException? exception = new NonsufficientFundsException(share, request.Amount);
+            NonsufficientFundsException? exception = new NonsufficientFundsException(share, request?.Amount ?? Money.Zero);
             context.Transactions.Add(exception.Transaction);
 
             try
@@ -73,17 +73,17 @@ public class TransactionService : ITransactionService
             }
         }
 
-        share.Balance += request.Amount;
+        share.Balance += request?.Amount ?? Money.Zero;
         share.DateLastActive = DateTime.UtcNow;
 
         Transaction? transaction = new Transaction
         {
-            Amount = request.Amount,
+            Amount = request?.Amount ?? Money.Zero,
             NewBalance = share.Balance,
             TargetShare = share,
             TransactionType = transactionType,
-            EffectiveDate = request.EffectiveDate ?? DateTime.UtcNow,
-            Comment = request.Comment ?? string.Empty
+            EffectiveDate = request?.EffectiveDate ?? DateTime.UtcNow,
+            Comment = request?.Comment ?? string.Empty
         };
 
         context.Transactions.Add(transaction);

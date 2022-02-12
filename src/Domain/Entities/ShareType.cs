@@ -1,3 +1,4 @@
+using JahnDigital.StudentBank.Domain.Common;
 using JahnDigital.StudentBank.Domain.Enums;
 using JahnDigital.StudentBank.Domain.ValueObjects;
 
@@ -6,10 +7,10 @@ namespace JahnDigital.StudentBank.Domain.Entities;
 /// <summary>
 ///     Describes the functionality of a given share type.
 /// </summary>
-public class ShareType
+public class ShareType : SoftDeletableEntity
 {
     /// <summary>
-    ///     Unique id of the share type.
+    ///     The unique ID number of the entity.
     /// </summary>
     public long Id { get; set; }
 
@@ -36,7 +37,7 @@ public class ShareType
     /// <summary>
     ///     The maximum number of withdrawals per period.
     /// </summary>
-    public int WithdrawalLimitCount { get; set; } = 0;
+    public int WithdrawalLimitCount { get; set; }
 
     /// <summary>
     ///     The period of time that must elapse prior to resetting the withdrawal limit.
@@ -46,7 +47,7 @@ public class ShareType
     /// <summary>
     ///     Instead of denying the transaction, charge a fee.
     /// </summary>
-    public bool WithdrawalLimitShouldFee { get; set; } = false;
+    public bool WithdrawalLimitShouldFee { get; set; }
 
     /// <summary>
     /// </summary>
@@ -71,21 +72,10 @@ public class ShareType
     /// <summary>
     ///     Gets the list of shares associated with this share type.
     /// </summary>
-    public ICollection<Share> Shares { get; set; } = new HashSet<Share>();
+    public ICollection<Share> Shares { get; } = new HashSet<Share>();
 
     /// <summary>
     ///     Get or set the date that the withdrawal limit was last reset.
     /// </summary>
     public DateTime WithdrawalLimitLastReset { get; set; } = DateTime.UtcNow;
-
-    /// <summary>
-    ///     Get the date that the share type was created.
-    /// </summary>
-    public DateTime DateCreated { get; set; } = DateTime.UtcNow;
-
-    /// <summary>
-    ///     Get or set the date the share type was deleted.
-    /// </summary>
-    public DateTime? DateDeleted { get; set; } = null;
 }
-

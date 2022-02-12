@@ -1,13 +1,15 @@
+using JahnDigital.StudentBank.Domain.Common;
+
 namespace JahnDigital.StudentBank.Domain.Entities;
 
 /// <summary>
 ///     Represents an instance of the software.  An instance is a collection of
 ///     groups, students, transactions, and other data.
 /// </summary>
-public class Instance
+public class Instance : SoftDeletableEntity
 {
     /// <summary>
-    ///     The unique ID of the instance.
+    ///     The unique ID number of the entity.
     /// </summary>
     public long Id { get; set; }
 
@@ -19,7 +21,7 @@ public class Instance
     /// <summary>
     ///     If the instance is currently active for user login.
     /// </summary>
-    public bool IsActive { get; set; } = false;
+    public bool IsActive { get; set; }
 
     /// <summary>
     ///     An invite code that is distributed to students for first-time registration.
@@ -45,15 +47,4 @@ public class Instance
     ///     Get or set a collection of Products linked to this instance.
     /// </summary>
     public ICollection<ProductInstance> ProductInstances { get; set; } = new HashSet<ProductInstance>();
-
-    /// <summary>
-    ///     Get the date the instance was created.
-    /// </summary>
-    public DateTime DateCreated { get; set; } = DateTime.UtcNow;
-
-    /// <summary>
-    ///     Get or set the date the instance was deleted.
-    /// </summary>
-    public DateTime? DateDeleted { get; set; } = null;
 }
-

@@ -1,6 +1,8 @@
+using JahnDigital.StudentBank.Domain.Common;
+
 namespace JahnDigital.StudentBank.Domain.Entities;
 
-public class RefreshToken
+public class RefreshToken : EntityBase
 {
     /// <summary>
     ///     Get or set the unique ID of this record.
@@ -50,4 +52,3 @@ public class RefreshToken
     /// </summary>
     public bool IsActive => Revoked == null && !IsExpired;
 }
-

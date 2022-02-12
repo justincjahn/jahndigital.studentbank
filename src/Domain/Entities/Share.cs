@@ -1,3 +1,4 @@
+using JahnDigital.StudentBank.Domain.Common;
 using JahnDigital.StudentBank.Domain.ValueObjects;
 
 namespace JahnDigital.StudentBank.Domain.Entities;
@@ -5,10 +6,10 @@ namespace JahnDigital.StudentBank.Domain.Entities;
 /// <summary>
 ///     Represents a deposit product with a balance.
 /// </summary>
-public class Share
+public class Share : SoftDeletableEntity
 {
     /// <summary>
-    ///     The unique ID of the share.
+    ///     The unique ID number of the entity.
     /// </summary>
     public long Id { get; set; }
 
@@ -83,20 +84,10 @@ public class Share
     /// <summary>
     ///     The number of limited withdrawals.
     /// </summary>
-    public int LimitedWithdrawalCount { get; set; } = 0;
+    public int LimitedWithdrawalCount { get; set; }
 
     /// <summary>
     ///     The last activity date of the share.
     /// </summary>
     public DateTime DateLastActive { get; set; } = DateTime.UtcNow;
-
-    /// <summary>
-    ///     Get the date the share was created.
-    /// </summary>
-    public DateTime DateCreated { get; set; } = DateTime.UtcNow;
-
-    /// <summary>
-    ///     Get or set the date the share was deleted.
-    /// </summary>
-    public DateTime? DateDeleted { get; set; } = null;
 }

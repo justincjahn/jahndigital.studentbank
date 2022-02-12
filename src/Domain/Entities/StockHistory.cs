@@ -1,3 +1,4 @@
+using JahnDigital.StudentBank.Domain.Common;
 using JahnDigital.StudentBank.Domain.ValueObjects;
 
 namespace JahnDigital.StudentBank.Domain.Entities;
@@ -5,10 +6,10 @@ namespace JahnDigital.StudentBank.Domain.Entities;
 /// <summary>
 ///     Represents the price history of a particular stock.
 /// </summary>
-public class StockHistory
+public class StockHistory : EntityBase
 {
     /// <summary>
-    ///     Unique ID for this history entry.
+    ///     The unique ID number of the entity.
     /// </summary>
     public long Id { get; set; }
 
