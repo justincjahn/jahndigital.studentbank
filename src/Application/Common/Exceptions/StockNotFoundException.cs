@@ -1,6 +1,6 @@
-namespace JahnDigital.StudentBank.Infrastructure.Exceptions;
+namespace JahnDigital.StudentBank.Application.Common.Exceptions;
 
-public class StockNotFoundException : DatabaseException
+public class StockNotFoundException : NotFoundException
 {
     public StockNotFoundException(long stockId) : base(
         $"Stock #{stockId} not found."
@@ -11,4 +11,3 @@ public class StockNotFoundException : DatabaseException
 
     public long StockId { get; }
 }
-

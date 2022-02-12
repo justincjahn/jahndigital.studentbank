@@ -1,6 +1,6 @@
-namespace JahnDigital.StudentBank.Infrastructure.Exceptions;
+namespace JahnDigital.StudentBank.Application.Common.Exceptions;
 
-public class StudentNotFoundException : DatabaseException
+public class StudentNotFoundException : NotFoundException
 {
     public StudentNotFoundException(long studentId) : base(
         $"Student with ID {studentId} not found."
