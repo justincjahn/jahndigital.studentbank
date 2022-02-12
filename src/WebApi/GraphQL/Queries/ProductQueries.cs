@@ -33,26 +33,21 @@ namespace JahnDigital.StudentBank.WebApi.GraphQL.Queries
             [Service] IResolverContext resolverContext
         )
         {
-            UserType? userType = resolverContext.GetUserType() ?? throw ErrorFactory.Unauthorized();
-            long userId = resolverContext.GetUserId() ?? throw ErrorFactory.Unauthorized();
-            resolverContext.SetUser(userId, userType);
-
-            if (userType == UserType.User)
+            if (resolverContext.GetUserType() == UserType.User)
             {
                 return context.Products.Where(x => x.DateDeleted == null);
             }
 
             // Fetch the product IDs the user has access to
-            Student? student = await context.Students
+            Student student = await context.Students
                     .Include(x => x.Group)
                     .ThenInclude(x => x.Instance)
                     .ThenInclude(x => x.ProductInstances)
-                    .Where(x => x.Id == userId)
+                    .Where(x => x.Id == resolverContext.GetUserId())
                     .FirstOrDefaultAsync()
                 ?? throw ErrorFactory.NotFound();
 
             IEnumerable<long>? productIds = student.Group.Instance.ProductInstances.Select(x => x.ProductId);
-
             return context.Products.Where(x => productIds.Contains(x.Id) && x.DateDeleted == null);
         }
 

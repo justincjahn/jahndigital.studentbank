@@ -25,18 +25,16 @@ namespace JahnDigital.StudentBank.WebApi.GraphQL.Queries
         /// <param name="resolverContext"></param>
         /// <returns></returns>
         [UseDbContext(typeof(AppDbContext)), UsePaging, UseProjection, UseFiltering, UseSorting,
-         HotChocolate.AspNetCore.Authorization.Authorize]
+         Authorize]
         public async Task<IQueryable<Stock>> GetStocksAsync(
             IEnumerable<long>? instances,
             [ScopedService] AppDbContext context,
             [Service] IResolverContext resolverContext
         )
         {
-            UserType? userType = resolverContext.GetUserType() ?? throw ErrorFactory.Unauthorized();
-            long userId = resolverContext.GetUserId() ?? throw ErrorFactory.Unauthorized();
-            resolverContext.SetUser(userId, userType);
+            resolverContext.SetUser();
 
-            if (userType == UserType.User)
+            if (resolverContext.GetUserType() == UserType.User)
             {
                 AuthorizationResult? auth = await resolverContext.AuthorizeAsync(Privilege.ManageStocks.Name);
 
@@ -60,7 +58,7 @@ namespace JahnDigital.StudentBank.WebApi.GraphQL.Queries
                     .Include(x => x.Group)
                     .ThenInclude(x => x.Instance)
                     .ThenInclude(x => x.StockInstances)
-                    .Where(x => x.Id == userId)
+                    .Where(x => x.Id == resolverContext.GetUserId())
                     .FirstOrDefaultAsync()
                 ?? throw ErrorFactory.NotFound();
 
@@ -84,11 +82,9 @@ namespace JahnDigital.StudentBank.WebApi.GraphQL.Queries
             [Service] IResolverContext resolverContext
         )
         {
-            long userId = resolverContext.GetUserId() ?? throw ErrorFactory.NotFound();
-            UserType? userType = resolverContext.GetUserType() ?? throw ErrorFactory.NotFound();
-            resolverContext.SetUser(userId, userType);
+            resolverContext.SetUser();
 
-            if (userType == UserType.User)
+            if (resolverContext.GetUserType() == UserType.User)
             {
                 AuthorizationResult? auth = await resolverContext.AuthorizeAsync(Privilege.ManageStocks.Name);
 
@@ -105,7 +101,7 @@ namespace JahnDigital.StudentBank.WebApi.GraphQL.Queries
                     .Include(x => x.Group)
                     .ThenInclude(x => x.Instance)
                     .ThenInclude(x => x.StockInstances)
-                    .Where(x => x.Id == userId)
+                    .Where(x => x.Id == resolverContext.GetUserId())
                     .FirstOrDefaultAsync()
                 ?? throw ErrorFactory.NotFound();
 

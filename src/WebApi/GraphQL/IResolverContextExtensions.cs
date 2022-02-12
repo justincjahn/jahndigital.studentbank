@@ -3,10 +3,14 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Security.Claims;
 using System.Threading.Tasks;
+using HotChocolate.Execution;
 using HotChocolate.Resolvers;
 using JahnDigital.StudentBank.Application.Common;
+using JahnDigital.StudentBank.Domain.Entities;
 using JahnDigital.StudentBank.Domain.Enums;
+using JahnDigital.StudentBank.WebApi.GraphQL.ObjectTypes;
 using JahnDigital.StudentBank.WebApi.Permissions;
+using JahnDigital.StudentBank.WebApi.Permissions.Handlers;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 
@@ -15,7 +19,7 @@ namespace JahnDigital.StudentBank.WebApi.GraphQL
     public static class IResolverContextExtensions
     {
         /// <summary>
-        ///     Declaratively authorize the active user (if logged in) against the policy provided.
+        ///     Authorize the active user (if logged in) against the policy provided.
         /// </summary>
         /// <param name="context"></param>
         /// <param name="policy"></param>
@@ -24,7 +28,6 @@ namespace JahnDigital.StudentBank.WebApi.GraphQL
         {
             IAuthorizationService? svc = context.Service<IAuthorizationService>();
             ClaimsPrincipal? usr = context.GetHttpContext().User;
-
             return svc.AuthorizeAsync(usr, context, policy);
         }
 
@@ -35,7 +38,8 @@ namespace JahnDigital.StudentBank.WebApi.GraphQL
         /// <param name="authorized"></param>
         public static IResolverContext SetAuthorized(this IResolverContext context, bool authorized = true)
         {
-            context.ScopedContextData = context.ScopedContextData
+            context.ScopedContextData = context
+                .ScopedContextData
                 .SetItem(DataOwnerAuthorizationHandlerGraphQL.CTX_ISOWNER, authorized);
 
             return context;
@@ -46,17 +50,16 @@ namespace JahnDigital.StudentBank.WebApi.GraphQL
         /// </summary>
         /// <param name="context"></param>
         /// <returns></returns>
-        public static UserType? GetUserType(this IResolverContext context)
+        public static UserType GetUserType(this IResolverContext context)
         {
-            Claim? type = context.GetHttpContext().User.Claims
+            Claim? type = context
+                .GetHttpContext()
+                .User
+                .Claims
                 .FirstOrDefault(x => x.Type == Constants.Auth.CLAIM_USER_TYPE);
 
-            if (type != null)
-            {
-                return (UserType?)type.Value;
-            }
-
-            return null;
+            var userType = type?.Value ?? UserType.Anonymous.Name;
+            return UserType.UserTypes.FirstOrDefault(x => x.Name.ToLower() == userType) ?? UserType.Anonymous;
         }
 
         /// <summary>
@@ -64,17 +67,12 @@ namespace JahnDigital.StudentBank.WebApi.GraphQL
         /// </summary>
         /// <param name="context"></param>
         /// <returns></returns>
-        public static long? GetUserId(this IResolverContext context)
+        public static long GetUserId(this IResolverContext context)
         {
             Claim? id = context.GetHttpContext().User.Claims
                 .FirstOrDefault(x => x.Type == ClaimTypes.NameIdentifier);
 
-            if (id != null)
-            {
-                return long.Parse(id.Value);
-            }
-
-            return null;
+            return long.Parse(id?.Value ?? "-1");
         }
 
         /// <summary>
@@ -92,6 +90,21 @@ namespace JahnDigital.StudentBank.WebApi.GraphQL
             });
 
             return context;
+        }
+
+        /**
+         * Set the user type and ID using claims information from the currently logged in user or throw an exception
+         * if unauthorized.
+         *
+         * <param name="context"></param>
+         * <exception cref="QueryException">If the user type or ID cannot be determined from the context.</exception>
+         */
+        public static IResolverContext SetUser(this IResolverContext context)
+        {
+            var userType = context.GetUserType();
+            var userId = context.GetUserId();
+            if (userType == UserType.Anonymous) throw ErrorFactory.Unauthorized();
+            return SetUser(context, userId, userType);
         }
 
         /// <summary>

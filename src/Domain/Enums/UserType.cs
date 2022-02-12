@@ -22,6 +22,11 @@ public sealed class UserType
     /// </summary>
     public static readonly UserType Student = new("student");
 
+    /// <summary>
+    ///     An anonymous user
+    /// </summary>
+    public static readonly UserType Anonymous = new("anonymous");
+
     private UserType(string name)
     {
         Name = name;

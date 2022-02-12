@@ -28,11 +28,9 @@ namespace JahnDigital.StudentBank.WebApi.GraphQL.Queries
             [Service] IResolverContext resolverContext
         )
         {
-            UserType? userType = resolverContext.GetUserType() ?? throw ErrorFactory.Unauthorized();
-            long userId = resolverContext.GetUserId() ?? throw ErrorFactory.Unauthorized();
-            resolverContext.SetUser(userId, userType);
+            resolverContext.SetUser();
 
-            if (userType == UserType.User)
+            if (resolverContext.GetUserType() == UserType.User)
             {
                 AuthorizationResult? auth = await resolverContext.AuthorizeAsync(Privilege.ManageShares.Name);
 
@@ -44,7 +42,7 @@ namespace JahnDigital.StudentBank.WebApi.GraphQL.Queries
                 return context.Shares.AsQueryable();
             }
 
-            return context.Shares.Where(x => x.StudentId == userId);
+            return context.Shares.Where(x => x.StudentId == resolverContext.GetUserId());
         }
 
         /// <summary>

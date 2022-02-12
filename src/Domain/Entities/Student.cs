@@ -1,4 +1,3 @@
-using System.Text.Json.Serialization;
 using System.Text.RegularExpressions;
 using JahnDigital.StudentBank.Domain.Common;
 
@@ -87,7 +86,6 @@ public class Student : SoftDeletableEntity
     /// <summary>
     ///     A list of JWT refresh tokens for the user.
     /// </summary>
-    [JsonIgnore]
     public ICollection<RefreshToken> RefreshTokens { get; set; } = new HashSet<RefreshToken>();
 
     /// <summary>

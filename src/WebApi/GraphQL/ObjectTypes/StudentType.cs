@@ -16,6 +16,7 @@ namespace JahnDigital.StudentBank.WebApi.GraphQL.ObjectTypes
 
             // Hide sensitive fields
             descriptor.Field(f => f.Password).Ignore();
+            descriptor.Field(x => x.RefreshTokens).Ignore();
         }
     }
 }

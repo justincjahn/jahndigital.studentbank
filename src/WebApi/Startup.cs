@@ -14,6 +14,8 @@ using JahnDigital.StudentBank.WebApi.GraphQL.Queries;
 using JahnDigital.StudentBank.WebApi.GraphQL.Types;
 using JahnDigital.StudentBank.WebApi.Jobs;
 using JahnDigital.StudentBank.WebApi.Permissions;
+using JahnDigital.StudentBank.WebApi.Permissions.Handlers;
+using JahnDigital.StudentBank.WebApi.Permissions.Providers;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Builder;
