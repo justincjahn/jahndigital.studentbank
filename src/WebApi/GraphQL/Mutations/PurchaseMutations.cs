@@ -10,6 +10,7 @@ using JahnDigital.StudentBank.Application.Transactions.Services;
 using JahnDigital.StudentBank.Domain.Entities;
 using JahnDigital.StudentBank.Domain.Enums;
 using JahnDigital.StudentBank.Infrastructure.Persistence;
+using JahnDigital.StudentBank.WebApi.Extensions;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.EntityFrameworkCore;
 using Privilege = JahnDigital.StudentBank.Domain.Enums.Privilege;
@@ -45,20 +46,15 @@ namespace JahnDigital.StudentBank.WebApi.GraphQL.Mutations
                     .FirstOrDefaultAsync()
                 ?? throw ErrorFactory.NotFound();
 
-            resolverContext.SetUser(studentId, UserType.Student);
-            AuthorizationResult? auth = await resolverContext.AuthorizeAsync(
-                $"{Constants.AuthPolicy.DataOwner}<{Privilege.ManageStudents}>"
-            );
+            await resolverContext
+                .SetDataOwner(studentId, UserType.Student)
+                .AssertAuthorizedAsync($"{Constants.AuthPolicy.DataOwner}<{Privilege.ManageStudents}>");
 
-            if (!auth.Succeeded)
-            {
-                throw ErrorFactory.Unauthorized();
-            }
+            StudentPurchase purchase = await transactionService.PurchaseAsync(input);
 
-            StudentPurchase? purchase;
-            purchase = await transactionService.PurchaseAsync(input);
-
-            return context.StudentPurchases.Where(x => x.Id == purchase.Id);
+            return context
+                .StudentPurchases
+                .Where(x => x.Id == purchase.Id);
         }
     }
 }

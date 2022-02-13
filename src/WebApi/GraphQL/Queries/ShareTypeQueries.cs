@@ -8,6 +8,7 @@ using HotChocolate.Types;
 using JahnDigital.StudentBank.Domain.Entities;
 using JahnDigital.StudentBank.Domain.Enums;
 using JahnDigital.StudentBank.Infrastructure.Persistence;
+using JahnDigital.StudentBank.WebApi.Extensions;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.EntityFrameworkCore;
 using Privilege = JahnDigital.StudentBank.Domain.Enums.Privilege;
@@ -32,30 +33,28 @@ namespace JahnDigital.StudentBank.WebApi.GraphQL.Queries
             [Service] IResolverContext resolverContext
         )
         {
-            resolverContext.SetUser();
+            resolverContext.SetDataOwner();
 
             if (resolverContext.GetUserType() == UserType.User)
             {
-                AuthorizationResult? auth =
-                    await resolverContext.AuthorizeAsync(Privilege.ManageShareTypes.Name);
+                await resolverContext.AssertAuthorizedAsync(Privilege.ManageShareTypes.Name);
 
-                if (!auth.Succeeded)
-                {
-                    throw ErrorFactory.Unauthorized();
-                }
-
-                IQueryable<ShareType>? shareTypes = context.ShareTypes.Where(x => x.DateDeleted == null);
+                var shareTypes = context
+                    .ShareTypes
+                    .Where(x => x.DateDeleted == null);
 
                 if (instances != null)
                 {
-                    shareTypes = shareTypes.Where(x => x.ShareTypeInstances.Any(x => instances.Contains(x.InstanceId)));
+                    shareTypes = shareTypes
+                        .Where(x => x.ShareTypeInstances.Any(y => instances.Contains(y.InstanceId)));
                 }
 
                 return shareTypes;
             }
 
             // Fetch the share type IDs the student has access to
-            Student? shares = await context.Students
+            Student? shares = await context
+                    .Students
                     .Include(x => x.Group)
                     .ThenInclude(x => x.Instance)
                     .ThenInclude(x => x.ShareTypeInstances)
@@ -63,9 +62,15 @@ namespace JahnDigital.StudentBank.WebApi.GraphQL.Queries
                     .FirstOrDefaultAsync()
                 ?? throw ErrorFactory.NotFound();
 
-            IEnumerable<long>? shareTypeIds = shares.Group.Instance.ShareTypeInstances.Select(x => x.ShareTypeId);
+            var shareTypeIds = shares
+                .Group
+                .Instance
+                .ShareTypeInstances
+                .Select(x => x.ShareTypeId);
 
-            return context.ShareTypes.Where(x => x.DateDeleted == null && shareTypeIds.Contains(x.Id));
+            return context
+                .ShareTypes
+                .Where(x => x.DateDeleted == null && shareTypeIds.Contains(x.Id));
         }
 
         /// <summary>
@@ -74,10 +79,12 @@ namespace JahnDigital.StudentBank.WebApi.GraphQL.Queries
         /// <param name="context"></param>
         /// <returns></returns>
         [UseDbContext(typeof(AppDbContext)), UsePaging, UseProjection, UseFiltering, UseSorting,
-         HotChocolate.AspNetCore.Authorization.Authorize(Policy = Privilege.PRIVILEGE_MANAGE_SHARE_TYPES)]
+         Authorize(Policy = Privilege.PRIVILEGE_MANAGE_SHARE_TYPES)]
         public IQueryable<ShareType> GetDeletedShareTypes([ScopedService] AppDbContext context)
         {
-            return context.ShareTypes.Where(x => x.DateDeleted != null);
+            return context
+                .ShareTypes
+                .Where(x => x.DateDeleted != null);
         }
     }
 }

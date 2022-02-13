@@ -24,7 +24,9 @@ namespace JahnDigital.StudentBank.WebApi.GraphQL.Queries
          Authorize(Policy = Privilege.PRIVILEGE_MANAGE_GROUPS)]
         public IQueryable<Group> GetGroups([ScopedService] AppDbContext context)
         {
-            return context.Groups.Where(x => x.DateDeleted == null);
+            return context
+                .Groups
+                .Where(x => x.DateDeleted == null);
         }
 
         /// <summary>
@@ -36,7 +38,9 @@ namespace JahnDigital.StudentBank.WebApi.GraphQL.Queries
          Authorize(Policy = Privilege.PRIVILEGE_MANAGE_GROUPS)]
         public IQueryable<Group> GetDeletedGroups([ScopedService] AppDbContext context)
         {
-            return context.Groups.Where(x => x.DateDeleted != null);
+            return context
+                .Groups
+                .Where(x => x.DateDeleted != null);
         }
     }
 }

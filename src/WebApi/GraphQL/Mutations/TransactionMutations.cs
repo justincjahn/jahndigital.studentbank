@@ -12,6 +12,7 @@ using JahnDigital.StudentBank.Application.Transactions.Services;
 using JahnDigital.StudentBank.Domain.Entities;
 using JahnDigital.StudentBank.Domain.Enums;
 using JahnDigital.StudentBank.Infrastructure.Persistence;
+using JahnDigital.StudentBank.WebApi.Extensions;
 using JahnDigital.StudentBank.WebApi.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.EntityFrameworkCore;
@@ -76,7 +77,7 @@ namespace JahnDigital.StudentBank.WebApi.GraphQL.Mutations
         /// <param name="transactionService"></param>
         /// <param name="resolverContext"></param>
         /// <returns></returns>
-        [UseDbContext(typeof(AppDbContext)), HotChocolate.AspNetCore.Authorization.Authorize]
+        [UseDbContext(typeof(AppDbContext)), Authorize]
         public async Task<Tuple<Transaction, Transaction>> NewTransferAsync(
             NewTransferRequest input,
             [ScopedService] AppDbContext context,
@@ -91,15 +92,9 @@ namespace JahnDigital.StudentBank.WebApi.GraphQL.Mutations
                     .FirstOrDefaultAsync()
                 ?? throw ErrorFactory.NotFound();
 
-            resolverContext.SetUser(studentId.Value, UserType.Student);
-            AuthorizationResult? auth = await resolverContext.AuthorizeAsync(
-                $"{Constants.AuthPolicy.DataOwner}<{Privilege.ManageStudents}>"
-            );
-
-            if (!auth.Succeeded)
-            {
-                throw ErrorFactory.Unauthorized();
-            }
+            await resolverContext
+                .SetDataOwner(studentId.Value, UserType.Student)
+                .AssertAuthorizedAsync($"{Constants.AuthPolicy.DataOwner}<{Privilege.ManageStudents}>");
 
             var transactions = await transactionService.TransferAsync(new TransferRequest()
             {

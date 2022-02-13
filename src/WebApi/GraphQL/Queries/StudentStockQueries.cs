@@ -8,6 +8,7 @@ using JahnDigital.StudentBank.Application.Common;
 using JahnDigital.StudentBank.Domain.Entities;
 using JahnDigital.StudentBank.Domain.Enums;
 using JahnDigital.StudentBank.Infrastructure.Persistence;
+using JahnDigital.StudentBank.WebApi.Extensions;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.EntityFrameworkCore;
 using Privilege = JahnDigital.StudentBank.Domain.Enums.Privilege;
@@ -24,25 +25,20 @@ namespace JahnDigital.StudentBank.WebApi.GraphQL.Queries
         /// <param name="context"></param>
         /// <param name="resolverContext"></param>
         /// <returns></returns>
-        [UseDbContext(typeof(AppDbContext)), UsePaging, UseProjection, UseFiltering, UseSorting,
-         HotChocolate.AspNetCore.Authorization.Authorize]
+        [UseDbContext(typeof(AppDbContext)), UsePaging, UseProjection, UseFiltering, UseSorting, Authorize]
         public async Task<IQueryable<StudentStock>> GetStudentStocksAsync(
             long studentId,
             [ScopedService] AppDbContext context,
             [Service] IResolverContext resolverContext
         )
         {
-            resolverContext.SetUser();
+            await resolverContext
+                .SetDataOwner()
+                .AssertAuthorizedAsync($"{Constants.AuthPolicy.DataOwner}<{Privilege.ManageStocks}>");
 
-            AuthorizationResult? auth = await resolverContext
-                .AuthorizeAsync($"{Constants.AuthPolicy.DataOwner}<{Privilege.ManageStocks}>");
-
-            if (!auth.Succeeded)
-            {
-                throw ErrorFactory.Unauthorized();
-            }
-
-            return context.StudentStocks.Where(x => x.StudentId == studentId);
+            return context
+                .StudentStocks
+                .Where(x => x.StudentId == studentId);
         }
 
         /// <summary>
@@ -52,32 +48,26 @@ namespace JahnDigital.StudentBank.WebApi.GraphQL.Queries
         /// <param name="context"></param>
         /// <param name="resolverContext"></param>
         /// <returns></returns>
-        [UseDbContext(typeof(AppDbContext)), UsePaging, UseProjection, UseFiltering, UseSorting,
-         HotChocolate.AspNetCore.Authorization.Authorize]
+        [UseDbContext(typeof(AppDbContext)), UsePaging, UseProjection, UseFiltering, UseSorting, Authorize]
         public async Task<IQueryable<StudentStockHistory>> GetStudentStockHistoryAsync(
             long studentStockId,
             [ScopedService] AppDbContext context,
             [Service] IResolverContext resolverContext
         )
         {
-            UserType? type = resolverContext.GetUserType() ?? throw ErrorFactory.NotFound();
-
-            StudentStock? studentStock = await context.StudentStocks
+            StudentStock studentStock = await context
+                    .StudentStocks
                     .Where(x => x.Id == studentStockId)
                     .FirstOrDefaultAsync()
                 ?? throw ErrorFactory.NotFound();
 
-            resolverContext.SetUser(studentStock.StudentId, type);
+            await resolverContext
+                .SetDataOwner(studentStock.StudentId, resolverContext.GetUserType())
+                .AssertAuthorizedAsync($"{Constants.AuthPolicy.DataOwner}<{Privilege.ManageStocks}>");
 
-            AuthorizationResult? auth = await resolverContext
-                .AuthorizeAsync($"{Constants.AuthPolicy.DataOwner}<{Privilege.ManageStocks}>");
-
-            if (!auth.Succeeded)
-            {
-                throw ErrorFactory.Unauthorized();
-            }
-
-            return context.StudentStockHistory.Where(x => x.StudentStockId == studentStockId);
+            return context
+                .StudentStockHistory
+                .Where(x => x.StudentStockId == studentStockId);
         }
     }
 }
