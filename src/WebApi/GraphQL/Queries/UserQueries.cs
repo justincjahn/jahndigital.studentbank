@@ -8,6 +8,7 @@ using HotChocolate.Types;
 using JahnDigital.StudentBank.Domain.Entities;
 using JahnDigital.StudentBank.Domain.Enums;
 using JahnDigital.StudentBank.Infrastructure.Persistence;
+using JahnDigital.StudentBank.WebApi.Extensions;
 using Microsoft.AspNetCore.Http;
 
 namespace JahnDigital.StudentBank.WebApi.GraphQL.Queries
@@ -30,12 +31,11 @@ namespace JahnDigital.StudentBank.WebApi.GraphQL.Queries
             [Service] IResolverContext resolverContext
         )
         {
-            if (resolverContext.GetUserType() != UserType.User)
-            {
-                throw ErrorFactory.NotFound();
-            }
+            if (resolverContext.GetUserType() != UserType.User) throw ErrorFactory.NotFound();
 
-            return context.Users.Where(x => x.Id == resolverContext.GetUserId());
+            return context
+                .Users
+                .Where(x => x.Id == resolverContext.GetUserId());
         }
 
         /// <summary>
@@ -45,10 +45,7 @@ namespace JahnDigital.StudentBank.WebApi.GraphQL.Queries
         /// <returns></returns>
         public bool IsAuthenticated([Service] IHttpContextAccessor contextAccessor)
         {
-            HttpContext? httpc = contextAccessor.HttpContext
-                ?? throw new Exception("Unable to fetch HTTP Context to determine if user is authenticated.");
-
-            return httpc.User.Identity?.IsAuthenticated ?? false;
+            return (contextAccessor.HttpContext?.GetUserId() ?? -1) > 0;
         }
     }
 }

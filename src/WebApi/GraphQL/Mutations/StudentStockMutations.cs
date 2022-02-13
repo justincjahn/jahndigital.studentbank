@@ -10,6 +10,7 @@ using JahnDigital.StudentBank.Application.Transactions.Services;
 using JahnDigital.StudentBank.Domain.Entities;
 using JahnDigital.StudentBank.Domain.Enums;
 using JahnDigital.StudentBank.Infrastructure.Persistence;
+using JahnDigital.StudentBank.WebApi.Extensions;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.EntityFrameworkCore;
 using Privilege = JahnDigital.StudentBank.Domain.Enums.Privilege;
@@ -30,7 +31,7 @@ namespace JahnDigital.StudentBank.WebApi.GraphQL.Mutations
         /// <param name="transactionService"></param>
         /// <param name="resolverContext"></param>
         /// <returns></returns>
-        [UseDbContext(typeof(AppDbContext)), UseProjection, HotChocolate.AspNetCore.Authorization.Authorize]
+        [UseDbContext(typeof(AppDbContext)), UseProjection, Authorize]
         public async Task<IQueryable<StudentStock>> NewStockPurchaseAsync(
             PurchaseStockRequest input,
             [ScopedService] AppDbContext context,
@@ -45,20 +46,15 @@ namespace JahnDigital.StudentBank.WebApi.GraphQL.Mutations
                     .FirstOrDefaultAsync()
                 ?? throw ErrorFactory.NotFound();
 
-            resolverContext.SetUser(studentId, UserType.Student);
-            AuthorizationResult? auth = await resolverContext.AuthorizeAsync(
-                $"{Constants.AuthPolicy.DataOwner}<{Privilege.ManageStudents}>"
-            );
+            await resolverContext
+                .SetDataOwner(studentId, UserType.Student)
+                .AssertAuthorizedAsync($"{Constants.AuthPolicy.DataOwner}<{Privilege.ManageStudents}>");
 
-            if (!auth.Succeeded)
-            {
-                throw ErrorFactory.Unauthorized();
-            }
+            var purchase = await transactionService.PurchaseStockAsync(input);
 
-            StudentStock? purchase;
-            purchase = await transactionService.PurchaseStockAsync(input);
-
-            return context.StudentStocks.Where(x => x.Id == purchase.Id);
+            return context
+                .StudentStocks
+                .Where(x => x.Id == purchase.Id);
         }
     }
 }

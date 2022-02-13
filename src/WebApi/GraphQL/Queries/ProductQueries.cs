@@ -9,6 +9,7 @@ using HotChocolate.Types;
 using JahnDigital.StudentBank.Domain.Entities;
 using JahnDigital.StudentBank.Domain.Enums;
 using JahnDigital.StudentBank.Infrastructure.Persistence;
+using JahnDigital.StudentBank.WebApi.Extensions;
 using Microsoft.EntityFrameworkCore;
 using Privilege = JahnDigital.StudentBank.Domain.Enums.Privilege;
 
@@ -35,11 +36,14 @@ namespace JahnDigital.StudentBank.WebApi.GraphQL.Queries
         {
             if (resolverContext.GetUserType() == UserType.User)
             {
-                return context.Products.Where(x => x.DateDeleted == null);
+                return context
+                    .Products
+                    .Where(x => x.DateDeleted == null);
             }
 
             // Fetch the product IDs the user has access to
-            Student student = await context.Students
+            Student student = await context
+                    .Students
                     .Include(x => x.Group)
                     .ThenInclude(x => x.Instance)
                     .ThenInclude(x => x.ProductInstances)
@@ -47,8 +51,15 @@ namespace JahnDigital.StudentBank.WebApi.GraphQL.Queries
                     .FirstOrDefaultAsync()
                 ?? throw ErrorFactory.NotFound();
 
-            IEnumerable<long>? productIds = student.Group.Instance.ProductInstances.Select(x => x.ProductId);
-            return context.Products.Where(x => productIds.Contains(x.Id) && x.DateDeleted == null);
+            var productIds = student
+                .Group
+                .Instance
+                .ProductInstances
+                .Select(x => x.ProductId);
+
+            return context
+                .Products
+                .Where(x => productIds.Contains(x.Id) && x.DateDeleted == null);
         }
 
         /// <summary>
@@ -60,7 +71,9 @@ namespace JahnDigital.StudentBank.WebApi.GraphQL.Queries
          Authorize(Policy = Privilege.PRIVILEGE_MANAGE_PRODUCTS)]
         public IQueryable<Product> GetDeletedProducts([ScopedService] AppDbContext context)
         {
-            return context.Products.Where(x => x.DateDeleted != null);
+            return context
+                .Products
+                .Where(x => x.DateDeleted != null);
         }
     }
 }

@@ -7,6 +7,7 @@ using HotChocolate.Types;
 using JahnDigital.StudentBank.Domain.Entities;
 using JahnDigital.StudentBank.Domain.Enums;
 using JahnDigital.StudentBank.Infrastructure.Persistence;
+using JahnDigital.StudentBank.WebApi.Extensions;
 
 namespace JahnDigital.StudentBank.WebApi.GraphQL.Queries
 {
@@ -28,14 +29,11 @@ namespace JahnDigital.StudentBank.WebApi.GraphQL.Queries
             [Service] IResolverContext resolverContext
         )
         {
-            resolverContext.SetUser();
+            if (resolverContext.GetUserType() == UserType.User) return context.StudentPurchases;
 
-            if (resolverContext.GetUserType() == UserType.User)
-            {
-                return context.StudentPurchases;
-            }
-
-            return context.StudentPurchases.Where(x => x.StudentId == resolverContext.GetUserId());
+            return context
+                .StudentPurchases
+                .Where(x => x.StudentId == resolverContext.GetUserId());
         }
     }
 }

@@ -7,6 +7,7 @@ using HotChocolate.Types;
 using JahnDigital.StudentBank.Domain.Entities;
 using JahnDigital.StudentBank.Domain.Enums;
 using JahnDigital.StudentBank.Infrastructure.Persistence;
+using JahnDigital.StudentBank.WebApi.Extensions;
 using Microsoft.AspNetCore.Authorization;
 using Privilege = JahnDigital.StudentBank.Domain.Enums.Privilege;
 
@@ -21,28 +22,23 @@ namespace JahnDigital.StudentBank.WebApi.GraphQL.Queries
         /// <param name="context"></param>
         /// <param name="resolverContext"></param>
         /// <returns></returns>
-        [UseDbContext(typeof(AppDbContext)), UsePaging, UseProjection, UseFiltering, UseSorting,
-         HotChocolate.AspNetCore.Authorization.Authorize]
+        [UseDbContext(typeof(AppDbContext)), UsePaging, UseProjection, UseFiltering, UseSorting, Authorize]
         public async Task<IQueryable<Share>> GetShares(
             [ScopedService] AppDbContext context,
             [Service] IResolverContext resolverContext
         )
         {
-            resolverContext.SetUser();
+            resolverContext.SetDataOwner();
 
             if (resolverContext.GetUserType() == UserType.User)
             {
-                AuthorizationResult? auth = await resolverContext.AuthorizeAsync(Privilege.ManageShares.Name);
-
-                if (!auth.Succeeded)
-                {
-                    throw ErrorFactory.Unauthorized();
-                }
-
+                await resolverContext.AssertAuthorizedAsync(Privilege.ManageShares.Name);
                 return context.Shares.AsQueryable();
             }
 
-            return context.Shares.Where(x => x.StudentId == resolverContext.GetUserId());
+            return context
+                .Shares
+                .Where(x => x.StudentId == resolverContext.GetUserId());
         }
 
         /// <summary>
@@ -51,10 +47,12 @@ namespace JahnDigital.StudentBank.WebApi.GraphQL.Queries
         /// <param name="context"></param>
         /// <returns></returns>
         [UseDbContext(typeof(AppDbContext)), UsePaging, UseProjection, UseFiltering, UseSorting,
-         HotChocolate.AspNetCore.Authorization.Authorize(Policy = Privilege.PRIVILEGE_MANAGE_SHARES)]
+         Authorize(Policy = Privilege.PRIVILEGE_MANAGE_SHARES)]
         public IQueryable<Share> GetDeletedShares([ScopedService] AppDbContext context)
         {
-            return context.Shares.Where(x => x.DateDeleted != null);
+            return context
+                .Shares
+                .Where(x => x.DateDeleted != null);
         }
     }
 }

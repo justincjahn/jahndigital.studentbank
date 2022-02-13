@@ -5,7 +5,7 @@
 ///     frontend users or students.  Backend users are consistent across all instances
 ///     where frontend users may only interact within their own instance.
 /// </summary>
-public sealed class UserType
+public sealed class UserType : IComparable<UserType>
 {
     /// <summary>
     ///     Backing field for <see cref="UserTypes" />.
@@ -43,13 +43,13 @@ public sealed class UserType
     /// </summary>
     public static IReadOnlyCollection<UserType> UserTypes => _userTypes.AsReadOnly();
 
-    public override string ToString()
+    public int CompareTo(UserType? other)
     {
-        return Name;
+        if (other is null) return 0;
+        return String.Equals(other.Name, Name, StringComparison.CurrentCultureIgnoreCase) ? 1 : 0;
     }
 
-    public static explicit operator UserType?(string value)
-    {
-        return UserTypes.FirstOrDefault(x => x.Name == value);
-    }
+    public override string ToString() => Name;
+
+    public static explicit operator UserType?(string value) => UserTypes.FirstOrDefault(x => x.Name == value);
 }

@@ -20,6 +20,7 @@ using JahnDigital.StudentBank.Application.Students.Commands.UpdateStudent;
 using JahnDigital.StudentBank.Domain.Entities;
 using JahnDigital.StudentBank.Domain.Enums;
 using JahnDigital.StudentBank.Infrastructure.Persistence;
+using JahnDigital.StudentBank.WebApi.Extensions;
 using JahnDigital.StudentBank.WebApi.Models;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
@@ -282,29 +283,19 @@ namespace JahnDigital.StudentBank.WebApi.GraphQL.Mutations
             [Service] IHttpContextAccessor contextAccessor
         )
         {
-            resolverContext.SetUser(input.Id, UserType.Student);
-            AuthorizationResult? auth = await resolverContext.AuthorizeAsync(
-                $"{Constants.AuthPolicy.DataOwner}<{Privilege.ManageStudents}>"
-            );
+            await resolverContext
+                .SetDataOwner(input.Id, UserType.Student)
+                .AssertAuthorizedAsync($"{Constants.AuthPolicy.DataOwner}<{Privilege.ManageStudents}>");
 
-            if (!auth.Succeeded)
-            {
-                throw ErrorFactory.Unauthorized();
-            }
-
-            Student student = await context.Students
+            Student student = await context
+                    .Students
                     .Where(x => x.Id == input.Id)
                     .SingleOrDefaultAsync()
                 ?? throw ErrorFactory.NotFound();
 
             if (input.GroupId != null)
             {
-                UserType? type = resolverContext.GetUserType() ?? throw ErrorFactory.Unauthorized();
-
-                if (type != UserType.User)
-                {
-                    throw ErrorFactory.Unauthorized();
-                }
+                if (resolverContext.GetUserType() != UserType.User) throw ErrorFactory.Unauthorized();
             }
 
             if (input.Password is not null && resolverContext.GetUserType() != UserType.User)
@@ -312,15 +303,19 @@ namespace JahnDigital.StudentBank.WebApi.GraphQL.Mutations
                 if (input.CurrentPassword is null)
                 {
                     throw new QueryException(
-                        ErrorBuilder.New()
+                        ErrorBuilder
+                            .New()
                             .SetMessage("Bad username or password.")
                             .SetCode("LOGIN_FAIL")
                             .Build()
                     );
                 }
 
-                var authCommand = new AuthenticateStudentCommand(student.AccountNumber, input.CurrentPassword,
-                    GetIp(contextAccessor));
+                var authCommand = new AuthenticateStudentCommand(
+                    student.AccountNumber,
+                    input.CurrentPassword,
+                    GetIp(contextAccessor)
+                );
 
                 try
                 {
@@ -348,7 +343,9 @@ namespace JahnDigital.StudentBank.WebApi.GraphQL.Mutations
                 throw ErrorFactory.QueryFailed(e.Message);
             }
 
-            return context.Students.Where(x => x.Id == input.Id);
+            return context
+                .Students
+                .Where(x => x.Id == input.Id);
         }
 
         /// <summary>

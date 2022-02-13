@@ -24,7 +24,9 @@ namespace JahnDigital.StudentBank.WebApi.GraphQL.Queries
          Authorize(Policy = Privilege.PRIVILEGE_MANAGE_INSTANCES)]
         public IQueryable<Instance> GetInstances([ScopedService] AppDbContext context)
         {
-            return context.Instances.Where(x => x.DateDeleted == null);
+            return context
+                .Instances
+                .Where(x => x.DateDeleted == null);
         }
 
         /// <summary>
@@ -36,7 +38,9 @@ namespace JahnDigital.StudentBank.WebApi.GraphQL.Queries
          Authorize(Policy = Privilege.PRIVILEGE_MANAGE_INSTANCES)]
         public IQueryable<Instance> GetDeletedInstances([ScopedService] AppDbContext context)
         {
-            return context.Instances.Where(x => x.DateDeleted != null);
+            return context
+                .Instances
+                .Where(x => x.DateDeleted != null);
         }
     }
 }

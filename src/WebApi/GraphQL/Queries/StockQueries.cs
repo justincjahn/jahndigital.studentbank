@@ -8,13 +8,14 @@ using HotChocolate.Types;
 using JahnDigital.StudentBank.Domain.Entities;
 using JahnDigital.StudentBank.Domain.Enums;
 using JahnDigital.StudentBank.Infrastructure.Persistence;
+using JahnDigital.StudentBank.WebApi.Extensions;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.EntityFrameworkCore;
 using Privilege = JahnDigital.StudentBank.Domain.Enums.Privilege;
 
 namespace JahnDigital.StudentBank.WebApi.GraphQL.Queries
 {
-    //[ExtendObjectType(Name = "Query")]
+    [ExtendObjectType("Query")]
     public class StockQueries
     {
         /// <summary>
@@ -24,37 +25,35 @@ namespace JahnDigital.StudentBank.WebApi.GraphQL.Queries
         /// <param name="context"></param>
         /// <param name="resolverContext"></param>
         /// <returns></returns>
-        [UseDbContext(typeof(AppDbContext)), UsePaging, UseProjection, UseFiltering, UseSorting,
-         Authorize]
+        [UseDbContext(typeof(AppDbContext)), UsePaging, UseProjection, UseFiltering, UseSorting, Authorize]
         public async Task<IQueryable<Stock>> GetStocksAsync(
             IEnumerable<long>? instances,
             [ScopedService] AppDbContext context,
             [Service] IResolverContext resolverContext
         )
         {
-            resolverContext.SetUser();
+            resolverContext.SetDataOwner();
 
             if (resolverContext.GetUserType() == UserType.User)
             {
-                AuthorizationResult? auth = await resolverContext.AuthorizeAsync(Privilege.ManageStocks.Name);
+                await resolverContext.AssertAuthorizedAsync(Privilege.ManageStocks.Name);
 
-                if (!auth.Succeeded)
-                {
-                    throw ErrorFactory.Unauthorized();
-                }
-
-                IQueryable<Stock>? stocks = context.Stocks.Where(x => x.DateDeleted == null);
+                var stocks = context
+                    .Stocks
+                    .Where(x => x.DateDeleted == null);
 
                 if (instances != null)
                 {
-                    stocks = stocks.Where(x => x.StockInstances.Any(x => instances.Contains(x.InstanceId)));
+                    stocks = stocks
+                        .Where(x => x.StockInstances.Any(y => instances.Contains(y.InstanceId)));
                 }
 
                 return stocks;
             }
 
             // Fetch the stock IDs the user has access to
-            Student? availableStocks = await context.Students
+            Student availableStocks = await context
+                    .Students
                     .Include(x => x.Group)
                     .ThenInclude(x => x.Instance)
                     .ThenInclude(x => x.StockInstances)
@@ -62,9 +61,15 @@ namespace JahnDigital.StudentBank.WebApi.GraphQL.Queries
                     .FirstOrDefaultAsync()
                 ?? throw ErrorFactory.NotFound();
 
-            IEnumerable<long>? stockIds = availableStocks.Group.Instance.StockInstances.Select(x => x.StockId);
+            IEnumerable<long>? stockIds = availableStocks
+                .Group
+                .Instance
+                .StockInstances
+                .Select(x => x.StockId);
 
-            return context.Stocks.Where(x => x.DateDeleted == null && stockIds.Contains(x.Id));
+            return context
+                .Stocks
+                .Where(x => x.DateDeleted == null && stockIds.Contains(x.Id));
         }
 
         /// <summary>
@@ -74,30 +79,27 @@ namespace JahnDigital.StudentBank.WebApi.GraphQL.Queries
         /// <param name="context"></param>
         /// <param name="resolverContext"></param>
         /// <returns></returns>
-        [UseDbContext(typeof(AppDbContext)), UsePaging, UseFiltering, UseSorting,
-         HotChocolate.AspNetCore.Authorization.Authorize]
+        [UseDbContext(typeof(AppDbContext)), UsePaging, UseFiltering, UseSorting, Authorize]
         public async Task<IQueryable<StockHistory>> GetStockHistoryAsync(
             long stockId,
             [ScopedService] AppDbContext context,
             [Service] IResolverContext resolverContext
         )
         {
-            resolverContext.SetUser();
-
+            resolverContext.SetDataOwner();
+            
             if (resolverContext.GetUserType() == UserType.User)
             {
-                AuthorizationResult? auth = await resolverContext.AuthorizeAsync(Privilege.ManageStocks.Name);
+                await resolverContext.AssertAuthorizedAsync(Privilege.ManageStocks.Name);
 
-                if (!auth.Succeeded)
-                {
-                    throw ErrorFactory.Unauthorized();
-                }
-
-                return context.StockHistory.Where(x => x.StockId == stockId);
+                return context
+                    .StockHistory
+                    .Where(x => x.StockId == stockId);
             }
 
             // Fetch the stock IDs the user has access to
-            Student? availableStocks = await context.Students
+            Student availableStocks = await context
+                    .Students
                     .Include(x => x.Group)
                     .ThenInclude(x => x.Instance)
                     .ThenInclude(x => x.StockInstances)
@@ -105,14 +107,17 @@ namespace JahnDigital.StudentBank.WebApi.GraphQL.Queries
                     .FirstOrDefaultAsync()
                 ?? throw ErrorFactory.NotFound();
 
-            bool hasAccess = availableStocks.Group.Instance.StockInstances.Any(x => x.StockId == stockId);
+            bool hasAccess = availableStocks
+                .Group
+                .Instance
+                .StockInstances
+                .Any(x => x.StockId == stockId);
 
-            if (!hasAccess)
-            {
-                throw ErrorFactory.NotFound();
-            }
+            if (!hasAccess) throw ErrorFactory.NotFound();
 
-            return context.StockHistory.Where(x => x.StockId == stockId);
+            return context
+                .StockHistory
+                .Where(x => x.StockId == stockId);
         }
 
         /// <summary>
@@ -121,10 +126,12 @@ namespace JahnDigital.StudentBank.WebApi.GraphQL.Queries
         /// <param name="context"></param>
         /// <returns></returns>
         [UseDbContext(typeof(AppDbContext)), UsePaging, UseProjection, UseFiltering, UseSorting,
-         HotChocolate.AspNetCore.Authorization.Authorize(Policy = Privilege.PRIVILEGE_MANAGE_STOCKS)]
+         Authorize(Policy = Privilege.PRIVILEGE_MANAGE_STOCKS)]
         public IQueryable<Stock> GetDeletedStocks([ScopedService] AppDbContext context)
         {
-            return context.Stocks.Where(x => x.DateDeleted != null);
+            return context
+                .Stocks
+                .Where(x => x.DateDeleted != null);
         }
     }
 }

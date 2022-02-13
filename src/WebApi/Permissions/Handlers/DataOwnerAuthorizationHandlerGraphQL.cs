@@ -1,12 +1,11 @@
 using System.Collections.Generic;
 using System.Linq;
-using System.Security.Claims;
 using System.Threading.Tasks;
 using HotChocolate.Language;
 using HotChocolate.Resolvers;
-using JahnDigital.StudentBank.Application.Common;
 using JahnDigital.StudentBank.Application.Roles.Services;
 using JahnDigital.StudentBank.Domain.Enums;
+using JahnDigital.StudentBank.WebApi.Extensions;
 using JahnDigital.StudentBank.WebApi.Permissions.Requirements;
 using Microsoft.AspNetCore.Authorization;
 
@@ -31,35 +30,30 @@ internal class DataOwnerAuthorizationHandlerGraphQL : AuthorizationHandler<DataO
         _roleService = roleService;
     }
 
-    protected override async Task HandleRequirementAsync(AuthorizationHandlerContext context,
-        DataOwnerRequirement requirement, IResolverContext resource)
+    protected override async Task HandleRequirementAsync(
+        AuthorizationHandlerContext handlerContext,
+        DataOwnerRequirement requirement,
+        IResolverContext resolverContext
+    )
     {
-        // Make sure the user isn't preauthenticated
-        if (PreauthorizationHandler.AssertPreauthenticated(context))
+        if (PreauthorizationHandler.AssertPreauthenticated(handlerContext)) return;
+
+        if (IsDataOwner(handlerContext, resolverContext))
         {
+            handlerContext.Succeed(requirement);
             return;
         }
 
-        if (IsDataOwner(context, resource))
-        {
-            context.Succeed(requirement);
-            return;
-        }
-
-        bool hasPermission = await HasPermissionAsync(context, requirement);
-
-        if (hasPermission)
-        {
-            context.Succeed(requirement);
-        }
+        if (await HasPermissionAsync(resolverContext, requirement)) handlerContext.Succeed(requirement);
     }
 
     /// <summary>
     ///     Determine if the current user is the owner of the resource.
     /// </summary>
     /// <remarks>
-    ///     By convention the a request param called 'userId' should be used for user resources
-    ///     and 'studentId' should be used for student resources.
+    ///     By convention the a request param called 'userId' should be used for user resources and 'studentId' should
+    ///     be used for student resources.  The HotChocolate ScopedContext will be used if the values are set, then
+    ///     the HotChocolate GlobalContext will be used.
     /// </remarks>
     /// <param name="context"></param>
     /// <param name="resolverContext"></param>
@@ -72,15 +66,13 @@ internal class DataOwnerAuthorizationHandlerGraphQL : AuthorizationHandler<DataO
             return (bool)resolverContext.ScopedContextData[CTX_ISOWNER]!;
         }
 
-        // var route = resolverContext.FieldSelection.Arguments;
-        IReadOnlyList<ArgumentNode> route = resolverContext.Selection.SyntaxNode.Arguments;
+        resolverContext.ScopedContextData = resolverContext.ScopedContextData.SetItem(CTX_ISOWNER, false);
 
+        IReadOnlyList<ArgumentNode> route = resolverContext.Selection.SyntaxNode.Arguments;
         string userId = string.Empty;
         UserType? userType = null;
 
-        resolverContext.ScopedContextData = resolverContext.ScopedContextData.SetItem(CTX_ISOWNER, false);
-
-        // Check to see if the caller has specified the user ID and type
+        // Check to see if the caller has specified the user ID and type of the data owner
         if (resolverContext.ScopedContextData.ContainsKey(CTX_USER_ID)
             && resolverContext.ScopedContextData.ContainsKey(CTX_USER_TYPE))
         {
@@ -89,6 +81,7 @@ internal class DataOwnerAuthorizationHandlerGraphQL : AuthorizationHandler<DataO
         }
         else
         {
+            // Try to pull the data owner from the GraphQL request
             ArgumentNode? arg = route.FirstOrDefault(x => x.Name.Value == "userId");
 
             if (arg != null)
@@ -106,53 +99,27 @@ internal class DataOwnerAuthorizationHandlerGraphQL : AuthorizationHandler<DataO
             }
         }
 
-        if (userType == null)
-        {
-            return false;
-        }
+        // If no data owner was identified, then short circuit
+        if (userType == null) return false;
+        if (string.IsNullOrWhiteSpace(userId))  return false;
 
-        if (string.IsNullOrWhiteSpace(userId))
-        {
-            return false;
-        }
+        var claimUserId = context.User.GetUserId();
+        var claimUserType = context.User.GetUserType();
 
-        Claim? userIdClaim = context.User.Claims.FirstOrDefault(x => x.Type == ClaimTypes.NameIdentifier);
+        // If the logged in user is anonymous, short circuit
+        if (claimUserId == -1) return false;
 
-        if (userIdClaim == null)
-        {
-            return false;
-        }
-
-        Claim? userTypeClaim = context.User.Claims.FirstOrDefault(x => x.Type == Constants.Auth.CLAIM_USER_TYPE);
-
-        if (userTypeClaim == null)
-        {
-            return false;
-        }
-
-        if (!int.TryParse(userId, out int routeId))
-        {
-            return false;
-        }
-
-        if (!int.TryParse(userIdClaim.Value, out int claimId))
-        {
-            return false;
-        }
+        // If the userId is malformed, short circuit
+        if (!int.TryParse(userId, out int routeId)) return false;
 
         // Assert the claim type matches the user type from the URL convention
-        if (userType.Name != userTypeClaim.Value)
-        {
-            return false;
-        }
+        if (userType != claimUserType) return false;
+        if (routeId != claimUserId) return false;
 
-        if (routeId == claimId)
-        {
-            resolverContext.ScopedContextData = resolverContext.ScopedContextData.SetItem(CTX_ISOWNER, true);
-            return true;
-        }
+        // Cache for subsequent requests
+        resolverContext.ScopedContextData = resolverContext.ScopedContextData.SetItem(CTX_ISOWNER, true);
 
-        return false;
+        return true;
     }
 
     /// <summary>
@@ -161,20 +128,9 @@ internal class DataOwnerAuthorizationHandlerGraphQL : AuthorizationHandler<DataO
     /// <param name="context"></param>
     /// <param name="requirement"></param>
     /// <returns></returns>
-    private async Task<bool> HasPermissionAsync(AuthorizationHandlerContext context, DataOwnerRequirement requirement)
+    private async Task<bool> HasPermissionAsync(IResolverContext context, DataOwnerRequirement requirement)
     {
-        if (!requirement.Permissions.Any())
-        {
-            return false;
-        }
-
-        Claim? role = context.User.Claims.SingleOrDefault(x => x.Type == ClaimTypes.Role);
-
-        if (role == null)
-        {
-            return false;
-        }
-
-        return await _roleService.HasPermissionAsync(role.Value, requirement.Permissions);
+        if (!requirement.Permissions.Any()) return false;
+        return await _roleService.HasPermissionAsync(context.GetUserRole().Name, requirement.Permissions);
     }
 }

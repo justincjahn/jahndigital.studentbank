@@ -15,6 +15,7 @@ using JahnDigital.StudentBank.Application.Users.Commands.UpdateUser;
 using JahnDigital.StudentBank.Domain.Entities;
 using JahnDigital.StudentBank.Domain.Enums;
 using JahnDigital.StudentBank.Infrastructure.Persistence;
+using JahnDigital.StudentBank.WebApi.Extensions;
 using JahnDigital.StudentBank.WebApi.Models;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
@@ -168,17 +169,12 @@ namespace JahnDigital.StudentBank.WebApi.GraphQL.Mutations
             [Service] ISender mediatr
         )
         {
-            resolverContext.SetUser(input.Id, UserType.User);
-            AuthorizationResult? auth = await resolverContext.AuthorizeAsync(
-                $"{Constants.AuthPolicy.DataOwner}<{Privilege.ManageUsers}>"
-            );
+            await resolverContext
+                .SetDataOwner(input.Id, UserType.User)
+                .AssertAuthorizedAsync($"{Constants.AuthPolicy.DataOwner}<{Privilege.ManageUsers}>");
 
-            if (!auth.Succeeded)
-            {
-                throw ErrorFactory.Unauthorized();
-            }
-
-            User? user = await context.Users
+            User? user = await context
+                    .Users
                     .Where(x => x.Id == input.Id)
                     .SingleOrDefaultAsync()
                 ?? throw ErrorFactory.NotFound();
@@ -213,7 +209,6 @@ namespace JahnDigital.StudentBank.WebApi.GraphQL.Mutations
             try
             {
                 await mediatr.Send(updateUserCommand);
-
                 return context.Users.Where(x => x.Id == user.Id);
             }
             catch (Exception e)

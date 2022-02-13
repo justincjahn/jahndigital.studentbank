@@ -8,6 +8,7 @@ using JahnDigital.StudentBank.Application.Common;
 using JahnDigital.StudentBank.Domain.Entities;
 using JahnDigital.StudentBank.Domain.Enums;
 using JahnDigital.StudentBank.Infrastructure.Persistence;
+using JahnDigital.StudentBank.WebApi.Extensions;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.EntityFrameworkCore;
 using Privilege = JahnDigital.StudentBank.Domain.Enums.Privilege;
@@ -26,28 +27,22 @@ namespace JahnDigital.StudentBank.WebApi.GraphQL.Queries
         /// <param name="context"></param>
         /// <param name="resolverContext"></param>
         /// <returns></returns>
-        [UseDbContext(typeof(AppDbContext)), UsePaging, UseFiltering, UseSorting,
-         HotChocolate.AspNetCore.Authorization.Authorize]
+        [UseDbContext(typeof(AppDbContext)), UsePaging, UseFiltering, UseSorting, Authorize]
         public async Task<IQueryable<Transaction>> GetTransactionsAsync(
             long shareId,
             [ScopedService] AppDbContext context,
             [Service] IResolverContext resolverContext
         )
         {
-            Share? share = await context.Shares
+            Share share = await context
+                    .Shares
                     .Where(x => x.Id == shareId)
                     .FirstOrDefaultAsync()
                 ?? throw ErrorFactory.NotFound();
 
-            resolverContext.SetUser(share.StudentId, UserType.Student);
-
-            AuthorizationResult? auth = await resolverContext
-                .AuthorizeAsync($"{Constants.AuthPolicy.DataOwner}<{Privilege.ManageTransactions}>");
-
-            if (!auth.Succeeded)
-            {
-                throw ErrorFactory.Unauthorized();
-            }
+            await resolverContext
+                .SetDataOwner(share.StudentId, UserType.Student)
+                .AssertAuthorizedAsync($"{Constants.AuthPolicy.DataOwner}<{Privilege.ManageTransactions}>");
 
             return context.Transactions.Where(x => x.TargetShareId == shareId);
         }
