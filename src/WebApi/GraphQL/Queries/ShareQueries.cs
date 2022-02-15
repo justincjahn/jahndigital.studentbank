@@ -4,41 +4,41 @@ using HotChocolate;
 using HotChocolate.Data;
 using HotChocolate.Resolvers;
 using HotChocolate.Types;
+using JahnDigital.StudentBank.Application.Shares.Queries.GetShares;
+using JahnDigital.StudentBank.Application.Shares.Queries.GetSharesForStudent;
 using JahnDigital.StudentBank.Domain.Entities;
 using JahnDigital.StudentBank.Domain.Enums;
 using JahnDigital.StudentBank.Infrastructure.Persistence;
 using JahnDigital.StudentBank.WebApi.Extensions;
+using JahnDigital.StudentBank.WebApi.GraphQL.Common;
+using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Privilege = JahnDigital.StudentBank.Domain.Enums.Privilege;
 
 namespace JahnDigital.StudentBank.WebApi.GraphQL.Queries
 {
     [ExtendObjectType("Query")]
-    public class ShareQueries
+    public class ShareQueries : RequestBase
     {
+        public ShareQueries(ISender mediatr) : base(mediatr) { }
+
         /// <summary>
         ///     Get shares for the currently active user.
         /// </summary>
-        /// <param name="context"></param>
         /// <param name="resolverContext"></param>
         /// <returns></returns>
         [UseDbContext(typeof(AppDbContext)), UsePaging, UseProjection, UseFiltering, UseSorting, Authorize]
-        public async Task<IQueryable<Share>> GetShares(
-            [ScopedService] AppDbContext context,
-            [Service] IResolverContext resolverContext
-        )
+        public async Task<IQueryable<Share>> GetSharesAsync([Service] IResolverContext resolverContext)
         {
             resolverContext.SetDataOwner();
 
-            if (resolverContext.GetUserType() == UserType.User)
+            if (resolverContext.GetUserType() != UserType.User)
             {
-                await resolverContext.AssertAuthorizedAsync(Privilege.ManageShares.Name);
-                return context.Shares.AsQueryable();
+                return await _mediatr.Send(new GetSharesForStudent(resolverContext.GetUserId()));
             }
 
-            return context
-                .Shares
-                .Where(x => x.StudentId == resolverContext.GetUserId());
+            await resolverContext.AssertAuthorizedAsync(Privilege.ManageShares.Name);
+            return await _mediatr.Send(new GetSharesQuery());
         }
 
         /// <summary>
@@ -48,11 +48,9 @@ namespace JahnDigital.StudentBank.WebApi.GraphQL.Queries
         /// <returns></returns>
         [UseDbContext(typeof(AppDbContext)), UsePaging, UseProjection, UseFiltering, UseSorting,
          Authorize(Policy = Privilege.PRIVILEGE_MANAGE_SHARES)]
-        public IQueryable<Share> GetDeletedShares([ScopedService] AppDbContext context)
+        public async Task<IQueryable<Share>> GetDeletedSharesAsync([ScopedService] AppDbContext context)
         {
-            return context
-                .Shares
-                .Where(x => x.DateDeleted != null);
+            return await _mediatr.Send(new GetSharesQuery(true));
         }
     }
 }

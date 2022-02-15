@@ -1,8 +1,5 @@
-﻿using System.Linq;
-using System.Security.Claims;
-using JahnDigital.StudentBank.Domain.Enums;
+﻿using JahnDigital.StudentBank.Domain.Enums;
 using Microsoft.AspNetCore.Http;
-using Constants = JahnDigital.StudentBank.Application.Common.Constants;
 
 namespace JahnDigital.StudentBank.WebApi.Extensions;
 
