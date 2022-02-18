@@ -1,4 +1,5 @@
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using HotChocolate;
 using HotChocolate.AspNetCore.Authorization;
@@ -9,7 +10,6 @@ using JahnDigital.StudentBank.Application.Products.Queries.GetProducts;
 using JahnDigital.StudentBank.Application.Products.Queries.GetStudentProducts;
 using JahnDigital.StudentBank.Domain.Entities;
 using JahnDigital.StudentBank.Domain.Enums;
-using JahnDigital.StudentBank.Infrastructure.Persistence;
 using JahnDigital.StudentBank.WebApi.Extensions;
 using JahnDigital.StudentBank.WebApi.GraphQL.Common;
 using MediatR;
@@ -23,34 +23,41 @@ namespace JahnDigital.StudentBank.WebApi.GraphQL.Queries
     [ExtendObjectType("Query")]
     public class ProductQueries : RequestBase
     {
-        public ProductQueries(ISender mediatr) : base(mediatr) { }
-
         /// <summary>
         ///     Lists all products available to a given student.
         /// </summary>
         /// <param name="resolverContext"></param>
+        /// <param name="mediatr"></param>
+        /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        [UseDbContext(typeof(AppDbContext)), UsePaging, UseProjection, UseFiltering, UseSorting, Authorize]
-        public async Task<IQueryable<Product>> GetProductsAsync([Service] IResolverContext resolverContext)
+        [UsePaging, UseProjection, UseFiltering, UseSorting, Authorize]
+        public async Task<IQueryable<Product>> GetProductsAsync(
+            [Service] IResolverContext resolverContext,
+            [Service] ISender mediatr,
+            CancellationToken cancellationToken
+        )
         {
             if (resolverContext.GetUserType() == UserType.User)
             {
-                return await _mediatr.Send(new GetProductsQuery());
+                return await mediatr.Send(new GetProductsQuery(), cancellationToken);
             }
 
-            return await _mediatr.Send(new GetStudentProducts(resolverContext.GetUserId()));
+            return await mediatr.Send(new GetStudentProducts(resolverContext.GetUserId()), cancellationToken);
         }
 
         /// <summary>
         ///     Get a list of deleted products if authorized (Manage Products).
         /// </summary>
-        /// <param name="context"></param>
+        /// <param name="mediatr"></param>
+        /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        [UseDbContext(typeof(AppDbContext)), UsePaging, UseProjection, UseFiltering, UseSorting,
-         Authorize(Policy = Privilege.PRIVILEGE_MANAGE_PRODUCTS)]
-        public async Task<IQueryable<Product>> GetDeletedProductsAsync([ScopedService] AppDbContext context)
+        [UsePaging, UseProjection, UseFiltering, UseSorting, Authorize(Policy = Privilege.PRIVILEGE_MANAGE_PRODUCTS)]
+        public async Task<IQueryable<Product>> GetDeletedProductsAsync(
+            [Service] ISender mediatr,
+            CancellationToken cancellationToken
+        )
         {
-            return await _mediatr.Send(new GetProductsQuery(true));
+            return await mediatr.Send(new GetProductsQuery(true), cancellationToken);
         }
     }
 }
