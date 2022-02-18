@@ -1,4 +1,5 @@
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using HotChocolate;
 using HotChocolate.AspNetCore.Authorization;
@@ -8,7 +9,6 @@ using HotChocolate.Types;
 using JahnDigital.StudentBank.Application.StudentPurchases.Queries.GetStudentPurchases;
 using JahnDigital.StudentBank.Domain.Entities;
 using JahnDigital.StudentBank.Domain.Enums;
-using JahnDigital.StudentBank.Infrastructure.Persistence;
 using JahnDigital.StudentBank.WebApi.Extensions;
 using JahnDigital.StudentBank.WebApi.GraphQL.Common;
 using MediatR;
@@ -21,22 +21,26 @@ namespace JahnDigital.StudentBank.WebApi.GraphQL.Queries
     [ExtendObjectType("Query")]
     public class PurchaseQueries : RequestBase
     {
-        public PurchaseQueries(ISender mediatr) : base(mediatr) { }
-
         /// <summary>
         ///     Get the purchases the user has available to them.
         /// </summary>
         /// <param name="resolverContext"></param>
+        /// <param name="mediatr"></param>
+        /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        [UseDbContext(typeof(AppDbContext)), UsePaging, UseProjection, UseFiltering, UseSorting, Authorize]
-        public async Task<IQueryable<StudentPurchase>> GetPurchases([Service] IResolverContext resolverContext)
+        [UsePaging, UseProjection, UseFiltering, UseSorting, Authorize]
+        public async Task<IQueryable<StudentPurchase>> GetPurchasesAsync(
+            [Service] IResolverContext resolverContext,
+            [Service] ISender mediatr,
+            CancellationToken cancellationToken
+        )
         {
             if (resolverContext.GetUserType() == UserType.User)
             {
-                return await _mediatr.Send(new GetStudentPurchasesQuery());
+                return await mediatr.Send(new GetStudentPurchasesQuery(), cancellationToken);
             }
 
-            return await _mediatr.Send(new GetStudentPurchasesQuery(resolverContext.GetUserId()));
+            return await mediatr.Send(new GetStudentPurchasesQuery(resolverContext.GetUserId()), cancellationToken);
         }
     }
 }
