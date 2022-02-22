@@ -8,7 +8,7 @@ namespace JahnDigital.StudentBank.Application.Groups.Queries.GetGroups;
 /// Get a query that returns either active or deleted groups.
 /// </summary>
 /// <param name="OnlyDeleted"></param>
-public record GetGroupsQuery(bool OnlyDeleted = false) : IRequest<IQueryable<Group>>;
+public record GetGroupsQuery(long? InstanceId = null, bool OnlyDeleted = false) : IRequest<IQueryable<Group>>;
 
 public class GetGroupsQueryHandler : IRequestHandler<GetGroupsQuery, IQueryable<Group>>
 {
@@ -18,12 +18,17 @@ public class GetGroupsQueryHandler : IRequestHandler<GetGroupsQuery, IQueryable<
     {
         _context = context;
     }
-    
+
     public Task<IQueryable<Group>> Handle(GetGroupsQuery request, CancellationToken cancellationToken)
     {
         var query = (request.OnlyDeleted)
             ? _context.Groups.Where(x => x.DateDeleted != null)
             : _context.Groups.Where(x => x.DateDeleted == null);
+
+        if (request.InstanceId is not null)
+        {
+            query = query.Where(x => x.InstanceId == request.InstanceId);
+        }
 
         return Task.FromResult(query);
     }

@@ -16,10 +16,11 @@ namespace JahnDigital.StudentBank.Infrastructure;
 
 public static class DependencyInjection
 {
-    public static IServiceCollection AddInfrastructure(this IServiceCollection services, IConfiguration configuration, ILoggerFactory loggerFactory)
+    public static IServiceCollection AddInfrastructure(this IServiceCollection services, IConfiguration configuration,
+        ILoggerFactory loggerFactory)
     {
         AppConfig appConfig = configuration.GetRequiredSection("AppConfig").Get<AppConfig>();
-        
+
         #if !DEBUG
         if (string.IsNullOrEmpty(appConfig.Secret))
         {
@@ -27,12 +28,12 @@ public static class DependencyInjection
                 "AppConfig__Secret must be provided as an environment variable.");
         }
         #endif
-        
+
         SqlAuthenticationProvider.SetProvider(
             SqlAuthenticationMethod.ActiveDirectoryInteractive,
             new SqlAppAuthenticationProvider()
         );
-        
+
         services.AddPooledDbContextFactory<AppDbContext>(options =>
         {
             options.UseSqlServer(
@@ -46,9 +47,10 @@ public static class DependencyInjection
         services.AddScoped<IAppDbContext>(provider =>
         {
             var factory = provider.GetRequiredService<IDbContextFactory<AppDbContext>>();
+
             return factory.CreateDbContext();
         });
-        
+
         services
             .AddScoped<IPasswordHasher, MsIdentityPasswordHasher>()
             .AddScoped<IDbInitializerService, DbInitializerService>()
