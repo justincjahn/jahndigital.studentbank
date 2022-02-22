@@ -46,7 +46,7 @@ namespace JahnDigital.StudentBank.WebApi.GraphQL.Queries
             CancellationToken cancellationToken
         )
         {
-            return await mediatr.Send(new GetGroupsQuery(true), cancellationToken);
+            return await mediatr.Send(new GetGroupsQuery(null, true), cancellationToken);
         }
     }
 }

@@ -45,7 +45,7 @@ public class Startup
         services
             .AddApplication()
             .AddInfrastructure(_configuration, LoggerFactory);
-            
+
         AppConfig appConfig = _configuration.GetRequiredSection("AppConfig").Get<AppConfig>();
 
         #if !DEBUG
@@ -117,6 +117,8 @@ public class Startup
             {
                 options.ExecutionTimeout = TimeSpan.FromMinutes(10);
             });
+
+        services.AddHttpResultSerializer<AlwaysOkResultSerializer>();
 
         services.AddQuartz(q =>
         {

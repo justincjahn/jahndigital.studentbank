@@ -1,6 +1,8 @@
 using System;
+using System.Linq;
 using HotChocolate;
 using JahnDigital.StudentBank.Application.Common;
+using JahnDigital.StudentBank.Application.Common.Exceptions;
 using JahnDigital.StudentBank.Domain.Exceptions;
 using Microsoft.AspNetCore.Http;
 
@@ -20,7 +22,7 @@ namespace JahnDigital.StudentBank.WebApi.GraphQL
 
         public IError OnError(IError error)
         {
-            Console.WriteLine($"[GraphQL Error] {error.Code}: {error.Message}.");
+            Console.WriteLine($"[GraphQL Error] {error.Code}: {error.Exception?.Message ?? error.Message}");
 
             // If the use is unauthorized via the AuthorizeAttribute, determine if they are even
             // logged in and return a different error code if not.
@@ -41,41 +43,48 @@ namespace JahnDigital.StudentBank.WebApi.GraphQL
             {
                 return error
                     .WithCode(Constants.ErrorStrings.TRANSACTION_NSF)
-                    .WithMessage(error.Exception.Message);
+                    .WithMessage(error.Exception.Message ?? "An invalid transaction occurred.");
             }
 
             if (error.Exception is WithdrawalLimitExceededException)
             {
                 return error
                     .WithCode(Constants.ErrorStrings.TRANSACTION_WITHDRAWAL_LIMIT)
-                    .WithMessage(error.Exception.Message);
+                    .WithMessage(error.Exception.Message ?? "An invalid transaction occurred.");
             }
 
             if (error.Exception is InvalidShareQuantityException)
             {
                 return error
                     .WithCode(Constants.ErrorStrings.TRANSACTION_STOCK_QUANTITY)
-                    .WithMessage(error.Exception.Message);
+                    .WithMessage(error.Exception.Message ?? "An invalid transaction occurred.");
+            }
+
+            if (error.Exception is ValidationException e)
+            {
+                // TODO: There can be multiple validation exceptions.  Figure out how to present them to the GQL client.
+                var firstError = e.Errors.First().Value[0];
+
+                return error
+                    .WithCode("ERROR_INVALID_FIELD")
+                    .WithMessage(firstError);
             }
 
             if (error.Exception is BaseException)
             {
                 return error
                     .WithCode(Constants.ErrorStrings.ERROR_UNKNOWN)
-                    .WithMessage(error.Exception.Message);
+                    .WithMessage(error.Exception.Message ?? error.Message);
             }
 
             if (error.Exception is not null)
             {
-                string? msg = error.Exception.Message;
-
                 return error
-                    .RemoveException()
-                    .WithMessage(msg);
+                    .WithCode(Constants.ErrorStrings.ERROR_UNKNOWN)
+                    .WithMessage(error.Exception.Message ?? error.Message);
             }
 
-            return error
-                .WithMessage(error?.Exception?.Message ?? error?.Message ?? "An unknown error occurred.");
+            return error;
         }
     }
 }
