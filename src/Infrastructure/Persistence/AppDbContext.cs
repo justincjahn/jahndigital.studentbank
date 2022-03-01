@@ -3,6 +3,7 @@ using JahnDigital.StudentBank.Domain.Entities;
 using JahnDigital.StudentBank.Infrastructure.Persistence.Extensions;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Storage;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 namespace JahnDigital.StudentBank.Infrastructure.Persistence;
