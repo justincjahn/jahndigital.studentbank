@@ -17,11 +17,11 @@ namespace JahnDigital.StudentBank.Infrastructure.Transactions.Services;
 /// </summary>
 public class TransactionService : ITransactionService
 {
-    private readonly IDbContextFactory<AppDbContext> _factory;
+    private readonly IAppDbContext _context;
 
-    public TransactionService(IDbContextFactory<AppDbContext> factory)
+    public TransactionService(IAppDbContext context)
     {
-        _factory = factory;
+        _context = context;
     }
 
     /// <param name="request"></param>
@@ -106,8 +106,7 @@ public class TransactionService : ITransactionService
     /// <exception cref="DatabaseException"></exception>
     public async Task<Transaction> PostAsync(TransactionRequest request, CancellationToken cancellationToken = new())
     {
-        await using AppDbContext? context = _factory.CreateDbContext();
-        return await PostAsync(request, context, cancellationToken);
+        return await PostAsync(request, _context, cancellationToken);
     }
 
     /// <inheritdoc />
@@ -121,9 +120,8 @@ public class TransactionService : ITransactionService
         CancellationToken cancellationToken = new()
     )
     {
-        await using AppDbContext? context = await _factory.CreateDbContextAsync(cancellationToken);
         var postedTransactions = new List<Transaction>();
-        IDbContextTransaction? dbTransaction = await context.Database.BeginTransactionAsync(cancellationToken);
+        await using IDbContextTransaction? dbTransaction = await _context.Database.BeginTransactionAsync(cancellationToken);
 
         foreach (var transaction in transactions)
         {
@@ -138,7 +136,7 @@ public class TransactionService : ITransactionService
                     WithdrawalLimit = withdrawalLimit
                 };
 
-                postedTransactions.Add(await PostAsync(request, context, cancellationToken));
+                postedTransactions.Add(await PostAsync(request, _context, cancellationToken));
             }
             catch (NonsufficientFundsException e)
             {
@@ -190,8 +188,6 @@ public class TransactionService : ITransactionService
     /// </exception>
     public async Task<(Transaction, Transaction)> TransferAsync(TransferRequest request, CancellationToken cancellationToken = new())
     {
-        await using AppDbContext? context = await _factory.CreateDbContextAsync(cancellationToken);
-
         if (request.Amount < Money.FromCurrency(0.0m))
         {
             throw new ArgumentOutOfRangeException(
@@ -200,7 +196,7 @@ public class TransactionService : ITransactionService
             );
         }
 
-        var sourceShare = await context.Shares
+        var sourceShare = await _context.Shares
                 .Include(x => x.Student)
                 .ThenInclude(x => x.Group)
                 .Include(x => x.ShareType)
@@ -208,7 +204,7 @@ public class TransactionService : ITransactionService
                 .FirstOrDefaultAsync(cancellationToken: cancellationToken)
             ?? throw new ShareNotFoundException(request.SourceShareId);
 
-        var destinationShare = await context.Shares
+        var destinationShare = await _context.Shares
                 .Include(x => x.Student)
                 .ThenInclude(x => x.Group)
                 .Where(x => x.Id == request.DestinationShareId && x.Student.DateDeleted == null)
@@ -225,7 +221,7 @@ public class TransactionService : ITransactionService
 
         if (request.WithdrawalLimit)
         {
-            _assessWithdrawalLimit(sourceShare, context);
+            _assessWithdrawalLimit(sourceShare, _context);
         }
 
         if (sourceShare.Balance < request.Amount && !request.TakeNegative)
@@ -262,7 +258,7 @@ public class TransactionService : ITransactionService
             tranComment += $". Comment: {request.Comment}";
         }
 
-        Transaction? destinationTransaction = new Transaction
+        Transaction destinationTransaction = new Transaction
         {
             Amount = request.Amount,
             NewBalance = destinationShare.Balance,
@@ -272,12 +268,12 @@ public class TransactionService : ITransactionService
             Comment = tranComment
         };
 
-        context.Add(sourceTransaction);
-        context.Add(destinationTransaction);
+        _context.Transactions.Add(sourceTransaction);
+        _context.Transactions.Add(destinationTransaction);
 
         try
         {
-            await context.SaveChangesAsync(cancellationToken);
+            await _context.SaveChangesAsync(cancellationToken);
         }
         catch (Exception e)
         {
@@ -297,8 +293,6 @@ public class TransactionService : ITransactionService
     /// <exception cref="DatabaseException">If a database error occurs.</exception>
     public async Task<StudentPurchase> PurchaseAsync(PurchaseRequest input, CancellationToken cancellationToken = new())
     {
-        await using AppDbContext context = await _factory.CreateDbContextAsync(cancellationToken);
-
         // Validate that the items don't contain negative or zero quantities
         if (input.Items.Any(x => x.Count < 1))
         {
@@ -309,7 +303,7 @@ public class TransactionService : ITransactionService
         }
 
         // Get the share's Student ID and Instance ID for later use
-        var share = await context.Shares
+        var share = await _context.Shares
                 .Include(x => x.Student)
                 .ThenInclude(x => x.Group)
                 .ThenInclude(x => x.Instance)
@@ -323,7 +317,7 @@ public class TransactionService : ITransactionService
 
         // Pull the list of requested products to validate cost and quantity
         List<long>? productIds = input.Items.Select(x => x.ProductId).ToList();
-        List<Product>? products = await context.ProductInstances
+        List<Product>? products = await _context.ProductInstances
             .Include(x => x.Product)
             .Where(x =>
                 x.InstanceId == share.InstanceId
@@ -361,11 +355,11 @@ public class TransactionService : ITransactionService
         }
 
         purchase.TotalCost = total;
-        context.Add(purchase);
+        _context.StudentPurchases.Add(purchase);
 
         try
         {
-            await context.SaveChangesAsync(cancellationToken);
+            await _context.SaveChangesAsync(cancellationToken);
         }
         catch (Exception e)
         {
@@ -380,8 +374,8 @@ public class TransactionService : ITransactionService
                 Amount = -total,
                 Comment = $"Purchase #{purchase.Id}"
             };
-            
-            await PostAsync(request, context, cancellationToken);
+
+            await PostAsync(request, _context, cancellationToken);
         }
         catch (Exception e)
         {
@@ -395,14 +389,14 @@ public class TransactionService : ITransactionService
                     product.Quantity += item.Quantity;
                 }
 
-                context.Remove(item);
+                _context.StudentPurchaseItems.Remove(item);
             }
 
-            context.Remove(purchase);
+            _context.StudentPurchases.Remove(purchase);
 
             try
             {
-                await context.SaveChangesAsync(cancellationToken);
+                await _context.SaveChangesAsync(cancellationToken);
             }
             catch (Exception e2)
             {
@@ -432,9 +426,9 @@ public class TransactionService : ITransactionService
     /// <exception cref="DatabaseException">If a database error occurs.</exception>
     public async Task<StudentStock> PurchaseStockAsync(PurchaseStockRequest input, CancellationToken cancellationToken = new())
     {
-        await using AppDbContext context = await _factory.CreateDbContextAsync(cancellationToken);
-
-        bool stockExists = await context.Stocks.Where(x => x.Id == input.StockId).AnyAsync(cancellationToken: cancellationToken);
+        bool stockExists = await _context
+            .Stocks
+            .Where(x => x.Id == input.StockId).AnyAsync(cancellationToken);
 
         if (!stockExists)
         {
@@ -442,7 +436,8 @@ public class TransactionService : ITransactionService
         }
 
         // Get the share's Student ID and Instance ID for later use
-        var share = await context.Shares
+        var share = await _context
+                .Shares
                 .Include(x => x.Student)
                 .ThenInclude(x => x.Group)
                 .ThenInclude(x => x.Instance)
@@ -456,7 +451,8 @@ public class TransactionService : ITransactionService
             ?? throw new ShareNotFoundException(input.ShareId);
 
         // Get the stock provided it is included in the instance of the share
-        Stock? stock = await context.Stocks
+        Stock? stock = await _context
+                .Stocks
                 .Include(x => x.StockInstances)
                 .Where(x =>
                     x.Id == input.StockId
@@ -471,7 +467,8 @@ public class TransactionService : ITransactionService
         }
 
         // Fetch or create the StudentStock entity
-        StudentStock? studentStock = await context.StudentStocks
+        StudentStock? studentStock = await _context
+            .StudentStocks
             .Where(x => x.StudentId == share.StudentId && x.StockId == stock.Id)
             .SingleOrDefaultAsync(cancellationToken: cancellationToken);
 
@@ -485,7 +482,7 @@ public class TransactionService : ITransactionService
                 NetContribution = Money.FromCurrency(0m)
             };
 
-            context.Add(studentStock);
+            _context.StudentStocks.Add(studentStock);
         }
 
         // If the student is selling stock, make sure they have enough shares
@@ -506,7 +503,7 @@ public class TransactionService : ITransactionService
             Comment = $"Stock {buySell}: {input.Quantity} shares of {stock.Symbol} at {stock.CurrentValue}"
         };
 
-        var transaction = await PostAsync(request, context, cancellationToken);
+        var transaction = await PostAsync(request, _context, cancellationToken);
 
         studentStock.History.Add(
         new StudentStockHistory
@@ -523,7 +520,7 @@ public class TransactionService : ITransactionService
 
         try
         {
-            await context.SaveChangesAsync(cancellationToken);
+            await _context.SaveChangesAsync(cancellationToken);
         }
         catch (Exception e)
         {
@@ -536,7 +533,7 @@ public class TransactionService : ITransactionService
                     Comment = $"VOIDED: Stock purchase: {input.Quantity} shares of {stock.Symbol}"
                 };
 
-                await PostAsync(request, context, cancellationToken);
+                await PostAsync(request, _context, cancellationToken);
             }
             catch (Exception e2)
             {
@@ -556,9 +553,8 @@ public class TransactionService : ITransactionService
     /// <exception cref="DatabaseException">If any database error(s) occurred during the posting.</exception>
     public async Task<bool> PostDividendsAsync(PostDividendsRequest input, CancellationToken cancellationToken = new())
     {
-        await using AppDbContext context = await _factory.CreateDbContextAsync(cancellationToken);
-
-        ShareType? shareType = await context.ShareTypes
+        ShareType shareType = await _context
+                .ShareTypes
                 .Where(x => x.Id == input.ShareTypeId)
                 .SingleOrDefaultAsync(cancellationToken: cancellationToken)
             ?? throw new ShareTypeNotFoundException(input.ShareTypeId);
@@ -571,7 +567,8 @@ public class TransactionService : ITransactionService
             );
         }
 
-        int instances = await context.Instances
+        int instances = await _context
+            .Instances
             .Where(x => input.Instances.Contains(x.Id))
             .CountAsync(cancellationToken: cancellationToken);
 
@@ -583,11 +580,12 @@ public class TransactionService : ITransactionService
             );
         }
 
-        await using IDbContextTransaction? transaction = await context.Database.BeginTransactionAsync(cancellationToken);
+        await using IDbContextTransaction? transaction = await _context.Database.BeginTransactionAsync(cancellationToken);
 
         foreach (long instance in input.Instances)
         {
-            IQueryable<Share>? query = context.Shares
+            IQueryable<Share>? query = _context
+                .Shares
                 .Include(x => x.Student)
                 .ThenInclude(x => x.Group)
                 .Where(x =>
@@ -606,7 +604,7 @@ public class TransactionService : ITransactionService
                     Money? dividendAmount = share.Balance * shareType.DividendRate;
                     Money? newBalance = share.Balance += dividendAmount;
 
-                    context.Add(new Transaction
+                    _context.Transactions.Add(new Transaction
                     {
                         Amount = dividendAmount,
                         EffectiveDate = DateTime.UtcNow,
@@ -623,7 +621,7 @@ public class TransactionService : ITransactionService
 
                 try
                 {
-                    await context.SaveChangesAsync(cancellationToken);
+                    await _context.SaveChangesAsync(cancellationToken);
                 }
                 catch (Exception e)
                 {
