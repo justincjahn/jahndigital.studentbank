@@ -1,9 +1,11 @@
+using JahnDigital.StudentBank.Application.Common.Interfaces;
+
 namespace JahnDigital.StudentBank.Application.Common.Utils;
 
 /// <summary>
 ///     Simple utility class to generate a random invite code of a given length.
 /// </summary>
-public static class InviteCode
+public class InviteCodeGenerator : IInviteCodeGenerator
 {
     /// <summary>
     ///     List of valid characters for invite codes.
@@ -14,7 +16,7 @@ public static class InviteCode
     ///     Create a new invite code of the specified length and return it.
     /// </summary>
     /// <param name="length"></param>
-    public static string NewCode(int length = 6)
+    public string NewCode(int length = 6)
     {
         char[] chars = new char[length];
         Random rng = new();
