@@ -19,6 +19,7 @@ public class DbInitializerService : IDbInitializerService
 {
     private readonly IDbContextFactory<AppDbContext> _factory;
     private readonly IPasswordHasher _passwordHasher;
+    private readonly IInviteCodeGenerator _inviteCodeGenerator;
 
 
     /// <summary>
@@ -32,13 +33,20 @@ public class DbInitializerService : IDbInitializerService
     private ShareType? _shareType;
 
     /// <summary>
-    /// 
+    ///
     /// </summary>
     /// <param name="factory"></param>
-    public DbInitializerService(IDbContextFactory<AppDbContext> factory, IPasswordHasher passwordHasher)
+    /// <param name="passwordHasher"></param>
+    /// <param name="inviteCodeGenerator"></param>
+    public DbInitializerService(
+        IDbContextFactory<AppDbContext> factory,
+        IPasswordHasher passwordHasher,
+        IInviteCodeGenerator inviteCodeGenerator
+    )
     {
         _factory = factory;
         _passwordHasher = passwordHasher;
+        _inviteCodeGenerator = inviteCodeGenerator;
     }
 
     /// <summary>
@@ -127,7 +135,7 @@ public class DbInitializerService : IDbInitializerService
             ?? throw new DbUpdateException("Unable to seed admin user- superuser role not found.");
 
         var users = context.Users.ToList();
-        
+
         if (context.Users.Count() == 0)
         {
             User? admin = new User
@@ -292,7 +300,7 @@ public class DbInitializerService : IDbInitializerService
 
                 do
                 {
-                    code = InviteCode.NewCode(); // Using default length for seeding
+                    code = _inviteCodeGenerator.NewCode(6); // Using default length for seeding
                 } while (instances.Any(x => x.InviteCode == code));
 
                 Instance? instance = new Instance { Description = $"Instance {i}", InviteCode = code };

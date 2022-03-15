@@ -44,10 +44,10 @@ public static class DependencyInjection
             options.UseLoggerFactory(loggerFactory);
         });
 
-        services.AddScoped<IAppDbContext>(provider =>
+        // NOTE: HotChocolate may run queries concurrently and AddScoped will give mediatr only one context per request instead of one per thread.
+        services.AddTransient<IAppDbContext>(provider =>
         {
             var factory = provider.GetRequiredService<IDbContextFactory<AppDbContext>>();
-
             return factory.CreateDbContext();
         });
 
