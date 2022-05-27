@@ -540,7 +540,7 @@ public class DbInitializerService : IDbInitializerService
             Quantity = quantity
         };
 
-        purchase.Items.Add(item);
+        purchase.AddPurchaseItem(item);
         share.Balance = share.Balance - item.PurchasePrice;
         context.Add(item);
 
@@ -588,7 +588,7 @@ public class DbInitializerService : IDbInitializerService
         chocolateBar.Quantity--;
         context.Update(chocolateBar);
 
-        purchase.Items.Add(item);
+        purchase.AddPurchaseItem(item);
         share.Balance = share.Balance - item.PurchasePrice;
         context.Add(item);
 
