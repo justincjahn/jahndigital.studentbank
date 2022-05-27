@@ -9,7 +9,7 @@
         <RootNamespace>JahnDigital.StudentBank.WebApi</RootNamespace>
     </PropertyGroup>
     <ItemGroup>
-        <PackageReference Include="HotChocolate.AspNetCore" Version="11.3.5" />
+        <PackageReference Include="HotChocolate.AspNetCore" Version="11.3.8" />
         <PackageReference Include="HotChocolate.AspNetCore.Authorization" Version="11.3.5" />
         <PackageReference Include="HotChocolate.Data.EntityFramework" Version="11.3.5" />
         <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="6.0.2" />

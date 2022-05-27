@@ -45,16 +45,19 @@ public class StudentPurchase : AuditableEntity
     public PurchaseStatus Status { get; set; } = PurchaseStatus.Placed;
 
     /// <summary>
-    ///     Mutable list of items on this purchase.
+    ///     Backing field for line items on this purchase.
     /// </summary>
-    private readonly ICollection<StudentPurchaseItem> _purchaseItems = new HashSet<StudentPurchaseItem>();
+    private ICollection<StudentPurchaseItem> _items = new HashSet<StudentPurchaseItem>();
 
     /// <summary>
     ///     Get a list of line items on this purchase.
     /// </summary>
     public IReadOnlyCollection<StudentPurchaseItem> Items
     {
-        get => new ReadOnlyCollection<StudentPurchaseItem>(_purchaseItems.ToList());
+        get => _items.ToList();
+
+        // @NOTE HotChocolate workaround
+        private set => _items = value.ToList();
     }
 
     /// <summary>
@@ -63,8 +66,8 @@ public class StudentPurchase : AuditableEntity
     /// <param name="item"></param>
     public void AddPurchaseItem(StudentPurchaseItem item)
     {
-        _purchaseItems.Add(item);
-        TotalCost += item.TotalPurchasePrice;
+        _items.Add(item);
+        TotalCost += item.PurchasePrice;
     }
 
     /// <summary>
@@ -73,11 +76,11 @@ public class StudentPurchase : AuditableEntity
     /// <param name="item"></param>
     public void RemovePurchaseItem(StudentPurchaseItem item)
     {
-        var wasRemoved = _purchaseItems.Remove(item);
+        var wasRemoved = _items.Remove(item);
 
         if (wasRemoved)
         {
-            TotalCost -= item.TotalPurchasePrice;
+            TotalCost -= item.PurchasePrice;
         }
     }
 

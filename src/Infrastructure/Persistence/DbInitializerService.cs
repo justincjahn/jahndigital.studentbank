@@ -1,4 +1,5 @@
-﻿using System.Linq;
+﻿using System.Diagnostics;
+using System.Linq;
 using JahnDigital.StudentBank.Application.Common.Interfaces;
 using JahnDigital.StudentBank.Application.Common.Utils;
 using JahnDigital.StudentBank.Domain.Entities;
@@ -335,9 +336,11 @@ public class DbInitializerService : IDbInitializerService
     private void SeedGroups(AppDbContext context, IEnumerable<Instance> instances)
     {
         List<Product>? products = context.Products.ToList();
+        bool hasInstance = false;
 
         foreach (Instance? instance in instances)
         {
+            hasInstance = true;
             List<Group>? groups = new List<Group>();
 
             for (int i = 0; i < 5; i++)
@@ -353,7 +356,7 @@ public class DbInitializerService : IDbInitializerService
         }
 
         // After everything is created and transactions are posted, purchase stuff
-        if (instances.Count() > 0)
+        if (hasInstance)
         {
             SeedPurchases(context);
         }
@@ -513,7 +516,7 @@ public class DbInitializerService : IDbInitializerService
     /// <param name="purchase"></param>
     private void SeedPurchasesExtraCredit(AppDbContext context, Share share, StudentPurchase purchase)
     {
-        Product? extraCredit = _productsCache.FirstOrDefault(x => x.IsLimitedQuantity = true);
+        Product? extraCredit = _productsCache.FirstOrDefault(x => x.IsLimitedQuantity = false);
 
         if (extraCredit == null)
         {
@@ -535,7 +538,6 @@ public class DbInitializerService : IDbInitializerService
         StudentPurchaseItem? item = new StudentPurchaseItem
         {
             Product = extraCredit,
-            PurchasePrice = extraCredit.Cost * quantity,
             StudentPurchase = purchase,
             Quantity = quantity
         };
@@ -555,7 +557,7 @@ public class DbInitializerService : IDbInitializerService
     /// <param name="purchase"></param>
     private void SeedPurchasesLimited(AppDbContext context, Share share, StudentPurchase purchase)
     {
-        Product? chocolateBar = _productsCache.FirstOrDefault(x => x.IsLimitedQuantity);
+        Product? chocolateBar = _productsCache.FirstOrDefault(x => x.IsLimitedQuantity = true);
 
         if (chocolateBar == null)
         {
@@ -582,7 +584,9 @@ public class DbInitializerService : IDbInitializerService
         // Add the purchase, subtract from share balance
         StudentPurchaseItem? item = new StudentPurchaseItem
         {
-            Product = chocolateBar, PurchasePrice = chocolateBar.Cost, StudentPurchase = purchase, Quantity = 1
+            Product = chocolateBar,
+            StudentPurchase = purchase,
+            Quantity = 1
         };
 
         chocolateBar.Quantity--;
