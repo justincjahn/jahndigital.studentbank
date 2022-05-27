@@ -33,10 +33,26 @@ public class StudentPurchaseItem : EntityBase
     /// </summary>
     public Product Product { get; set; } = default!;
 
+    private int _quantity = 1;
+
     /// <summary>
     ///     Get the total number of items purchased.
     /// </summary>
-    public int Quantity { get; set; } = 1;
+    public int Quantity
+    {
+        get => _quantity;
+
+        set
+        {
+            if (value < 0)
+            {
+                throw new ArgumentOutOfRangeException(nameof(value), "Quantity cannot be less than zero.");
+            }
+
+            _quantity = value;
+            RawTotalPurchasePrice = RawPurchasePrice * value;
+        }
+    }
 
     /// <summary>
     ///     Get the raw (database stored) purchase cost of the item.
@@ -49,6 +65,24 @@ public class StudentPurchaseItem : EntityBase
     public Money PurchasePrice
     {
         get => Money.FromDatabase(RawPurchasePrice);
-        set => RawPurchasePrice = value.DatabaseAmount;
+
+        set
+        {
+            RawPurchasePrice = value.DatabaseAmount;
+            RawTotalPurchasePrice = value.DatabaseAmount * Quantity;
+        }
+    }
+
+    /// <summary>
+    ///     Get the raw (database stored) total cost of this item (qty * price).
+    /// </summary>
+    public long RawTotalPurchasePrice { get; private set; }
+
+    /// <summary>
+    /// Get the total cost of this item (qty * PurchasePrice)
+    /// </summary>
+    public Money TotalPurchasePrice
+    {
+        get => Money.FromDatabase(RawTotalPurchasePrice);
     }
 }

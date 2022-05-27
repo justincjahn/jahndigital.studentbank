@@ -6,7 +6,6 @@ using JahnDigital.StudentBank.Domain.Entities;
 using JahnDigital.StudentBank.Domain.Exceptions;
 using JahnDigital.StudentBank.Domain.ValueObjects;
 using JahnDigital.StudentBank.Infrastructure.Common.Exceptions;
-using JahnDigital.StudentBank.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Storage;
 
@@ -345,7 +344,7 @@ public class TransactionService : ITransactionService
                 product.Quantity -= purchaseItem.Count;
             }
 
-            purchase.Items.Add(new StudentPurchaseItem
+            purchase.AddPurchaseItem(new StudentPurchaseItem
             {
                 Quantity = purchaseItem.Count,
                 PurchasePrice = product.Cost,
@@ -353,9 +352,6 @@ public class TransactionService : ITransactionService
                 Product = product
             });
         }
-
-        purchase.TotalCost = total;
-        _context.StudentPurchases.Add(purchase);
 
         try
         {

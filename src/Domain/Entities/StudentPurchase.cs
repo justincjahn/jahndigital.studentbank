@@ -1,3 +1,4 @@
+using System.Collections.ObjectModel;
 using JahnDigital.StudentBank.Domain.Common;
 using JahnDigital.StudentBank.Domain.Enums;
 using JahnDigital.StudentBank.Domain.ValueObjects;
@@ -44,7 +45,49 @@ public class StudentPurchase : AuditableEntity
     public PurchaseStatus Status { get; set; } = PurchaseStatus.Placed;
 
     /// <summary>
+    ///     Mutable list of items on this purchase.
+    /// </summary>
+    private readonly ICollection<StudentPurchaseItem> _purchaseItems = new HashSet<StudentPurchaseItem>();
+
+    /// <summary>
     ///     Get a list of line items on this purchase.
     /// </summary>
-    public ICollection<StudentPurchaseItem> Items { get; set; } = new HashSet<StudentPurchaseItem>();
+    public IReadOnlyCollection<StudentPurchaseItem> Items
+    {
+        get => new ReadOnlyCollection<StudentPurchaseItem>(_purchaseItems.ToList());
+    }
+
+    /// <summary>
+    /// Adds an item to the purchase.
+    /// </summary>
+    /// <param name="item"></param>
+    public void AddPurchaseItem(StudentPurchaseItem item)
+    {
+        _purchaseItems.Add(item);
+        TotalCost += item.TotalPurchasePrice;
+    }
+
+    /// <summary>
+    /// Removes an item from the purchase.
+    /// </summary>
+    /// <param name="item"></param>
+    public void RemovePurchaseItem(StudentPurchaseItem item)
+    {
+        var wasRemoved = _purchaseItems.Remove(item);
+
+        if (wasRemoved)
+        {
+            TotalCost -= item.TotalPurchasePrice;
+        }
+    }
+
+    /// <summary>
+    /// Updates an existing item on the purchase.
+    /// </summary>
+    /// <param name="item"></param>
+    public void UpdatePurchaseItem(StudentPurchaseItem item)
+    {
+        RemovePurchaseItem(item);
+        AddPurchaseItem(item);
+    }
 }
