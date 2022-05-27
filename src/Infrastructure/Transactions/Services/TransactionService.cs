@@ -347,7 +347,6 @@ public class TransactionService : ITransactionService
             purchase.AddPurchaseItem(new StudentPurchaseItem
             {
                 Quantity = purchaseItem.Count,
-                PurchasePrice = product.Cost,
                 StudentPurchase = purchase,
                 Product = product
             });

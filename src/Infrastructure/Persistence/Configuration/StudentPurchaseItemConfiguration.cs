@@ -14,12 +14,5 @@ public class StudentPurchaseItemConfiguration : IEntityTypeConfiguration<Student
             .IsRequired();
 
         builder.Ignore(x => x.PurchasePrice);
-
-        builder
-            .Property(x => x.RawTotalPurchasePrice)
-            .HasColumnName("TotalPurchasePrice")
-            .IsRequired();
-
-        builder.Ignore(x => x.TotalPurchasePrice);
     }
 }

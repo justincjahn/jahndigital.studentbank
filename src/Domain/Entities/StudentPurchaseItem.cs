@@ -29,9 +29,23 @@ public class StudentPurchaseItem : EntityBase
     public StudentPurchase StudentPurchase { get; set; } = default!;
 
     /// <summary>
+    ///     Backing field for product.
+    /// </summary>
+    private Product _product = default!;
+
+    /// <summary>
     ///     Get the product that was purchased.
     /// </summary>
-    public Product Product { get; set; } = default!;
+    public Product Product
+    {
+        get => _product;
+
+        set
+        {
+            _product = value;
+            RawPurchasePrice = value.RawCost * Quantity;
+        }
+    }
 
     private int _quantity = 1;
 
@@ -50,7 +64,7 @@ public class StudentPurchaseItem : EntityBase
             }
 
             _quantity = value;
-            RawTotalPurchasePrice = RawPurchasePrice * value;
+            RawPurchasePrice = RawPurchasePrice * value;
         }
     }
 
@@ -65,24 +79,6 @@ public class StudentPurchaseItem : EntityBase
     public Money PurchasePrice
     {
         get => Money.FromDatabase(RawPurchasePrice);
-
-        set
-        {
-            RawPurchasePrice = value.DatabaseAmount;
-            RawTotalPurchasePrice = value.DatabaseAmount * Quantity;
-        }
-    }
-
-    /// <summary>
-    ///     Get the raw (database stored) total cost of this item (qty * price).
-    /// </summary>
-    public long RawTotalPurchasePrice { get; private set; }
-
-    /// <summary>
-    /// Get the total cost of this item (qty * PurchasePrice)
-    /// </summary>
-    public Money TotalPurchasePrice
-    {
-        get => Money.FromDatabase(RawTotalPurchasePrice);
+        private set => RawPurchasePrice = value.DatabaseAmount;
     }
 }

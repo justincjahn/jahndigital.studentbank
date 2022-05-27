@@ -103,9 +103,9 @@ public class Startup
             .BindRuntimeType<int, IntType>()
             .BindRuntimeType<Money, MoneyType>()
             .BindRuntimeType<Rate, RateType>()
-            .AddProjections()
-            .AddSorting()
             .AddFiltering()
+            .AddSorting()
+            .AddProjections()
             .AddAuthorization()
             .SetPagingOptions(new PagingOptions
             {
