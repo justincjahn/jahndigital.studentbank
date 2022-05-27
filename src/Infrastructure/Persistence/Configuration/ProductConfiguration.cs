@@ -11,7 +11,6 @@ public class ProductConfiguration : IEntityTypeConfiguration<Product>
     {
         builder
             .Property(x => x.Quantity)
-            .HasField("_quantity")
             .IsRequired();
 
         builder

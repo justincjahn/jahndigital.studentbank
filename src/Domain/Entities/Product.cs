@@ -9,11 +9,6 @@ namespace JahnDigital.StudentBank.Domain.Entities;
 public class Product : SoftDeletableEntity
 {
     /// <summary>
-    ///     Backing field for <see cref="Quantity" />.
-    /// </summary>
-    private int _quantity = -1;
-
-    /// <summary>
     ///     The unique ID number of the entity.
     /// </summary>
     public long Id { get; set; }
@@ -45,18 +40,7 @@ public class Product : SoftDeletableEntity
     /// <summary>
     ///     Gets or sets the in-stock quantity of the product.
     /// </summary>
-    public int Quantity
-    {
-        get => _quantity;
-
-        set
-        {
-            if (IsLimitedQuantity)
-            {
-                _quantity = value;
-            }
-        }
-    }
+    public int Quantity { get; set; } = -1;
 
     /// <summary>
     ///     Gets a list of <see cname="ProductInstance" /> objects linking this product to a group.

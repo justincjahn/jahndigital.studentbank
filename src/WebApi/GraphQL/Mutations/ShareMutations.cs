@@ -1,14 +1,21 @@
 using System;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using HotChocolate;
 using HotChocolate.AspNetCore.Authorization;
 using HotChocolate.Data;
 using HotChocolate.Types;
+using JahnDigital.StudentBank.Application.Shares.Commands.DeleteShare;
+using JahnDigital.StudentBank.Application.Shares.Commands.NewShare;
+using JahnDigital.StudentBank.Application.Shares.Commands.RestoreShare;
+using JahnDigital.StudentBank.Application.Shares.Commands.UpdateShare;
+using JahnDigital.StudentBank.Application.Shares.Queries.GetShare;
 using JahnDigital.StudentBank.Domain.Entities;
 using JahnDigital.StudentBank.Domain.ValueObjects;
 using JahnDigital.StudentBank.Infrastructure.Persistence;
 using JahnDigital.StudentBank.WebApi.Models;
+using MediatR;
 using Microsoft.EntityFrameworkCore;
 using Privilege = JahnDigital.StudentBank.Domain.Enums.Privilege;
 
@@ -24,128 +31,49 @@ namespace JahnDigital.StudentBank.WebApi.GraphQL.Mutations
         ///     Create a new <see cref="Share" /> .
         /// </summary>
         /// <param name="input"></param>
-        /// <param name="context"></param>
+        /// <param name="mediatr"></param>
+        /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        [UseDbContext(typeof(AppDbContext)), UseProjection,
-         Authorize(Policy = Privilege.PRIVILEGE_MANAGE_SHARES)]
+        [UseProjection, Authorize(Policy = Privilege.PRIVILEGE_MANAGE_SHARES)]
         public async Task<IQueryable<Share>> NewShareAsync(
             NewShareRequest input,
-            [ScopedService] AppDbContext context
+            [Service] ISender mediatr,
+            CancellationToken cancellationToken
         )
         {
-            Student student = await context.Students
-                    .Include(x => x.Group)
-                    .ThenInclude(x => x.Instance)
-                    .ThenInclude(x => x.ShareTypeInstances)
-                    .Where(x => x.Id == input.StudentId)
-                    .FirstOrDefaultAsync()
-                ?? throw ErrorFactory.NotFound();
-
-            // Verify the student's instance has been assigned the Share Type ID
-            ShareTypeInstance? hasShareType = student.Group.Instance.ShareTypeInstances
-                    .SingleOrDefault(x => x.ShareTypeId == input.ShareTypeId)
-                ?? throw ErrorFactory.NotFound();
-
-            Share? share = new Share
-            {
-                StudentId = input.StudentId,
-                ShareTypeId = input.ShareTypeId,
-                DateLastActive = DateTime.UtcNow,
-                Balance = Money.FromCurrency(0.0m)
-            };
-
-            try
-            {
-                context.Add(share);
-                await context.SaveChangesAsync();
-            }
-            catch (Exception e)
-            {
-                throw ErrorFactory.QueryFailed(e.Message);
-            }
-
-            return context.Shares.Where(x => x.Id == share.Id);
+            var shareId = await mediatr.Send(new NewShareCommand(input.StudentId, input.ShareTypeId, Money.Zero), cancellationToken);
+            return await mediatr.Send(new GetShareQuery(shareId), cancellationToken);
         }
 
         /// <summary>
         ///     Update a <see cref="Share" /> .
         /// </summary>
         /// <param name="input"></param>
-        /// <param name="context"></param>
+        /// <param name="mediatr"></param>
+        /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        [UseDbContext(typeof(AppDbContext)), UseProjection,
-         Authorize(Policy = Privilege.PRIVILEGE_MANAGE_SHARES)]
+        [UseProjection, Authorize(Policy = Privilege.PRIVILEGE_MANAGE_SHARES)]
         public async Task<IQueryable<Share>> UpdateShareAsync(
             UpdateShareRequest input,
-            [ScopedService] AppDbContext context
+            [Service] ISender mediatr,
+            CancellationToken cancellationToken
         )
         {
-            Share? share = await context.Shares.Where(x => x.Id == input.Id).FirstOrDefaultAsync()
-                ?? throw ErrorFactory.NotFound();
-
-            Student? student = await context.Students
-                    .Include(x => x.Group)
-                    .ThenInclude(x => x.Instance)
-                    .ThenInclude(x => x.ShareTypeInstances)
-                    .Where(x =>
-                        x.Group.Instance.ShareTypeInstances
-                            .Any(x => x.ShareTypeId == input.ShareTypeId)
-                        && x.Id == share.StudentId)
-                    .FirstOrDefaultAsync()
-                ?? throw ErrorFactory
-                    .QueryFailed(
-                        $"Student #{share.StudentId} does not have access to Share Type {input.ShareTypeId} or it doesn't exist.");
-
-            share.ShareTypeId = input.ShareTypeId;
-
-            try
-            {
-                await context.SaveChangesAsync();
-            }
-            catch (DbUpdateException e)
-            {
-                throw ErrorFactory.QueryFailed(e.InnerException?.Message ?? e.Message);
-            }
-            catch (Exception e)
-            {
-                throw ErrorFactory.QueryFailed(e.Message);
-            }
-
-            return context.Shares.Where(x => x.Id == share.Id);
+            await mediatr.Send(new UpdateShareCommand(input.Id, input.ShareTypeId), cancellationToken);
+            return await mediatr.Send(new GetShareQuery(input.Id), cancellationToken);
         }
 
         /// <summary>
         ///     Soft-delete a <see cref="Share" /> .
         /// </summary>
         /// <param name="id"></param>
-        /// <param name="context"></param>
+        /// <param name="mediatr"></param>
+        /// <param name="cancellationToken"></param>
         /// <returns></returns>
         [Authorize(Policy = Privilege.PRIVILEGE_MANAGE_SHARES)]
-        public async Task<bool> DeleteShareAsync(long id, [Service] AppDbContext context)
+        public async Task<bool> DeleteShareAsync(long id, [Service] ISender mediatr, CancellationToken cancellationToken)
         {
-            Share? share = await context.Shares
-                    .Where(x => x.Id == id)
-                    .FirstOrDefaultAsync()
-                ?? throw ErrorFactory.NotFound();
-
-            if (share.Balance != Money.FromCurrency(0.0m))
-            {
-                throw ErrorFactory.QueryFailed(
-                    "Share must be zero-balance before being deleted!"
-                );
-            }
-
-            share.DateDeleted = DateTime.UtcNow;
-
-            try
-            {
-                await context.SaveChangesAsync();
-            }
-            catch (Exception e)
-            {
-                throw ErrorFactory.QueryFailed(e.Message);
-            }
-
+            await mediatr.Send(new DeleteShareCommand(id), cancellationToken);
             return true;
         }
 
@@ -153,29 +81,14 @@ namespace JahnDigital.StudentBank.WebApi.GraphQL.Mutations
         ///     Restore a soft-deleted <see cref="Share" />.
         /// </summary>
         /// <param name="id"></param>
-        /// <param name="context"></param>
+        /// <param name="mediatr"></param>
+        /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        [UseDbContext(typeof(AppDbContext)), UseProjection,
-         Authorize(Policy = Privilege.PRIVILEGE_MANAGE_SHARES)]
-        public async Task<IQueryable<Share>> RestoreShareAsync(long id, [ScopedService] AppDbContext context)
+        [UseProjection, Authorize(Policy = Privilege.PRIVILEGE_MANAGE_SHARES)]
+        public async Task<IQueryable<Share>> RestoreShareAsync(long id, [Service] ISender mediatr, CancellationToken cancellationToken)
         {
-            Share? share = await context.Shares
-                    .Where(x => x.Id == id && x.DateDeleted != null)
-                    .SingleOrDefaultAsync()
-                ?? throw ErrorFactory.NotFound();
-
-            share.DateDeleted = null;
-
-            try
-            {
-                await context.SaveChangesAsync();
-            }
-            catch (Exception e)
-            {
-                throw ErrorFactory.QueryFailed(e.Message);
-            }
-
-            return context.Shares.Where(x => x.Id == id);
+            await mediatr.Send(new RestoreShareCommand(id), cancellationToken);
+            return await mediatr.Send(new GetShareQuery(id), cancellationToken);
         }
     }
 }
