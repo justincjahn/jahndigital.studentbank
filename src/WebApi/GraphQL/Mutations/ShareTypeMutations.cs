@@ -1,15 +1,24 @@
 using System;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using HotChocolate;
 using HotChocolate.AspNetCore.Authorization;
 using HotChocolate.Data;
 using HotChocolate.Types;
+using JahnDigital.StudentBank.Application.ShareTypes.Commands.DeleteShareTypeCommand;
+using JahnDigital.StudentBank.Application.ShareTypes.Commands.LinkShareTypeCommand;
+using JahnDigital.StudentBank.Application.ShareTypes.Commands.NewShareType;
+using JahnDigital.StudentBank.Application.ShareTypes.Commands.RestoreShareTypeCommand;
+using JahnDigital.StudentBank.Application.ShareTypes.Commands.UnlinkShareTypeCommand;
+using JahnDigital.StudentBank.Application.ShareTypes.Commands.UpdateShareType;
+using JahnDigital.StudentBank.Application.ShareTypes.Queries.GetShareType;
 using JahnDigital.StudentBank.Domain.Entities;
 using JahnDigital.StudentBank.Domain.Enums;
 using JahnDigital.StudentBank.Domain.ValueObjects;
 using JahnDigital.StudentBank.Infrastructure.Persistence;
 using JahnDigital.StudentBank.WebApi.Models;
+using MediatR;
 using Microsoft.EntityFrameworkCore;
 using Privilege = JahnDigital.StudentBank.Domain.Enums.Privilege;
 
@@ -25,248 +34,108 @@ namespace JahnDigital.StudentBank.WebApi.GraphQL.Mutations
         ///     Create a new <see cref="ShareType" />.
         /// </summary>
         /// <param name="input"></param>
-        /// <param name="context"></param>
+        /// <param name="mediatr"></param>
+        /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        [UseDbContext(typeof(AppDbContext)), UseProjection,
-         Authorize(Policy = Privilege.PRIVILEGE_MANAGE_SHARE_TYPES)]
+        [UseProjection, Authorize(Policy = Privilege.PRIVILEGE_MANAGE_SHARE_TYPES)]
         public async Task<IQueryable<ShareType>> NewShareTypeAsync(
             NewShareTypeRequest input,
-            [ScopedService] AppDbContext context
+            [Service] ISender mediatr,
+            CancellationToken cancellationToken
         )
         {
-            if (await context.ShareTypes.AnyAsync(x => x.Name == input.Name))
-            {
-                throw new ArgumentOutOfRangeException(
-                    "Name",
-                    $"A Share Type with the name '{input.Name}' already exists."
-                );
-            }
-
-            ShareType? shareType = new ShareType
+            var shareTypeId = await mediatr.Send(new NewShareTypeCommand
             {
                 Name = input.Name,
                 DividendRate = input.DividendRate,
                 WithdrawalLimitCount = input.WithdrawalLimitCount ?? 0,
                 WithdrawalLimitPeriod = input.WithdrawalLimitPeriod ?? Period.Monthly,
                 WithdrawalLimitShouldFee = input.WithdrawalLimitShouldFee ?? false,
-                WithdrawalLimitFee = input.WithdrawalLimitFee ?? Money.FromCurrency(0)
-            };
+                WithdrawalLimitFee = input.WithdrawalLimitFee ?? Money.Zero
+            }, cancellationToken);
 
-            try
-            {
-                context.Add(shareType);
-                await context.SaveChangesAsync();
-            }
-            catch (Exception e)
-            {
-                throw ErrorFactory.QueryFailed(e.Message);
-            }
-
-            return context.ShareTypes.Where(x => x.Id == shareType.Id);
+            return await mediatr.Send(new GetShareTypeQuery(shareTypeId), cancellationToken);
         }
 
         /// <summary>
         ///     Update a <see cref="ShareType" />.
         /// </summary>
         /// <param name="input"></param>
-        /// <param name="context"></param>
+        /// <param name="mediatr"></param>
+        /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        [UseDbContext(typeof(AppDbContext)), UseProjection,
-         Authorize(Policy = Privilege.PRIVILEGE_MANAGE_SHARE_TYPES)]
+        [UseProjection, Authorize(Policy = Privilege.PRIVILEGE_MANAGE_SHARE_TYPES)]
         public async Task<IQueryable<ShareType>> UpdateShareTypeAsync(
             UpdateShareTypeRequest input,
-            [ScopedService] AppDbContext context
+            [Service] ISender mediatr,
+            CancellationToken cancellationToken
         )
         {
-            ShareType? shareType = await context.ShareTypes.FindAsync(input.Id)
-                ?? throw ErrorFactory.NotFound();
-
-            shareType.DividendRate = input.DividendRate ?? shareType.DividendRate;
-            shareType.WithdrawalLimitCount = input.WithdrawalLimitCount ?? shareType.WithdrawalLimitCount;
-            shareType.WithdrawalLimitPeriod = input.WithdrawalLimitPeriod ?? shareType.WithdrawalLimitPeriod;
-            shareType.WithdrawalLimitShouldFee = input.WithdrawalLimitShouldFee ?? shareType.WithdrawalLimitShouldFee;
-            shareType.WithdrawalLimitFee = input.WithdrawalLimitFee ?? shareType.WithdrawalLimitFee;
-
-            if (input.Name != null && input.Name != shareType.Name)
+            await mediatr.Send(new UpdateShareTypeCommand
             {
-                if (await context.ShareTypes.Where(x => x.Name == input.Name).AnyAsync())
-                {
-                    throw new ArgumentOutOfRangeException(
-                        "Name",
-                        $"A Share Type with the name '{input.Name}' already exists."
-                    );
-                }
+                ShareTypeId = input.Id,
+                Name = input.Name,
+                DividendRate = input.DividendRate,
+                WithdrawalLimitCount = input.WithdrawalLimitCount,
+                WithdrawalLimitPeriod = input.WithdrawalLimitPeriod,
+                WithdrawalLimitShouldFee = input.WithdrawalLimitShouldFee,
+                WithdrawalLimitFee = input.WithdrawalLimitFee
+            }, cancellationToken);
 
-                shareType.Name = input.Name;
-            }
-
-            try
-            {
-                await context.SaveChangesAsync();
-            }
-            catch (DbUpdateException e)
-            {
-                throw ErrorFactory.QueryFailed(e.InnerException?.Message ?? e.Message);
-            }
-            catch (Exception e)
-            {
-                throw ErrorFactory.QueryFailed(e.Message);
-            }
-
-            return context.ShareTypes.Where(x => x.Id == shareType.Id);
+            return await mediatr.Send(new GetShareTypeQuery(input.Id), cancellationToken);
         }
 
         /// <summary>
         ///     Link a <see cref="ShareType" /> to an <see cref="Instance" />.<see langword="abstract" />
         /// </summary>
         /// <param name="input"></param>
-        /// <param name="context"></param>
+        /// <param name="mediatr"></param>
+        /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        [UseDbContext(typeof(AppDbContext)), UseProjection,
-         Authorize(Policy = Privilege.PRIVILEGE_MANAGE_SHARE_TYPES)]
+        [UseProjection, Authorize(Policy = Privilege.PRIVILEGE_MANAGE_SHARE_TYPES)]
         public async Task<IQueryable<ShareType>> LinkShareTypeAsync(
             LinkShareTypeRequest input,
-            [ScopedService] AppDbContext context
+            [Service] ISender mediatr,
+            CancellationToken cancellationToken
         )
         {
-            bool hasInstance = await context.Instances.AnyAsync(x => x.Id == input.InstanceId);
-
-            if (!hasInstance)
-            {
-                throw ErrorFactory.NotFound();
-            }
-
-            bool hasShareType = await context.ShareTypes.AnyAsync(x => x.Id == input.ShareTypeId);
-
-            if (!hasShareType)
-            {
-                throw ErrorFactory.NotFound();
-            }
-
-            bool hasLinks = await context.ShareTypeInstances
-                .Where(x => x.ShareTypeId == input.ShareTypeId && x.InstanceId == input.InstanceId)
-                .AnyAsync();
-
-            if (hasLinks)
-            {
-                throw ErrorFactory.QueryFailed("Share Type is already linked to the provided instance!");
-            }
-
-            ShareTypeInstance? link =
-                new ShareTypeInstance { ShareTypeId = input.ShareTypeId, InstanceId = input.InstanceId };
-
-            try
-            {
-                context.Add(link);
-                await context.SaveChangesAsync();
-            }
-            catch (Exception e)
-            {
-                throw ErrorFactory.QueryFailed(e.Message);
-            }
-
-            return context.ShareTypes.Where(x => x.Id == input.ShareTypeId);
+            await mediatr.Send(new LinkShareTypeCommand(input.ShareTypeId, input.InstanceId), cancellationToken);
+            return await mediatr.Send(new GetShareTypeQuery(input.ShareTypeId), cancellationToken);
         }
 
         /// <summary>
         ///     Unlink a <see cref="ShareType" /> from an <see cref="Instance" />.
         /// </summary>
         /// <param name="input"></param>
-        /// <param name="context"></param>
+        /// <param name="mediatr"></param>
+        /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        [UseDbContext(typeof(AppDbContext)), UseProjection,
-         Authorize(Policy = Privilege.PRIVILEGE_MANAGE_SHARE_TYPES)]
+        [UseProjection, Authorize(Policy = Privilege.PRIVILEGE_MANAGE_SHARE_TYPES)]
         public async Task<IQueryable<ShareType>> UnlinkShareTypeAsync(
             LinkShareTypeRequest input,
-            [ScopedService] AppDbContext context
+            [Service] ISender mediatr,
+            CancellationToken cancellationToken
         )
         {
-            bool hasInstance = await context.Instances.AnyAsync(x => x.Id == input.InstanceId);
-
-            if (!hasInstance)
-            {
-                throw ErrorFactory.NotFound();
-            }
-
-            bool hasShareType = await context.ShareTypes.AnyAsync(x => x.Id == input.ShareTypeId);
-
-            if (!hasShareType)
-            {
-                throw ErrorFactory.NotFound();
-            }
-
-            ShareTypeInstance? link = await context.ShareTypeInstances
-                .Where(x => x.ShareTypeId == input.ShareTypeId && x.InstanceId == input.InstanceId)
-                .FirstOrDefaultAsync();
-
-            if (link == null)
-            {
-                throw ErrorFactory.QueryFailed("Share Type is already unlinked from the provided instance!");
-            }
-
-            bool hasSharesInInstance = await context.Shares
-                .Include(x => x.Student)
-                .ThenInclude(x => x.Group)
-                .Where(x =>
-                    x.Student.Group.InstanceId == input.InstanceId
-                    && x.ShareTypeId == input.ShareTypeId
-                    && x.DateDeleted == null)
-                .AnyAsync();
-
-            if (hasSharesInInstance)
-            {
-                throw ErrorFactory.QueryFailed(
-                    "There are still open shares of this share type in the instance you are trying to unlink!"
-                );
-            }
-
-            try
-            {
-                context.Remove(link);
-                await context.SaveChangesAsync();
-            }
-            catch (Exception e)
-            {
-                throw ErrorFactory.QueryFailed(e.Message);
-            }
-
-            return context.ShareTypes.Where(x => x.Id == input.ShareTypeId);
+            await mediatr.Send(new UnlinkShareTypeCommand(input.ShareTypeId, input.InstanceId), cancellationToken);
+            return await mediatr.Send(new GetShareTypeQuery(input.ShareTypeId), cancellationToken);
         }
 
         /// <summary>
         ///     Soft-delete a <see cref="ShareType" />.
         /// </summary>
         /// <param name="id"></param>
-        /// <param name="context"></param>
+        /// <param name="mediatr"></param>
+        /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        [UseDbContext(typeof(AppDbContext)),
-         Authorize(Policy = Privilege.PRIVILEGE_MANAGE_SHARE_TYPES)]
+        [Authorize(Policy = Privilege.PRIVILEGE_MANAGE_SHARE_TYPES)]
         public async Task<bool> DeleteShareTypeAsync(
             long id,
-            [ScopedService] AppDbContext context
+            [Service] ISender mediatr,
+            CancellationToken cancellationToken
         )
         {
-            ShareType? shareType = await context.ShareTypes.FindAsync(id)
-                ?? throw ErrorFactory.NotFound();
-
-            bool hasShares = await context.Shares.AnyAsync(x => x.ShareTypeId == id && x.DateDeleted == null);
-
-            if (hasShares)
-            {
-                throw ErrorFactory.QueryFailed("Cannot delete a share type with active shares.");
-            }
-
-            shareType.DateDeleted = DateTime.UtcNow;
-
-            try
-            {
-                await context.SaveChangesAsync();
-            }
-            catch (Exception e)
-            {
-                throw ErrorFactory.QueryFailed(e.Message);
-            }
-
+            await mediatr.Send(new DeleteShareTypeCommand(id), cancellationToken);
             return true;
         }
 
@@ -274,32 +143,18 @@ namespace JahnDigital.StudentBank.WebApi.GraphQL.Mutations
         ///     Restore a soft-deleted <see cref="ShareType" />.
         /// </summary>
         /// <param name="id"></param>
-        /// <param name="context"></param>
+        /// <param name="mediatr"></param>
+        /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        [UseDbContext(typeof(AppDbContext)),
-         Authorize(Policy = Privilege.PRIVILEGE_MANAGE_SHARE_TYPES)]
+        [Authorize(Policy = Privilege.PRIVILEGE_MANAGE_SHARE_TYPES)]
         public async Task<IQueryable<ShareType>> RestoreShareTypeAsync(
             long id,
-            [ScopedService] AppDbContext context
+            [Service] ISender mediatr,
+            CancellationToken cancellationToken
         )
         {
-            ShareType? shareType = await context.ShareTypes
-                    .Where(x => x.Id == id && x.DateDeleted != null)
-                    .SingleOrDefaultAsync()
-                ?? throw ErrorFactory.NotFound();
-
-            shareType.DateDeleted = null;
-
-            try
-            {
-                await context.SaveChangesAsync();
-            }
-            catch (Exception e)
-            {
-                throw ErrorFactory.QueryFailed(e.Message);
-            }
-
-            return context.ShareTypes.Where(x => x.Id == id);
+            await mediatr.Send(new RestoreShareTypeCommand(id), cancellationToken);
+            return await mediatr.Send(new GetShareTypeQuery(id), cancellationToken);
         }
     }
 }
