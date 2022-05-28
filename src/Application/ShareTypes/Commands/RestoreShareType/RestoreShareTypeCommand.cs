@@ -4,7 +4,7 @@ using JahnDigital.StudentBank.Domain.Entities;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 
-namespace JahnDigital.StudentBank.Application.ShareTypes.Commands.RestoreShareTypeCommand;
+namespace JahnDigital.StudentBank.Application.ShareTypes.Commands.RestoreShareType;
 
 public record RestoreShareTypeCommand(long ShareTypeId) : IRequest;
 

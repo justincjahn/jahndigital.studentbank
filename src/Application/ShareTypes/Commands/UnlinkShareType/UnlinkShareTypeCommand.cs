@@ -4,7 +4,7 @@ using JahnDigital.StudentBank.Domain.Entities;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 
-namespace JahnDigital.StudentBank.Application.ShareTypes.Commands.UnlinkShareTypeCommand;
+namespace JahnDigital.StudentBank.Application.ShareTypes.Commands.UnlinkShareType;
 
 public record UnlinkShareTypeCommand(long ShareTypeId, long InstanceId) : IRequest;
 

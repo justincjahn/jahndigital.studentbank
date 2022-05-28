@@ -46,7 +46,17 @@ public class Stock : SoftDeletableEntity
     public Money CurrentValue
     {
         get => Money.FromDatabase(RawCurrentValue);
-        set => RawCurrentValue = value.DatabaseAmount;
+
+        set
+        {
+            if (value.DatabaseAmount == RawCurrentValue)
+            {
+                return;
+            }
+
+            _history.Add(new StockHistory { Stock = this, Value = value });
+            RawCurrentValue = value.DatabaseAmount;
+        }
     }
 
     /// <summary>
@@ -55,9 +65,20 @@ public class Stock : SoftDeletableEntity
     public ICollection<StudentStock> StudentStock { get; set; } = new HashSet<StudentStock>();
 
     /// <summary>
-    ///     The history of the stock.
+    ///     Backing field for the history of a stock.
     /// </summary>
-    public ICollection<StockHistory> History { get; set; } = new HashSet<StockHistory>();
+    private ICollection<StockHistory> _history = new HashSet<StockHistory>();
+
+    /// <summary>
+    ///     The history of the stock.  Read-only and can only be added to when the price of a stock changes.
+    /// </summary>
+    public IReadOnlyCollection<StockHistory> History
+    {
+        get => _history.ToList();
+
+        // @NOTE HotChocolate workaround
+        private set => _history = value.ToList();
+    }
 
     /// <summary>
     ///     Get or set a collection of instances this stock is linked to.
