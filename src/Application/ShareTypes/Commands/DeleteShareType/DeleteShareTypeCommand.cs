@@ -4,7 +4,7 @@ using JahnDigital.StudentBank.Domain.Entities;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 
-namespace JahnDigital.StudentBank.Application.ShareTypes.Commands.DeleteShareTypeCommand;
+namespace JahnDigital.StudentBank.Application.ShareTypes.Commands.DeleteShareType;
 
 public record DeleteShareTypeCommand(long ShareTypeId) : IRequest;
 
