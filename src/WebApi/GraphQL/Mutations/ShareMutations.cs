@@ -13,10 +13,8 @@ using JahnDigital.StudentBank.Application.Shares.Commands.UpdateShare;
 using JahnDigital.StudentBank.Application.Shares.Queries.GetShare;
 using JahnDigital.StudentBank.Domain.Entities;
 using JahnDigital.StudentBank.Domain.ValueObjects;
-using JahnDigital.StudentBank.Infrastructure.Persistence;
 using JahnDigital.StudentBank.WebApi.Models;
 using MediatR;
-using Microsoft.EntityFrameworkCore;
 using Privilege = JahnDigital.StudentBank.Domain.Enums.Privilege;
 
 namespace JahnDigital.StudentBank.WebApi.GraphQL.Mutations
