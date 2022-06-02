@@ -6,7 +6,6 @@ using System.Threading.Tasks;
 using HotChocolate;
 using HotChocolate.AspNetCore.Authorization;
 using HotChocolate.Data;
-using HotChocolate.Execution;
 using HotChocolate.Types;
 using JahnDigital.StudentBank.Application.Stocks.Commands.DeleteStock;
 using JahnDigital.StudentBank.Application.Stocks.Commands.LinkStock;
@@ -20,7 +19,6 @@ using JahnDigital.StudentBank.Domain.Entities;
 using JahnDigital.StudentBank.Infrastructure.Persistence;
 using JahnDigital.StudentBank.WebApi.Models;
 using MediatR;
-using Microsoft.EntityFrameworkCore;
 using Privilege = JahnDigital.StudentBank.Domain.Enums.Privilege;
 
 namespace JahnDigital.StudentBank.WebApi.GraphQL.Mutations
