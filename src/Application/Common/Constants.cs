@@ -68,6 +68,8 @@ public static class Constants
 
         public const string ERROR_UNAUTHORIZED = "AUTH_NOT_AUTHORIZED";
 
+        public const string ERROR_LOGIN_FAILED = "LOGIN_FAILED";
+
         public const string ERROR_NOT_FOUND = "ERROR_NOT_FOUND";
 
         public const string ERROR_QUERY_FAILED = "ERROR_QUERY_FAILED";

@@ -7,7 +7,6 @@ using System.Threading.Tasks;
 using HotChocolate;
 using HotChocolate.AspNetCore.Authorization;
 using HotChocolate.Data;
-using HotChocolate.Execution;
 using HotChocolate.Resolvers;
 using HotChocolate.Types;
 using JahnDigital.StudentBank.Application.Common;
@@ -15,9 +14,11 @@ using JahnDigital.StudentBank.Application.Common.DTOs;
 using JahnDigital.StudentBank.Application.Students.Commands.AdminUpdateStudent;
 using JahnDigital.StudentBank.Application.Students.Commands.AuthenticateStudent;
 using JahnDigital.StudentBank.Application.Students.Commands.AuthenticateStudentInvite;
+using JahnDigital.StudentBank.Application.Students.Commands.DeleteStudent;
 using JahnDigital.StudentBank.Application.Students.Commands.NewStudent;
 using JahnDigital.StudentBank.Application.Students.Commands.RefreshStudentToken;
 using JahnDigital.StudentBank.Application.Students.Commands.RegisterStudent;
+using JahnDigital.StudentBank.Application.Students.Commands.RestoreStudent;
 using JahnDigital.StudentBank.Application.Students.Commands.RevokeStudentToken;
 using JahnDigital.StudentBank.Application.Students.Commands.UpdateStudent;
 using JahnDigital.StudentBank.Application.Students.Queries.GetStudent;
@@ -55,12 +56,7 @@ namespace JahnDigital.StudentBank.WebApi.GraphQL.Mutations
             CancellationToken cancellationToken
         )
         {
-            if (string.IsNullOrEmpty(input.Username))
-            {
-                throw ErrorFactory.Unauthorized();
-            }
-
-            if (string.IsNullOrEmpty(input.Password))
+            if (string.IsNullOrEmpty(input.Username) || string.IsNullOrEmpty(input.Password))
             {
                 throw ErrorFactory.Unauthorized();
             }
@@ -74,12 +70,7 @@ namespace JahnDigital.StudentBank.WebApi.GraphQL.Mutations
             }
             catch (Exception)
             {
-                throw new QueryException(
-                    ErrorBuilder.New()
-                        .SetMessage("Bad username or password.")
-                        .SetCode("LOGIN_FAIL")
-                        .Build()
-                );
+                throw ErrorFactory.LoginFailed();
             }
         }
 
@@ -100,13 +91,7 @@ namespace JahnDigital.StudentBank.WebApi.GraphQL.Mutations
             CancellationToken cancellationToken
         )
         {
-            token = token
-                ?? GetToken(contextAccessor)
-                ?? throw new QueryException(
-                    ErrorBuilder.New()
-                        .SetMessage("A token is required.")
-                        .SetCode(Constants.ErrorStrings.INVALID_REFRESH_TOKEN)
-                        .Build());
+            token = token ?? GetToken(contextAccessor) ?? throw ErrorFactory.InvalidRefreshToken();
 
             try
             {
@@ -117,12 +102,7 @@ namespace JahnDigital.StudentBank.WebApi.GraphQL.Mutations
             }
             catch (Exception)
             {
-                throw new QueryException(
-                    ErrorBuilder.New()
-                        .SetMessage("Invalid refresh token.")
-                        .SetCode(Constants.ErrorStrings.INVALID_REFRESH_TOKEN)
-                        .Build()
-                );
+                throw ErrorFactory.InvalidRefreshToken();
             }
         }
 
@@ -142,13 +122,7 @@ namespace JahnDigital.StudentBank.WebApi.GraphQL.Mutations
             CancellationToken cancellationToken
         )
         {
-            token = token
-                ?? GetToken(contextAccessor)
-                ?? throw new QueryException(
-                    ErrorBuilder.New()
-                        .SetMessage("A token is required.")
-                        .SetCode(Constants.ErrorStrings.INVALID_REFRESH_TOKEN)
-                        .Build());
+            token = token ?? GetToken(contextAccessor) ?? throw ErrorFactory.InvalidRefreshToken();
 
             try
             {
@@ -159,12 +133,7 @@ namespace JahnDigital.StudentBank.WebApi.GraphQL.Mutations
             }
             catch (Exception)
             {
-                throw new QueryException(
-                    ErrorBuilder.New()
-                        .SetMessage("Token not found.")
-                        .SetCode(Constants.ErrorStrings.ERROR_NOT_FOUND)
-                        .Build()
-                );
+                throw ErrorFactory.NotFound("token", token);
             }
         }
 
@@ -189,12 +158,7 @@ namespace JahnDigital.StudentBank.WebApi.GraphQL.Mutations
             }
             catch (Exception)
             {
-                throw new QueryException(
-                    ErrorBuilder.New()
-                        .SetMessage("Invalid invite code or account number")
-                        .SetCode(Constants.ErrorStrings.ERROR_QUERY_FAILED)
-                        .Build()
-                );
+                throw ErrorFactory.InvalidInviteCode(input.InviteCode, input.AccountNumber);
             }
         }
 
@@ -267,7 +231,7 @@ namespace JahnDigital.StudentBank.WebApi.GraphQL.Mutations
 
             Student student = await (await mediatr.Send(new GetStudentQuery(input.Id), cancellationToken))
                 .FirstOrDefaultAsync(cancellationToken)
-            ?? throw ErrorFactory.NotFound();
+            ?? throw ErrorFactory.NotFound(nameof(Student), input.Id);
 
             if (input.GroupId is not null && resolverContext.GetUserType() != UserType.User)
             {
@@ -278,13 +242,7 @@ namespace JahnDigital.StudentBank.WebApi.GraphQL.Mutations
             {
                 if (input.CurrentPassword is null)
                 {
-                    throw new QueryException(
-                        ErrorBuilder
-                            .New()
-                            .SetMessage("Bad username or password.")
-                            .SetCode("LOGIN_FAIL")
-                            .Build()
-                    );
+                    throw ErrorFactory.LoginFailed();
                 }
 
                 var authCommand = new AuthenticateStudentCommand(
@@ -299,12 +257,7 @@ namespace JahnDigital.StudentBank.WebApi.GraphQL.Mutations
                 }
                 catch
                 {
-                    throw new QueryException(
-                        ErrorBuilder.New()
-                            .SetMessage("Bad username or password.")
-                            .SetCode("LOGIN_FAIL")
-                            .Build()
-                    );
+                    throw ErrorFactory.LoginFailed();
                 }
             }
 
@@ -333,7 +286,7 @@ namespace JahnDigital.StudentBank.WebApi.GraphQL.Mutations
 
             if (!ids.Any())
             {
-                throw ErrorFactory.NotFound();
+                throw ErrorFactory.NotFound(nameof(Student));
             }
 
             var students = await (await mediatr.Send(new GetStudentsQuery(), cancellationToken))
@@ -341,13 +294,13 @@ namespace JahnDigital.StudentBank.WebApi.GraphQL.Mutations
 
             if (students.Count != ids.Count())
             {
-                throw ErrorFactory.NotFound();
+                throw ErrorFactory.NotFound(nameof(Student));
             }
 
             foreach (var request in updateStudentRequests)
             {
                 var student = students.Find(x => x.Id == request.Id)
-                    ?? throw ErrorFactory.NotFound();
+                    ?? throw ErrorFactory.NotFound(nameof(Student), request.Id);
 
                 var command = new AdminUpdateStudentCommand(
                     student.Id,
@@ -391,7 +344,6 @@ namespace JahnDigital.StudentBank.WebApi.GraphQL.Mutations
             };
 
             var studentId = await mediatr.Send(request, cancellationToken);
-
             return await mediatr.Send(new GetStudentQuery(studentId), cancellationToken);
         }
 
@@ -399,33 +351,17 @@ namespace JahnDigital.StudentBank.WebApi.GraphQL.Mutations
         ///     Delete a student.
         /// </summary>
         /// <param name="id"></param>
-        /// <param name="context"></param>
+        /// <param name="mediatr"></param>
+        /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        [UseDbContext(typeof(AppDbContext)), Authorize(Policy = Privilege.PRIVILEGE_MANAGE_STUDENTS)]
+        [Authorize(Policy = Privilege.PRIVILEGE_MANAGE_STUDENTS)]
         public async Task<bool> DeleteStudentAsync(
             long id,
-            [ScopedService] AppDbContext context
+            [Service] ISender mediatr,
+            CancellationToken cancellationToken
         )
         {
-            Student? student = await context.Students.FindAsync(id);
-
-            if (student == null)
-            {
-                throw ErrorFactory.NotFound();
-            }
-
-            student.DateDeleted = DateTime.UtcNow;
-
-            try
-            {
-                context.Update(student);
-                await context.SaveChangesAsync();
-            }
-            catch
-            {
-                return false;
-            }
-
+            await mediatr.Send(new DeleteStudentCommand(id), cancellationToken);
             return true;
         }
 
@@ -433,31 +369,18 @@ namespace JahnDigital.StudentBank.WebApi.GraphQL.Mutations
         ///     Restore a deleted student.
         /// </summary>
         /// <param name="id"></param>
-        /// <param name="context"></param>
+        /// <param name="mediatr"></param>
+        /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        [UseDbContext(typeof(AppDbContext)), UseProjection, Authorize(Policy = Privilege.PRIVILEGE_MANAGE_STUDENTS)]
+        [UseProjection, Authorize(Policy = Privilege.PRIVILEGE_MANAGE_STUDENTS)]
         public async Task<IQueryable<Student>> RestoreStudentAsync(
             long id,
-            [ScopedService] AppDbContext context
+            [Service] ISender mediatr,
+            CancellationToken cancellationToken
         )
         {
-            Student? student = await context.Students
-                    .Where(x => x.Id == id && x.DateDeleted != null)
-                    .SingleOrDefaultAsync()
-                ?? throw ErrorFactory.NotFound();
-
-            student.DateDeleted = null;
-
-            try
-            {
-                await context.SaveChangesAsync();
-            }
-            catch (Exception e)
-            {
-                throw ErrorFactory.QueryFailed(e.Message);
-            }
-
-            return context.Students.Where(x => x.Id == id);
+            await mediatr.Send(new RestoreStudentCommand(id), cancellationToken);
+            return await mediatr.Send(new GetStudentQuery(id), cancellationToken);
         }
     }
 }
