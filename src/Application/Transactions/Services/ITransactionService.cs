@@ -51,6 +51,7 @@ public interface ITransactionService
     ///     Transfer funds from one share to another.
     /// </summary>
     /// <param name="request"></param>
+    /// <param name="cancellationToken"></param>
     /// <returns>A tuple with the source and destination transactions respectively.</returns>
     Task<(Transaction, Transaction)> TransferAsync(TransferRequest request, CancellationToken cancellationToken = new());
 

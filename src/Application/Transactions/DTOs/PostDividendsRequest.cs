@@ -1,9 +1,11 @@
+using MediatR;
+
 namespace JahnDigital.StudentBank.Application.Transactions.DTOs;
 
 /// <summary>
 ///     Represents a request to post dividends for a specific share type.
 /// </summary>
-public class PostDividendsRequest
+public class PostDividendsRequest : IRequest
 {
     /// <summary>
     ///     The <see cref="dal.Entities.ShareType" /> ID to post dividends to.

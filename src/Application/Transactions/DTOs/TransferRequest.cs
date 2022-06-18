@@ -1,4 +1,4 @@
-﻿using System.Transactions;
+﻿using JahnDigital.StudentBank.Domain.Entities;
 using JahnDigital.StudentBank.Domain.ValueObjects;
 using MediatR;
 
@@ -10,7 +10,7 @@ public class TransferRequest : IRequest<(Transaction, Transaction)>
     /// The source <see cref="JahnDigital.StudentBank.Domain.Entities.Share"/> ID.
     /// </summary>
     public long SourceShareId { get; init; }
-    
+
     /// <summary>
     /// The destination <see cref="JahnDigital.StudentBank.Domain.Entities.Share"/> ID.
     /// </summary>
