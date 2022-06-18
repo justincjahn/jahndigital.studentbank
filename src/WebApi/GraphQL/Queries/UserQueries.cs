@@ -8,12 +8,14 @@ using HotChocolate.Data;
 using HotChocolate.Resolvers;
 using HotChocolate.Types;
 using JahnDigital.StudentBank.Application.Users.Queries.GetUser;
+using JahnDigital.StudentBank.Application.Users.Queries.GetUsers;
 using JahnDigital.StudentBank.Domain.Entities;
 using JahnDigital.StudentBank.Domain.Enums;
 using JahnDigital.StudentBank.Infrastructure.Persistence;
 using JahnDigital.StudentBank.WebApi.Extensions;
 using MediatR;
 using Microsoft.AspNetCore.Http;
+using Privilege = JahnDigital.StudentBank.Domain.Enums.Privilege;
 
 namespace JahnDigital.StudentBank.WebApi.GraphQL.Queries
 {
@@ -29,8 +31,7 @@ namespace JahnDigital.StudentBank.WebApi.GraphQL.Queries
         /// <param name="mediatr"></param>
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        [UseDbContext(typeof(AppDbContext)), UseProjection,
-         Authorize]
+        [UseProjection, Authorize]
         public Task<IQueryable<User>> GetCurrentUserAsync(
             [Service] IResolverContext resolverContext,
             [Service] ISender mediatr,
@@ -39,6 +40,21 @@ namespace JahnDigital.StudentBank.WebApi.GraphQL.Queries
         {
             if (resolverContext.GetUserType() != UserType.User) throw ErrorFactory.NotFound();
             return mediatr.Send(new GetUserQuery(resolverContext.GetUserId()), cancellationToken);
+        }
+
+        /// <summary>
+        ///     Gets a list of users in the system.
+        /// </summary>
+        /// <param name="mediatr"></param>
+        /// <param name="cancellationToken"></param>
+        /// <returns></returns>
+        [UsePaging, UseProjection, UseFiltering, UseSorting, Authorize(Policy = Privilege.PRIVILEGE_MANAGE_USERS)]
+        public Task<IQueryable<User>> GetUsersAsync(
+            [Service] ISender mediatr,
+            CancellationToken cancellationToken
+        )
+        {
+            return mediatr.Send(new GetUsersQuery(), cancellationToken);
         }
 
         /// <summary>

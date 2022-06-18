@@ -61,9 +61,10 @@ namespace JahnDigital.StudentBank.WebApi.GraphQL.Mutations
                 throw ErrorFactory.Unauthorized();
             }
 
+            var command = new AuthenticateStudentCommand(input.Username, input.Password, GetIp(contextAccessor));
+
             try
             {
-                var command = new AuthenticateStudentCommand(input.Username, input.Password, GetIp(contextAccessor));
                 var response = await mediatr.Send(command, cancellationToken);
                 SetTokenCookie(contextAccessor, response.RefreshToken);
                 return response;
@@ -93,9 +94,10 @@ namespace JahnDigital.StudentBank.WebApi.GraphQL.Mutations
         {
             token = token ?? GetToken(contextAccessor) ?? throw ErrorFactory.InvalidRefreshToken();
 
+            var command = new RefreshStudentTokenCommand(token, GetIp(contextAccessor));
+
             try
             {
-                var command = new RefreshStudentTokenCommand(token, GetIp(contextAccessor));
                 var response = await mediatr.Send(command, cancellationToken);
                 SetTokenCookie(contextAccessor, response.RefreshToken);
                 return response;
@@ -122,18 +124,19 @@ namespace JahnDigital.StudentBank.WebApi.GraphQL.Mutations
             CancellationToken cancellationToken
         )
         {
-            token = token ?? GetToken(contextAccessor) ?? throw ErrorFactory.InvalidRefreshToken();
+            token ??= GetToken(contextAccessor) ?? throw ErrorFactory.InvalidRefreshToken();
+
+            var command = new RevokeStudentTokenCommand(token, GetIp(contextAccessor));
 
             try
             {
-                var command = new RevokeStudentTokenCommand(token, GetIp(contextAccessor));
                 await mediatr.Send(command, cancellationToken);
                 ClearTokenCookie(contextAccessor);
                 return true;
             }
             catch (Exception)
             {
-                throw ErrorFactory.NotFound("token", token);
+                throw ErrorFactory.NotFound(nameof(token), token);
             }
         }
 

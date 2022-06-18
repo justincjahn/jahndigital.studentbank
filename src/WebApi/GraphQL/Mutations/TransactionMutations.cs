@@ -1,20 +1,21 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using HotChocolate;
-using HotChocolate.Data;
+using HotChocolate.AspNetCore.Authorization;
 using HotChocolate.Resolvers;
 using HotChocolate.Types;
 using JahnDigital.StudentBank.Application.Common;
+using JahnDigital.StudentBank.Application.Shares.Queries.GetShare;
+using JahnDigital.StudentBank.Application.Transactions.Commands.PostBulkTransaction;
 using JahnDigital.StudentBank.Application.Transactions.DTOs;
-using JahnDigital.StudentBank.Application.Transactions.Services;
 using JahnDigital.StudentBank.Domain.Entities;
 using JahnDigital.StudentBank.Domain.Enums;
-using JahnDigital.StudentBank.Infrastructure.Persistence;
 using JahnDigital.StudentBank.WebApi.Extensions;
 using JahnDigital.StudentBank.WebApi.Models;
-using Microsoft.AspNetCore.Authorization;
+using MediatR;
 using Microsoft.EntityFrameworkCore;
 using Privilege = JahnDigital.StudentBank.Domain.Enums.Privilege;
 
@@ -30,31 +31,33 @@ namespace JahnDigital.StudentBank.WebApi.GraphQL.Mutations
         ///     Post a <see cref="Transaction" /> to the provided share, if authorized.
         /// </summary>
         /// <returns></returns>
-        [HotChocolate.AspNetCore.Authorization.Authorize(Policy = Privilege.PRIVILEGE_MANAGE_TRANSACTIONS)]
+        [Authorize(Policy = Privilege.PRIVILEGE_MANAGE_TRANSACTIONS)]
         public async Task<Transaction> NewTransactionAsync(
             TransactionRequest input,
-            [Service] ITransactionService transactionService
+            [Service] ISender mediatr,
+            CancellationToken cancellationToken
         )
         {
-            var transaction = await transactionService.PostAsync(input);
-            return transaction;
+            return await mediatr.Send(input, cancellationToken);
         }
 
         /// <summary>
         ///     Perform a bulk transaction and return transaction information.
         /// </summary>
         /// <param name="input"></param>
-        /// <param name="transactionService"></param>
+        /// <param name="mediatr"></param>
         /// <param name="skipBelowNegative">
         ///     Continue posting other transactions if a withdrawal cannot be completed due to nonsufficient funds
         ///     while the <c>takeNegative</c> flag is set to <see langword="false" />.
         /// </param>
+        /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        [HotChocolate.AspNetCore.Authorization.Authorize(Policy = Privilege.PRIVILEGE_MANAGE_TRANSACTIONS)]
+        [Authorize(Policy = Privilege.PRIVILEGE_MANAGE_TRANSACTIONS)]
         public async Task<IQueryable<Transaction>> NewBulkTransactionAsync(
             IEnumerable<NewTransactionRequest> input,
-            [Service] ITransactionService transactionService,
-            bool skipBelowNegative = false
+            [Service] ISender mediatr,
+            bool skipBelowNegative = false,
+            CancellationToken cancellationToken = new()
         )
         {
             var transactions = input.Select(x => new TransactionRequest()
@@ -64,72 +67,67 @@ namespace JahnDigital.StudentBank.WebApi.GraphQL.Mutations
                 ShareId = x.ShareId,
                 TakeNegative = x.TakeNegative
             });
-            
-            var result = await transactionService.PostAsync(transactions, !skipBelowNegative, false);
-            return result;
+
+            return await mediatr.Send(new PostBulkTransactionCommand(transactions, !skipBelowNegative, false), cancellationToken);
         }
 
         /// <summary>
         ///     Transfer funds from one share to another, if authorized.
         /// </summary>
         /// <param name="input"></param>
-        /// <param name="context"></param>
-        /// <param name="transactionService"></param>
+        /// <param name="mediatr"></param>
         /// <param name="resolverContext"></param>
+        /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        [UseDbContext(typeof(AppDbContext)), Authorize]
+        [Authorize]
         public async Task<Tuple<Transaction, Transaction>> NewTransferAsync(
             NewTransferRequest input,
-            [ScopedService] AppDbContext context,
-            [Service] ITransactionService transactionService,
-            [Service] IResolverContext resolverContext
+            [Service] ISender mediatr,
+            [Service] IResolverContext resolverContext,
+            CancellationToken cancellationToken
         )
         {
-            // Fetch the student ID that owns the source share and validate they are authorized
-            long? studentId = await context.Shares
-                    .Where(x => x.Id == input.SourceShareId)
-                    .Select(x => (long?)x.StudentId)
-                    .FirstOrDefaultAsync()
-                ?? throw ErrorFactory.NotFound();
+            // Fetch the student ID that owns the share and validate they are authorized
+            var studentId = await (await mediatr.Send(new GetShareQuery(input.SourceShareId), cancellationToken))
+                .Select(x => (long?)x.StudentId)
+                .FirstOrDefaultAsync(cancellationToken)
+            ?? throw ErrorFactory.NotFound(nameof(Share), input.SourceShareId);
 
             await resolverContext
-                .SetDataOwner(studentId.Value, UserType.Student)
+                .SetDataOwner(studentId, UserType.Student)
                 .AssertAuthorizedAsync($"{Constants.AuthPolicy.DataOwner}<{Privilege.ManageStudents}>");
 
-            var transactions = await transactionService.TransferAsync(new TransferRequest()
-            {
-                Amount = input.Amount,
-                Comment = input.Comment,
-                WithdrawalLimit = resolverContext.GetUserType() != UserType.User,
-                DestinationShareId = input.DestinationShareId,
-                SourceShareId = input.SourceShareId
-            });
+            var transactions = await mediatr.Send(
+                new TransferRequest()
+                {
+                    Amount = input.Amount,
+                    Comment = input.Comment,
+                    WithdrawalLimit = resolverContext.GetUserType() != UserType.User,
+                    DestinationShareId = input.DestinationShareId,
+                    SourceShareId = input.SourceShareId
+                },
+
+                cancellationToken
+            );
 
             return transactions.ToTuple();
         }
 
         /// <summary>
-        ///     Post dividends for a specific <see cref="ShareType" /> and a group
-        ///     of <see cref="Instance" />.
+        ///     Post dividends for a specific <see cref="ShareType" /> and a group of <see cref="Instance" />.
         /// </summary>
         /// <param name="input"></param>
-        /// <param name="transactionService"></param>
+        /// <param name="mediatr"></param>
+        /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        [HotChocolate.AspNetCore.Authorization.Authorize(Policy = Privilege.PRIVILEGE_MANAGE_TRANSACTIONS)]
+        [Authorize(Policy = Privilege.PRIVILEGE_MANAGE_TRANSACTIONS)]
         public async Task<bool> PostDividendsAsync(
             PostDividendsRequest input,
-            [Service] ITransactionService transactionService
+            [Service] ISender mediatr,
+            CancellationToken cancellationToken
         )
         {
-            try
-            {
-                await transactionService.PostDividendsAsync(input);
-            }
-            catch (Exception e)
-            {
-                throw ErrorFactory.QueryFailed(e.Message);
-            }
-
+            await mediatr.Send(input, cancellationToken);
             return true;
         }
     }

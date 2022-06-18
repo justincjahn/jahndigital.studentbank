@@ -1,24 +1,26 @@
 using System;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using HotChocolate;
+using HotChocolate.AspNetCore.Authorization;
 using HotChocolate.Data;
-using HotChocolate.Execution;
 using HotChocolate.Resolvers;
 using HotChocolate.Types;
 using JahnDigital.StudentBank.Application.Common;
 using JahnDigital.StudentBank.Application.Common.DTOs;
 using JahnDigital.StudentBank.Application.Users.Commands.AuthenticateUser;
+using JahnDigital.StudentBank.Application.Users.Commands.DeleteUser;
+using JahnDigital.StudentBank.Application.Users.Commands.NewUser;
 using JahnDigital.StudentBank.Application.Users.Commands.RefreshUserToken;
 using JahnDigital.StudentBank.Application.Users.Commands.RevokeUserToken;
 using JahnDigital.StudentBank.Application.Users.Commands.UpdateUser;
+using JahnDigital.StudentBank.Application.Users.Queries.GetUser;
 using JahnDigital.StudentBank.Domain.Entities;
 using JahnDigital.StudentBank.Domain.Enums;
-using JahnDigital.StudentBank.Infrastructure.Persistence;
 using JahnDigital.StudentBank.WebApi.Extensions;
 using JahnDigital.StudentBank.WebApi.Models;
 using MediatR;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
 using Privilege = JahnDigital.StudentBank.Domain.Enums.Privilege;
@@ -37,19 +39,16 @@ namespace JahnDigital.StudentBank.WebApi.GraphQL.Mutations
         /// <param name="input"></param>
         /// <param name="mediatr"></param>
         /// <param name="contextAccessor"></param>
+        /// <param name="cancellationToken"></param>
         /// <returns></returns>
         public async Task<AuthenticateResponse> UserLoginAsync(
             AuthenticateRequest input,
             [Service] ISender mediatr,
-            [Service] IHttpContextAccessor contextAccessor
+            [Service] IHttpContextAccessor contextAccessor,
+            CancellationToken cancellationToken
         )
         {
-            if (string.IsNullOrEmpty(input.Username))
-            {
-                throw ErrorFactory.Unauthorized();
-            }
-
-            if (string.IsNullOrEmpty(input.Password))
+            if (string.IsNullOrEmpty(input.Username) || string.IsNullOrEmpty(input.Password))
             {
                 throw ErrorFactory.Unauthorized();
             }
@@ -58,17 +57,13 @@ namespace JahnDigital.StudentBank.WebApi.GraphQL.Mutations
 
             try
             {
-                var response = await mediatr.Send(command);
+                var response = await mediatr.Send(command, cancellationToken);
                 SetTokenCookie(contextAccessor, response.RefreshToken);
                 return response;
             }
             catch (Exception)
             {
-                throw new QueryException(
-                    ErrorBuilder.New()
-                        .SetMessage("Bad username or password.")
-                        .SetCode("LOGIN_FAIL")
-                        .Build());
+                throw ErrorFactory.LoginFailed();
             }
         }
 
@@ -78,36 +73,28 @@ namespace JahnDigital.StudentBank.WebApi.GraphQL.Mutations
         /// <param name="token">The refresh token to use when obtaining a new JWT token. Must be valid and not expired.</param>
         /// <param name="mediatr"></param>
         /// <param name="contextAccessor"></param>
+        /// <param name="cancellationToken"></param>
         /// <returns></returns>
         public async Task<AuthenticateResponse> UserRefreshTokenAsync(
             string? token,
             [Service] ISender mediatr,
-            [Service] IHttpContextAccessor contextAccessor
+            [Service] IHttpContextAccessor contextAccessor,
+            CancellationToken cancellationToken
         )
         {
-            token = token
-                ?? GetToken(contextAccessor)
-                ?? throw new QueryException(
-                    ErrorBuilder.New()
-                        .SetMessage("No refresh token provided.")
-                        .SetCode(Constants.ErrorStrings.INVALID_REFRESH_TOKEN)
-                        .Build());
+            token ??= GetToken(contextAccessor) ?? throw ErrorFactory.InvalidRefreshToken();
 
             var command = new RefreshUserTokenCommand(token, GetIp(contextAccessor));
 
             try
             {
-                var response = await mediatr.Send(command);
+                var response = await mediatr.Send(command, cancellationToken);
                 SetTokenCookie(contextAccessor, response.RefreshToken);
                 return response;
             }
             catch (Exception)
             {
-                throw new QueryException(
-                    ErrorBuilder.New()
-                        .SetMessage("Invalid refresh token.")
-                        .SetCode(Constants.ErrorStrings.INVALID_REFRESH_TOKEN)
-                        .Build());
+                throw ErrorFactory.InvalidRefreshToken();
             }
         }
 
@@ -117,37 +104,29 @@ namespace JahnDigital.StudentBank.WebApi.GraphQL.Mutations
         /// <param name="token">The refresh token to revoke.</param>
         /// <param name="mediatr"></param>
         /// <param name="contextAccessor"></param>
+        /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        [HotChocolate.AspNetCore.Authorization.Authorize]
+        [Authorize]
         public async Task<bool> UserRevokeRefreshTokenAsync(
             string? token,
             [Service] ISender mediatr,
-            [Service] IHttpContextAccessor contextAccessor
+            [Service] IHttpContextAccessor contextAccessor,
+            CancellationToken cancellationToken
         )
         {
-            token = token
-                ?? GetToken(contextAccessor)
-                ?? throw new QueryException(
-                    ErrorBuilder.New()
-                        .SetMessage("A token is required.")
-                        .SetCode(Constants.ErrorStrings.INVALID_REFRESH_TOKEN)
-                        .Build());
+            token ??= GetToken(contextAccessor) ?? throw ErrorFactory.InvalidRefreshToken();
+
+            var command = new RevokeUserTokenCommand(token, GetIp(contextAccessor));
 
             try
             {
-                var command = new RevokeUserTokenCommand(token, GetIp(contextAccessor));
-                await mediatr.Send(command);
+                await mediatr.Send(command, cancellationToken);
                 ClearTokenCookie(contextAccessor);
                 return true;
             }
             catch (Exception)
             {
-                throw new QueryException(
-                    ErrorBuilder.New()
-                        .SetMessage("Token not found.")
-                        .SetCode(Constants.ErrorStrings.ERROR_NOT_FOUND)
-                        .Build()
-                );
+                throw ErrorFactory.NotFound(nameof(token), token);
             }
         }
 
@@ -155,29 +134,27 @@ namespace JahnDigital.StudentBank.WebApi.GraphQL.Mutations
         ///     Update a user.
         /// </summary>
         /// <param name="input"></param>
-        /// <param name="context"></param>
         /// <param name="resolverContext"></param>
         /// <param name="contextAccessor"></param>
         /// <param name="mediatr"></param>
+        /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        [UseDbContext(typeof(AppDbContext)), UseProjection, HotChocolate.AspNetCore.Authorization.Authorize]
+        [Authorize, UseProjection]
         public async Task<IQueryable<User>> UpdateUserAsync(
             UpdateUserRequest input,
-            [ScopedService] AppDbContext context,
             [Service] IResolverContext resolverContext,
             [Service] IHttpContextAccessor contextAccessor,
-            [Service] ISender mediatr
+            [Service] ISender mediatr,
+            CancellationToken cancellationToken
         )
         {
             await resolverContext
                 .SetDataOwner(input.Id, UserType.User)
                 .AssertAuthorizedAsync($"{Constants.AuthPolicy.DataOwner}<{Privilege.ManageUsers}>");
 
-            User? user = await context
-                    .Users
-                    .Where(x => x.Id == input.Id)
-                    .SingleOrDefaultAsync()
-                ?? throw ErrorFactory.NotFound();
+            var user = await (await mediatr.Send(new GetUserQuery(input.Id), cancellationToken))
+                .SingleOrDefaultAsync(cancellationToken)
+            ?? throw ErrorFactory.NotFound(nameof(User), input.Id);
 
             // If the account belongs to the user, they must provide their current password
             if (user.Id == resolverContext.GetUserId() && input.Password is not null)
@@ -192,107 +169,60 @@ namespace JahnDigital.StudentBank.WebApi.GraphQL.Mutations
 
                 try
                 {
-                    var response = await mediatr.Send(command);
+                    await mediatr.Send(command, cancellationToken);
                 }
                 catch
                 {
-                    throw new QueryException(
-                        ErrorBuilder.New()
-                            .SetMessage("Bad username or password.")
-                            .SetCode("LOGIN_FAIL")
-                            .Build());
+                    throw ErrorFactory.LoginFailed();
                 }
             }
 
             var updateUserCommand = new UpdateUserCommand(input.Id, input.RoleId, input.Email, input.Password);
+            await mediatr.Send(updateUserCommand, cancellationToken);
 
-            try
-            {
-                await mediatr.Send(updateUserCommand);
-                return context.Users.Where(x => x.Id == user.Id);
-            }
-            catch (Exception e)
-            {
-                throw ErrorFactory.QueryFailed(e.InnerException?.Message ?? e.Message);
-            }
+            return await mediatr.Send(new GetUserQuery(input.Id), cancellationToken);
         }
 
         /// <summary>
         ///     Create a new user.
         /// </summary>
         /// <param name="input"></param>
-        /// <param name="context"></param>
+        /// <param name="mediatr"></param>
+        /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        [UseDbContext(typeof(AppDbContext)),
-         HotChocolate.AspNetCore.Authorization.Authorize(Policy = Privilege.PRIVILEGE_MANAGE_USERS)]
+        [Authorize(Policy = Privilege.PRIVILEGE_MANAGE_USERS)]
         public async Task<IQueryable<User>> NewUserAsync(
             NewUserRequest input,
-            [ScopedService] AppDbContext context
+            [Service] ISender mediatr,
+            CancellationToken cancellationToken
         )
         {
-            bool roleExists = await context.Roles.Where(x => x.Id == input.RoleId).AnyAsync();
-
-            if (!roleExists)
-            {
-                throw ErrorFactory.QueryFailed($"The Role ID ({input.RoleId}) does not exist.");
-            }
-
-            bool userExists = await context.Users.Where(x => x.Email == input.Email).AnyAsync();
-
-            if (userExists)
-            {
-                throw ErrorFactory.QueryFailed($"A user with the email {input.Email} already exists.");
-            }
-
-            User? user = new User { Email = input.Email, RoleId = input.RoleId, Password = input.Password };
-
-            try
-            {
-                context.Add(user);
-                await context.SaveChangesAsync();
-            }
-            catch (Exception e)
-            {
-                throw ErrorFactory.QueryFailed(e.Message);
-            }
-
-            return context.Users.Where(x => x.Id == user.Id);
+            var id = await mediatr.Send(new NewUserCommand(input.RoleId, input.Email, input.Password), cancellationToken);
+            return await mediatr.Send(new GetUserQuery(id), cancellationToken);
         }
 
         /// <summary>
         ///     Delete a user.
         /// </summary>
         /// <param name="id"></param>
-        /// <param name="context"></param>
+        /// <param name="mediatr"></param>
         /// <param name="resolverContext"></param>
+        /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        [UseDbContext(typeof(AppDbContext)),
-         HotChocolate.AspNetCore.Authorization.Authorize(Policy = Privilege.PRIVILEGE_MANAGE_USERS)]
+        [Authorize(Policy = Privilege.PRIVILEGE_MANAGE_USERS)]
         public async Task<bool> DeleteUserAsync(
             long id,
-            [ScopedService] AppDbContext context,
-            [Service] IResolverContext resolverContext
+            [Service] ISender mediatr,
+            [Service] IResolverContext resolverContext,
+            CancellationToken cancellationToken
         )
         {
-            User? user = await context.Users.FindAsync(id)
-                ?? throw ErrorFactory.NotFound();
-
             if (id == resolverContext.GetUserId())
             {
-                throw ErrorFactory.QueryFailed("Cannot delete yourself!");
+                throw ErrorFactory.QueryFailed("You cannot delete yourself!");
             }
 
-            user.DateDeleted = DateTime.UtcNow;
-
-            try
-            {
-                context.Update(user);
-                await context.SaveChangesAsync();
-            }
-            catch
-            {
-                return false;
-            }
+            await mediatr.Send(new DeleteUserCommand(id), cancellationToken);
 
             return true;
         }

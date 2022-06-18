@@ -30,10 +30,7 @@ namespace JahnDigital.StudentBank.WebApi.GraphQL.Mutations
         /// <param name="token"></param>
         protected void SetTokenCookie(IHttpContextAccessor context, string token)
         {
-            HttpContext? httpc = context.HttpContext
-                ?? throw new ArgumentNullException("Unable to fetch HTTP Context object to set token cookie.");
-
-            CookieOptions? cookieOptions = new CookieOptions
+            CookieOptions cookieOptions = new()
             {
                 HttpOnly = true,
                 Expires = DateTime.UtcNow.AddDays(7),
@@ -42,7 +39,7 @@ namespace JahnDigital.StudentBank.WebApi.GraphQL.Mutations
                 Path = "/"
             };
 
-            httpc.Response.Cookies.Append(TOKEN_COOKIE, token, cookieOptions);
+            GetHttpContext(context).Response.Cookies.Append(TOKEN_COOKIE, token, cookieOptions);
         }
 
         /// <summary>
@@ -51,11 +48,7 @@ namespace JahnDigital.StudentBank.WebApi.GraphQL.Mutations
         /// <param name="context"></param>
         protected void ClearTokenCookie(IHttpContextAccessor context)
         {
-            HttpContext? httpc = context.HttpContext
-                ?? throw new ArgumentNullException(
-                    "Unable to fetch HTTP Context object to clear token cookie.");
-
-            httpc.Response.Cookies.Delete(TOKEN_COOKIE);
+            GetHttpContext(context).Response.Cookies.Delete(TOKEN_COOKIE);
         }
 
         /// <summary>
@@ -65,13 +58,27 @@ namespace JahnDigital.StudentBank.WebApi.GraphQL.Mutations
         /// <returns></returns>
         protected string GetIp(IHttpContextAccessor context)
         {
-            if (context.HttpContext?.Request.Headers.ContainsKey("X-Forwarded-For") ??
-                throw new Exception("Unable to fetch HttpContext."))
+            HttpContext ctx = GetHttpContext(context);
+
+            if (ctx.Request.Headers.ContainsKey("X-Forwarded-For"))
             {
-                return context.HttpContext.Request.Headers["X-Forwarded-For"];
+                return ctx.Request.Headers["X-Forwarded-For"];
             }
 
-            return context.HttpContext?.Connection.RemoteIpAddress?.MapToIPv4().ToString() ?? "";
+            return ctx.Connection.RemoteIpAddress?.MapToIPv4().ToString() ?? "0.0.0.0";
+        }
+
+        /// <summary>
+        /// Fetches the HttpContext object from the context accessor, or throws.
+        /// </summary>
+        /// <param name="context"></param>
+        /// <returns></returns>
+        /// <exception cref="ArgumentNullException"></exception>
+        private HttpContext GetHttpContext(IHttpContextAccessor context)
+        {
+            return context.HttpContext
+                ?? throw new ArgumentNullException(
+                    nameof(context.HttpContext), "Unable to fetch HTTP Context object to manage token refresh cookies.");
         }
     }
 }
