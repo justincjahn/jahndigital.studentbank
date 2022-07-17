@@ -1,6 +1,7 @@
 using System;
 using System.Linq;
 using System.Text;
+using HotChocolate.Data.Filters;
 using HotChocolate.Types;
 using HotChocolate.Types.Pagination;
 using JahnDigital.StudentBank.Application;
@@ -8,6 +9,7 @@ using JahnDigital.StudentBank.Domain.ValueObjects;
 using JahnDigital.StudentBank.Infrastructure;
 using JahnDigital.StudentBank.Infrastructure.Persistence;
 using JahnDigital.StudentBank.WebApi.GraphQL;
+using JahnDigital.StudentBank.WebApi.GraphQL.Filtering;
 using JahnDigital.StudentBank.WebApi.GraphQL.Mutations;
 using JahnDigital.StudentBank.WebApi.GraphQL.ObjectTypes;
 using JahnDigital.StudentBank.WebApi.GraphQL.Queries;
@@ -108,6 +110,7 @@ public class Startup
                 IncludeTotalCount = true
             })
             .AddProjections()
+            .AddConvention<IFilterConvention, CustomFilterConvention>()
             .AddFiltering()
             .AddSorting()
             .AddAuthorization()
