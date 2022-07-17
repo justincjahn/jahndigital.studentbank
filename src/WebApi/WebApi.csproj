@@ -12,11 +12,11 @@
         <PackageReference Include="HotChocolate.AspNetCore" Version="11.3.8" />
         <PackageReference Include="HotChocolate.AspNetCore.Authorization" Version="11.3.5" />
         <PackageReference Include="HotChocolate.Data.EntityFramework" Version="11.3.5" />
-        <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="6.0.2" />
+        <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="6.0.7" />
         <PackageReference Include="Microsoft.Azure.Services.AppAuthentication" Version="1.6.2" />
-        <PackageReference Include="Quartz.AspNetCore" Version="3.3.3" />
-        <PackageReference Include="Quartz.Extensions.DependencyInjection" Version="3.3.3" />
-        <PackageReference Include="System.IdentityModel.Tokens.Jwt" Version="6.15.1" />
+        <PackageReference Include="Quartz.AspNetCore" Version="3.4.0" />
+        <PackageReference Include="Quartz.Extensions.DependencyInjection" Version="3.4.0" />
+        <PackageReference Include="System.IdentityModel.Tokens.Jwt" Version="6.21.0" />
     </ItemGroup>
     <ItemGroup>
       <ProjectReference Include="..\Infrastructure\Infrastructure.csproj" />
