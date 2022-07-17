@@ -33,7 +33,7 @@ namespace JahnDigital.StudentBank.WebApi.GraphQL.Queries
         [UsePaging, UseProjection, UseFiltering, UseSorting, Authorize]
         public async Task<IQueryable<StudentStock>> GetStudentStocksAsync(
             long studentId,
-            [Service] IResolverContext resolverContext,
+            [SchemaService] IResolverContext resolverContext,
             [Service] ISender mediatr,
             CancellationToken cancellationToken
         )
@@ -56,7 +56,7 @@ namespace JahnDigital.StudentBank.WebApi.GraphQL.Queries
         [UsePaging, UseProjection, UseFiltering, UseSorting, Authorize]
         public async Task<IQueryable<StudentStockHistory>> GetStudentStockHistoryAsync(
             long studentStockId,
-            [Service] IResolverContext resolverContext,
+            [SchemaService] IResolverContext resolverContext,
             [Service] ISender mediatr,
             CancellationToken cancellationToken
         )

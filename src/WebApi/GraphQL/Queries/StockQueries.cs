@@ -3,6 +3,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using HotChocolate;
+using HotChocolate.AspNetCore.Authorization;
 using HotChocolate.Data;
 using HotChocolate.Resolvers;
 using HotChocolate.Types;
@@ -11,11 +12,9 @@ using JahnDigital.StudentBank.Application.Stocks.Queries.GetStocks;
 using JahnDigital.StudentBank.Application.Stocks.Queries.GetStocksForStudent;
 using JahnDigital.StudentBank.Domain.Entities;
 using JahnDigital.StudentBank.Domain.Enums;
-using JahnDigital.StudentBank.Infrastructure.Persistence;
 using JahnDigital.StudentBank.WebApi.Extensions;
 using JahnDigital.StudentBank.WebApi.GraphQL.Common;
 using MediatR;
-using Microsoft.AspNetCore.Authorization;
 using Privilege = JahnDigital.StudentBank.Domain.Enums.Privilege;
 
 namespace JahnDigital.StudentBank.WebApi.GraphQL.Queries
@@ -34,7 +33,7 @@ namespace JahnDigital.StudentBank.WebApi.GraphQL.Queries
         [UsePaging, UseProjection, UseFiltering, UseSorting, Authorize]
         public async Task<IQueryable<Stock>> GetStocksAsync(
             IEnumerable<long>? instances,
-            [Service] IResolverContext resolverContext,
+            [SchemaService] IResolverContext resolverContext,
             [Service] ISender mediatr,
             CancellationToken cancellationToken
         )
@@ -58,16 +57,16 @@ namespace JahnDigital.StudentBank.WebApi.GraphQL.Queries
         /// <param name="mediatr"></param>
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        [UseDbContext(typeof(AppDbContext)), UsePaging, UseFiltering, UseSorting, Authorize]
+        [UsePaging, UseProjection, UseFiltering, UseSorting, Authorize]
         public async Task<IQueryable<StockHistory>> GetStockHistoryAsync(
             long stockId,
-            [Service] IResolverContext resolverContext,
+            [SchemaService] IResolverContext resolverContext,
             [Service] ISender mediatr,
             CancellationToken cancellationToken
         )
         {
             resolverContext.SetDataOwner();
-            
+
             if (resolverContext.GetUserType() == UserType.User)
             {
                 await resolverContext.AssertAuthorizedAsync(Privilege.ManageStocks.Name);

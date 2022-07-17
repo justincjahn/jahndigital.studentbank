@@ -30,7 +30,7 @@ namespace JahnDigital.StudentBank.WebApi.GraphQL.Queries
         /// <returns></returns>
         [UsePaging, UseProjection, UseFiltering, UseSorting, Authorize]
         public async Task<IQueryable<StudentPurchase>> GetPurchasesAsync(
-            [Service] IResolverContext resolverContext,
+            [SchemaService] IResolverContext resolverContext,
             [Service] ISender mediatr,
             CancellationToken cancellationToken
         )

@@ -69,8 +69,7 @@ public class Startup
                 .AddType<ShareQueries>()
                 .AddType<ShareTypeQueries>()
                 .AddType<StockHistoryQueries>()
-                .AddType<StockQueries>()
-                .AddType<StockQueriesType>()
+                .AddType<StockQueriesType>() // @NOTE: No need to AddType<StockQueries>, this does it intrinsically.
                 .AddType<StudentQueries>()
                 .AddType<UserQueries>()
                 .AddType<StudentStockQueries>()
@@ -100,19 +99,18 @@ public class Startup
                 .AddType<TransactionTypes>()
                 .AddType<UserTypes>()
                 .AddType<AuthenticateResponseType>()
-            .BindRuntimeType<int, IntType>()
             .BindRuntimeType<Money, MoneyType>()
             .BindRuntimeType<Rate, RateType>()
-            .AddFiltering()
-            .AddSorting()
-            .AddProjections()
-            .AddAuthorization()
             .SetPagingOptions(new PagingOptions
             {
                 MaxPageSize = 10000,
                 DefaultPageSize = 100,
                 IncludeTotalCount = true
             })
+            .AddProjections()
+            .AddFiltering()
+            .AddSorting()
+            .AddAuthorization()
             .ModifyRequestOptions(options =>
             {
                 options.ExecutionTimeout = TimeSpan.FromMinutes(10);

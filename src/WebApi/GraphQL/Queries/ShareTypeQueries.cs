@@ -32,7 +32,7 @@ namespace JahnDigital.StudentBank.WebApi.GraphQL.Queries
         [UsePaging, UseProjection, UseFiltering, UseSorting, Authorize]
         public async Task<IQueryable<ShareType>> GetShareTypesAsync(
             IEnumerable<long>? instances,
-            [Service] IResolverContext resolverContext,
+            [SchemaService] IResolverContext resolverContext,
             [Service] ISender mediatr,
             CancellationToken cancellationToken
         )

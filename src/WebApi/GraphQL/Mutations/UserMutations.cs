@@ -142,7 +142,7 @@ namespace JahnDigital.StudentBank.WebApi.GraphQL.Mutations
         [Authorize, UseProjection]
         public async Task<IQueryable<User>> UpdateUserAsync(
             UpdateUserRequest input,
-            [Service] IResolverContext resolverContext,
+            [SchemaService] IResolverContext resolverContext,
             [Service] IHttpContextAccessor contextAccessor,
             [Service] ISender mediatr,
             CancellationToken cancellationToken
@@ -213,7 +213,7 @@ namespace JahnDigital.StudentBank.WebApi.GraphQL.Mutations
         public async Task<bool> DeleteUserAsync(
             long id,
             [Service] ISender mediatr,
-            [Service] IResolverContext resolverContext,
+            [SchemaService] IResolverContext resolverContext,
             CancellationToken cancellationToken
         )
         {

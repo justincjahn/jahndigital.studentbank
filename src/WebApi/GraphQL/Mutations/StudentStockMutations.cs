@@ -37,7 +37,7 @@ namespace JahnDigital.StudentBank.WebApi.GraphQL.Mutations
         public async Task<IQueryable<StudentStock>> NewStockPurchaseAsync(
             PurchaseStockRequest input,
             [Service] ISender mediatr,
-            [Service] IResolverContext resolverContext,
+            [SchemaService] IResolverContext resolverContext,
             CancellationToken cancellationToken
         )
         {

@@ -32,7 +32,7 @@ namespace JahnDigital.StudentBank.WebApi.GraphQL.Queries
         /// <returns></returns>
         [UseProjection, Authorize]
         public async Task<IQueryable<Student>> GetCurrentStudentAsync(
-            [Service] IResolverContext resolverContext,
+            [SchemaService] IResolverContext resolverContext,
             [Service] ISender mediatr,
             CancellationToken cancellationToken
         )

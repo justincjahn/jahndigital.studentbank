@@ -9,9 +9,9 @@
         <RootNamespace>JahnDigital.StudentBank.WebApi</RootNamespace>
     </PropertyGroup>
     <ItemGroup>
-        <PackageReference Include="HotChocolate.AspNetCore" Version="11.3.8" />
-        <PackageReference Include="HotChocolate.AspNetCore.Authorization" Version="11.3.5" />
-        <PackageReference Include="HotChocolate.Data.EntityFramework" Version="11.3.5" />
+        <PackageReference Include="HotChocolate.AspNetCore" Version="12.12.1" />
+        <PackageReference Include="HotChocolate.AspNetCore.Authorization" Version="12.12.1" />
+        <PackageReference Include="HotChocolate.Data.EntityFramework" Version="12.12.1" />
         <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="6.0.7" />
         <PackageReference Include="Microsoft.Azure.Services.AppAuthentication" Version="1.6.2" />
         <PackageReference Include="Quartz.AspNetCore" Version="3.4.0" />

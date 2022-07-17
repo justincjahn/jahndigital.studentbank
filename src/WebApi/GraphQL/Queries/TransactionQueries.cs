@@ -35,7 +35,7 @@ namespace JahnDigital.StudentBank.WebApi.GraphQL.Queries
         [UsePaging, UseFiltering, UseSorting, Authorize]
         public async Task<IQueryable<Transaction>> GetTransactionsAsync(
             long shareId,
-            [Service] IResolverContext resolverContext,
+            [SchemaService] IResolverContext resolverContext,
             [Service] ISender mediatr,
             CancellationToken cancellationToken
         )

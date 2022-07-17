@@ -79,14 +79,12 @@ namespace JahnDigital.StudentBank.WebApi.GraphQL.Mutations
         ///     Obtain a new JWT token using a refresh token.
         /// </summary>
         /// <param name="token">The refresh token to use when obtaining a new JWT token. Must be valid and not expired.</param>
-        /// <param name="context"></param>
         /// <param name="mediatr"></param>
         /// <param name="contextAccessor"></param>
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
         public async Task<AuthenticateResponse> StudentRefreshTokenAsync(
             string? token,
-            [ScopedService] AppDbContext context,
             [Service] ISender mediatr,
             [Service] IHttpContextAccessor contextAccessor,
             CancellationToken cancellationToken
@@ -222,7 +220,7 @@ namespace JahnDigital.StudentBank.WebApi.GraphQL.Mutations
         [UseProjection, Authorize]
         public async Task<IQueryable<Student>> UpdateStudentAsync(
             UpdateStudentRequest input,
-            [Service] IResolverContext resolverContext,
+            [SchemaService] IResolverContext resolverContext,
             [Service] ISender mediatr,
             [Service] IHttpContextAccessor contextAccessor,
             CancellationToken cancellationToken
