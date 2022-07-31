@@ -223,7 +223,7 @@ public class Startup
 
         app.UseEndpoints(endpoints => endpoints.MapControllers());
 
-        dbInitializer.Initialize();
-        dbInitializer.SeedData();
+        dbInitializer.InitializeAsync().Wait();
+        dbInitializer.SeedDataAsync().Wait();
     }
 }

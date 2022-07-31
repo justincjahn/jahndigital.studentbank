@@ -8,10 +8,10 @@ public interface IDbInitializerService
     /// <summary>
     ///     Ensure the database is created and migrated.
     /// </summary>
-    void Initialize();
+    Task InitializeAsync();
 
     /// <summary>
     ///     Seed initial data, and test data if in a development environment.
     /// </summary>
-    void SeedData();
+    Task SeedDataAsync();
 }
