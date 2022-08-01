@@ -14,14 +14,18 @@ public record UpdateStockCommand : IRequest
     public string? Symbol { get; init; }
     public long? TotalShares { get; init; }
     public Money? CurrentValue { get; init; }
+    public string? Description { get; init; }
 }
 
 public class UpdateStockCommandHandler : IRequestHandler<UpdateStockCommand>
 {
     private readonly IAppDbContext _context;
+    private readonly ITextFormatter _formatter;
 
-    public UpdateStockCommandHandler(IAppDbContext context) {
+    public UpdateStockCommandHandler(IAppDbContext context, ITextFormatter formatter)
+    {
         _context = context;
+        _formatter = formatter;
     }
 
     public async Task<Unit> Handle(UpdateStockCommand request, CancellationToken cancellationToken)
@@ -55,18 +59,15 @@ public class UpdateStockCommandHandler : IRequestHandler<UpdateStockCommand>
             stock.Symbol = request.Symbol;
         }
 
-        if (request.TotalShares is not null && stock.TotalShares != request.TotalShares)
+        if (request.CurrentValue is not null)
         {
-            if (request.TotalShares < stock.TotalShares)
-            {
-                throw new InvalidOperationException(
-                    $"Total shares for {stock.Name} cannot be less than the current amount of {stock.TotalShares}.");
-            }
-
-            stock.TotalShares = request.TotalShares.Value;
+            stock.SetValue(request.CurrentValue);
         }
 
-        stock.CurrentValue = request.CurrentValue ?? stock.CurrentValue;
+        if (request.Description is not null)
+        {
+            stock.SetDescription(request.Description, _formatter.Format(request.Description));
+        }
 
         await _context.SaveChangesAsync(cancellationToken);
 

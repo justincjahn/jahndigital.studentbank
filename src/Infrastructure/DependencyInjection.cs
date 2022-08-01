@@ -3,6 +3,7 @@ using JahnDigital.StudentBank.Application.Common.Interfaces;
 using JahnDigital.StudentBank.Application.Roles.Services;
 using JahnDigital.StudentBank.Application.Transactions.Services;
 using JahnDigital.StudentBank.Infrastructure.Authentication.Services;
+using JahnDigital.StudentBank.Infrastructure.Markdown;
 using JahnDigital.StudentBank.Infrastructure.Persistence;
 using JahnDigital.StudentBank.Infrastructure.Roles.Services;
 using JahnDigital.StudentBank.Infrastructure.Transactions.Services;
@@ -56,7 +57,8 @@ public static class DependencyInjection
             .AddScoped<IDbInitializerService, DbInitializerService>()
             .AddScoped<IJwtTokenGenerator>(_ => new JwtTokenService(appConfig.Secret, appConfig.TokenLifetime))
             .AddScoped<IRoleService, RoleService>()
-            .AddScoped<ITransactionService, TransactionService>();
+            .AddScoped<ITransactionService, TransactionService>()
+            .AddSingleton<ITextFormatter, MarkdownToHtmlFormatter>();
 
         return services;
     }

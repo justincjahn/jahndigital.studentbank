@@ -227,14 +227,13 @@ public class DbInitializerService : IDbInitializerService
         {
             int amount = new Random().Next(30, 250);
 
-            Stock stock = new()
-            {
-                Name = $"Stock {i + 1}",
-                Symbol = $"STK{i + 1}",
-                TotalShares = 10000000,
-                AvailableShares = 10000000,
-                CurrentValue = Money.FromCurrency(amount)
-            };
+            var stock = new Stock(
+                $"STK{i + 1}",
+                $"Stock {i + 1}",
+                Money.FromCurrency(amount),
+                "",
+                ""
+            );
 
             stocks.Add(stock);
             context.Stocks.Add(stock);
@@ -265,21 +264,9 @@ public class DbInitializerService : IDbInitializerService
                 Money newAmount = lastValue * Rate.FromRate(percent);
                 newAmount = newAmount.Amount > 0 ? newAmount : Money.FromCurrency(0.1M);
 
-                // Since we're simulating updates at specific days, bypass the domain logic
-                if (i != 0) {
-                    context.StockHistory.Add(new StockHistory
-                    {
-                        Stock = stock,
-                        Value = newAmount,
-                        DateChanged = DateTime.UtcNow.AddDays(i * -1),
-                    });
-                }
-
+                stock.SetValue(newAmount, DateTime.UtcNow.AddDays(i * -1));
                 lastValue = newAmount;
             }
-
-            // Allow the domain logic to create the final StockHistory object
-            stock.CurrentValue = lastValue;
         }
 
         await context.SaveChangesAsync();

@@ -11,28 +11,51 @@ public class Stock : SoftDeletableEntity
     /// <summary>
     ///     The unique ID number of the entity.
     /// </summary>
-    public long Id { get; set; }
+    // ReSharper disable once UnusedAutoPropertyAccessor.Local
+    public long Id { get; private set; }
 
     /// <summary>
-    ///     Unique name of th
+    /// Backing field for <see cref="Symbol"/>.
     /// </summary>
-    /// <value></value>
-    public string Symbol { get; set; } = default!;
+    private string _symbol = String.Empty;
+
+    /// <summary>
+    ///     The stock symbol.
+    /// </summary>
+    public string Symbol
+    {
+        get => _symbol;
+
+        set
+        {
+            if (String.IsNullOrWhiteSpace(value))
+            {
+                throw new InvalidOperationException($"The stock symbol must not be empty.");
+            }
+
+            if (value.Length > 10)
+            {
+                throw new InvalidOperationException("The stock symbol cannot be larger than 10 characters.");
+            }
+
+            _symbol = value;
+        }
+    }
 
     /// <summary>
     ///     Name of the company.
     /// </summary>
-    public string Name { get; set; } = default!;
+    public string Name { get; set; } = String.Empty;
 
     /// <summary>
-    ///     Total number of shares for the stock.
+    /// The description of the stock.
     /// </summary>
-    public long TotalShares { get; set; } = 10000000;
+    public string RawDescription { get; private set; } = String.Empty;
 
     /// <summary>
-    ///     Total number of shares available to buy.
+    /// The description of the stock, formatted for direct output in the UI.
     /// </summary>
-    public long AvailableShares { get; set; }
+    public string FormattedDescription { get; private set; } = String.Empty;
 
     /// <summary>
     ///     The raw database value representing the current value of the share.
@@ -46,17 +69,7 @@ public class Stock : SoftDeletableEntity
     public Money CurrentValue
     {
         get => Money.FromDatabase(RawCurrentValue);
-
-        set
-        {
-            if (value.DatabaseAmount == RawCurrentValue)
-            {
-                return;
-            }
-
-            _history.Add(new StockHistory { Stock = this, Value = value });
-            RawCurrentValue = value.DatabaseAmount;
-        }
+        private set => RawCurrentValue = value.DatabaseAmount;
     }
 
     /// <summary>
@@ -83,5 +96,55 @@ public class Stock : SoftDeletableEntity
     /// <summary>
     ///     Get or set a collection of instances this stock is linked to.
     /// </summary>
-    public ICollection<StockInstance> StockInstances { get; set; } = new HashSet<StockInstance>();
+    public ICollection<StockInstance> StockInstances { get; private set; } = new HashSet<StockInstance>();
+
+    /// <summary>
+    ///     Empty constructor for EF Core
+    /// </summary>
+    private Stock() {}
+
+    /// <summary>
+    ///     Initialize a new, valid stock record.
+    /// </summary>
+    /// <param name="symbol"></param>
+    /// <param name="name"></param>
+    /// <param name="initialValue"></param>
+    /// <param name="rawDescription"></param>
+    /// <param name="formattedDescription"></param>
+    public Stock(string symbol, string name, Money initialValue, string rawDescription = "", string formattedDescription = "")
+    {
+        Symbol = symbol;
+        Name = name;
+        CurrentValue = initialValue;
+        SetDescription(rawDescription, formattedDescription);
+    }
+
+    /// <summary>
+    ///     Set the description of the stock.
+    /// </summary>
+    /// <param name="rawDescription"></param>
+    /// <param name="formattedDescription"></param>
+    public void SetDescription(string rawDescription, string formattedDescription)
+    {
+        RawDescription = rawDescription;
+        FormattedDescription = formattedDescription;
+    }
+
+    /// <summary>
+    /// Sets the current value of the stock and adds a history entry.
+    /// </summary>
+    /// <param name="value"></param>
+    /// <param name="effectiveDate"></param>
+    public void SetValue(Money value, DateTime? effectiveDate = null)
+    {
+        var history = new StockHistory()
+        {
+            Stock = this,
+            Value = value,
+            DateChanged = effectiveDate ?? DateTime.UtcNow
+        };
+
+        _history.Add(history);
+        CurrentValue = value;
+    }
 }
