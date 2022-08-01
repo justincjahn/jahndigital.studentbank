@@ -1,3 +1,4 @@
+using System;
 using JahnDigital.StudentBank.Domain.ValueObjects;
 
 namespace JahnDigital.StudentBank.WebApi.Models
@@ -15,9 +16,9 @@ namespace JahnDigital.StudentBank.WebApi.Models
         public string Name { get; set; } = default!;
 
         /// <summary>
-        ///     Total number of shares for the stock.
+        ///     The description of the stock.
         /// </summary>
-        public long TotalShares { get; set; } = 0;
+        public string? RawDescription { get; set; }
 
         /// <summary>
         ///     The current value of the stock.
