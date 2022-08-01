@@ -20,9 +20,9 @@ namespace JahnDigital.StudentBank.WebApi.Models
         public string? Name { get; set; } = null;
 
         /// <summary>
-        ///     Total number of shares for the stock.
+        ///     Description of the stock.
         /// </summary>
-        public long? TotalShares { get; set; } = null;
+        public string? RawDescription { get; set; } = null;
 
         /// <summary>
         ///     The current value of the stock.
