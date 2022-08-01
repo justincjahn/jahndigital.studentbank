@@ -111,11 +111,19 @@ public class Stock : SoftDeletableEntity
     /// <param name="initialValue"></param>
     /// <param name="rawDescription"></param>
     /// <param name="formattedDescription"></param>
-    public Stock(string symbol, string name, Money initialValue, string rawDescription = "", string formattedDescription = "")
+    /// <param name="effectiveDate"></param>
+    public Stock(
+        string symbol,
+        string name,
+        Money initialValue,
+        string rawDescription = "",
+        string formattedDescription = "",
+        DateTime? effectiveDate = null
+    )
     {
         Symbol = symbol;
         Name = name;
-        CurrentValue = initialValue;
+        SetValue(initialValue, effectiveDate);
         SetDescription(rawDescription, formattedDescription);
     }
 

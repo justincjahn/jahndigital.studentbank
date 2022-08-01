@@ -35,36 +35,20 @@ public class UpdateStockCommandHandler : IRequestHandler<UpdateStockCommand>
 
         if (request.Name is not null && request.Name != stock.Name)
         {
-            bool stockExists = await _context.Stocks.Where(x => x.Name == request.Name && x.Id != request.StockId)
-                .AnyAsync(cancellationToken);
-
-            if (stockExists)
-            {
-                throw new InvalidOperationException($"A stock named {request.Name} already exists.");
-            }
-
             stock.Name = request.Name;
         }
 
         if (request.Symbol is not null && request.Symbol != stock.Symbol)
         {
-            bool stockExists = await _context.Stocks.Where(x => x.Symbol == request.Symbol && x.Id != request.StockId)
-                .AnyAsync(cancellationToken);
-
-            if (stockExists)
-            {
-                throw new InvalidOperationException($"A stock with the symbol {request.Symbol} already exists.");
-            }
-
             stock.Symbol = request.Symbol;
         }
 
-        if (request.CurrentValue is not null)
+        if (request.CurrentValue is not null && request.CurrentValue != stock.CurrentValue)
         {
             stock.SetValue(request.CurrentValue);
         }
 
-        if (request.RawDescription is not null)
+        if (request.RawDescription is not null && request.RawDescription != stock.RawDescription)
         {
             stock.SetDescription(request.RawDescription, _formatter.Format(request.RawDescription));
         }

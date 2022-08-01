@@ -21,15 +21,14 @@ public class NewStockCommandHandler : IRequestHandler<NewStockCommand, long>
 
     public async Task<long> Handle(NewStockCommand request, CancellationToken cancellationToken)
     {
-        bool hasStock = await _context.Stocks.AnyAsync(x => x.Symbol == request.Symbol, cancellationToken);
+        var stock = new Stock(
+            request.Symbol,
+            request.Name,
+            request.CurrentValue,
+            request.RawDescription,
+            _formatter.Format(request.RawDescription)
+        );
 
-        if (hasStock)
-        {
-            throw new InvalidOperationException(
-                $"A stock already exists with symbol '{request.Symbol}'!  Was it deleted?");
-        }
-
-        var stock = new Stock(request.Symbol, request.Name, request.CurrentValue, request.RawDescription, _formatter.Format(request.RawDescription));
         _context.Stocks.Add(stock);
         await _context.SaveChangesAsync(cancellationToken);
 
