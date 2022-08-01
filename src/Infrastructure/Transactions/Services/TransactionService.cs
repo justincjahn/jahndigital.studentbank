@@ -427,7 +427,7 @@ public class TransactionService : ITransactionService
 
         if (!stockExists)
         {
-            throw new StockNotFoundException(input.StockId);
+            throw new NotFoundException(nameof(Stock), input.StockId);
         }
 
         // Get the share's Student ID and Instance ID for later use
@@ -441,12 +441,12 @@ public class TransactionService : ITransactionService
                     && x.Student.DateDeleted == null
                     && x.Student.Group.DateDeleted == null
                     && x.Student.Group.Instance.DateDeleted == null)
-                .Select(x => new { x.Id, x.StudentId, x.Student.Group.InstanceId })
+                .Select(x => new { x.Id, x.Student, x.Student.Group.InstanceId })
                 .SingleOrDefaultAsync(cancellationToken: cancellationToken)
             ?? throw new ShareNotFoundException(input.ShareId);
 
         // Get the stock provided it is included in the instance of the share
-        Stock? stock = await _context
+        Stock stock = await _context
                 .Stocks
                 .Include(x => x.StockInstances)
                 .Where(x =>
@@ -455,63 +455,30 @@ public class TransactionService : ITransactionService
                 .SingleOrDefaultAsync(cancellationToken: cancellationToken)
             ?? throw new UnauthorizedPurchaseException();
 
-        // Ensure there are enough shares available to purchase
-        if (stock.AvailableShares < input.Quantity)
-        {
-            throw new InvalidShareQuantityException(stock, input.Quantity);
-        }
-
         // Fetch or create the StudentStock entity
         StudentStock? studentStock = await _context
             .StudentStocks
-            .Where(x => x.StudentId == share.StudentId && x.StockId == stock.Id)
+            .Where(x => x.StudentId == share.Student.Id && x.StockId == stock.Id)
             .SingleOrDefaultAsync(cancellationToken: cancellationToken);
 
         if (studentStock == null)
         {
-            studentStock = new StudentStock
-            {
-                StudentId = share.StudentId,
-                StockId = stock.Id,
-                SharesOwned = 0,
-                NetContribution = Money.FromCurrency(0m)
-            };
-
+            studentStock = new StudentStock(share.Student, stock);
             _context.StudentStocks.Add(studentStock);
         }
 
-        // If the student is selling stock, make sure they have enough shares
-        if (input.Quantity < 0 && studentStock.SharesOwned < -input.Quantity)
-        {
-            throw new InvalidShareQuantityException(stock, input.Quantity);
-        }
+        var transactionAmount = studentStock.CalculatePurchaseAmount(input.Quantity);
+        string buySell = transactionAmount > Money.Zero ? "sale" : "purchase";
 
-        studentStock.SharesOwned += input.Quantity;
-        studentStock.DateLastActive = DateTime.UtcNow;
-
-        Money? totalCost = stock.CurrentValue * input.Quantity * -1;
-        string? buySell = totalCost.Amount > 0.0M ? "sale" : "purchase";
         var request = new TransactionRequest()
         {
             ShareId = share.Id,
-            Amount = totalCost,
+            Amount = transactionAmount,
             Comment = $"Stock {buySell}: {input.Quantity} shares of {stock.Symbol} at {stock.CurrentValue}"
         };
 
         var transaction = await PostAsync(request, _context, cancellationToken);
-
-        studentStock.History.Add(
-        new StudentStockHistory
-            {
-                Amount = totalCost,
-                Count = input.Quantity,
-                StudentStock = studentStock,
-                Transaction = transaction
-            }
-        );
-
-        stock.AvailableShares -= input.Quantity;
-        studentStock.NetContribution += transaction.Amount * -1;
+        studentStock.PurchaseShares(input.Quantity, transaction);
 
         try
         {
@@ -524,11 +491,13 @@ public class TransactionService : ITransactionService
                 request = new TransactionRequest()
                 {
                     ShareId = share.Id,
-                    Amount = -totalCost,
+                    Amount = -transactionAmount,
                     Comment = $"VOIDED: Stock purchase: {input.Quantity} shares of {stock.Symbol}"
                 };
 
-                await PostAsync(request, _context, cancellationToken);
+                var reversal = await PostAsync(request, _context, cancellationToken);
+                studentStock.PurchaseShares(-input.Quantity, reversal);
+                await _context.SaveChangesAsync(cancellationToken);
             }
             catch (Exception e2)
             {

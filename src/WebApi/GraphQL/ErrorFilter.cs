@@ -53,7 +53,7 @@ namespace JahnDigital.StudentBank.WebApi.GraphQL
                     .WithMessage(error.Exception.Message ?? "An invalid transaction occurred.");
             }
 
-            if (error.Exception is InvalidShareQuantityException)
+            if (error.Exception is NotEnoughSharesException)
             {
                 return error
                     .WithCode(Constants.ErrorStrings.TRANSACTION_STOCK_QUANTITY)

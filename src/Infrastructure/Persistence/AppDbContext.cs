@@ -38,7 +38,7 @@ public class AppDbContext : DbContext, IAppDbContext
     /// </summary>
     /// <param name="kind">The date kind.</param>
     /// <returns></returns>
-    private ValueConverter<DateTime, DateTime> _convert(DateTimeKind kind)
+    private static ValueConverter<DateTime, DateTime> _convert(DateTimeKind kind)
     {
         return new ValueConverter<DateTime, DateTime>(x => x, x => DateTime.SpecifyKind(x, kind));
     }

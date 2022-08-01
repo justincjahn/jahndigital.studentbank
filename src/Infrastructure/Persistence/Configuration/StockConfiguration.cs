@@ -20,14 +20,6 @@ public class StockConfiguration : IEntityTypeConfiguration<Stock>
             .IsRequired();
 
         builder
-            .Property(x => x.TotalShares)
-            .IsRequired();
-
-        builder
-            .Property(x => x.AvailableShares)
-            .IsRequired();
-
-        builder
             .Property(x => x.RawCurrentValue)
             .HasColumnName("CurrentValue")
             .IsRequired();

@@ -26,17 +26,8 @@ public class NewStockCommandHandler : IRequestHandler<NewStockCommand, long>
                 $"A stock already exists with symbol '{request.Symbol}'!  Was it deleted?");
         }
 
-        var stock = new Stock
-        {
-            Symbol = request.Symbol,
-            Name = request.Name,
-            CurrentValue = request.CurrentValue,
-            TotalShares = request.TotalShares,
-            AvailableShares = request.TotalShares
-        };
-
+        var stock = new Stock(request.Symbol, request.Name, request.CurrentValue);
         _context.Stocks.Add(stock);
-
         await _context.SaveChangesAsync(cancellationToken);
 
         return stock.Id;
