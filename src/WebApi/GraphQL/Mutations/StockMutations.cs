@@ -67,7 +67,7 @@ namespace JahnDigital.StudentBank.WebApi.GraphQL.Mutations
                     StockId = input.Id,
                     Name = input.Name,
                     Symbol = input.Symbol,
-                    TotalShares = input.TotalShares,
+                    RawDescription = input.RawDescription,
                     CurrentValue = input.CurrentValue
                 }, cancellationToken);
 

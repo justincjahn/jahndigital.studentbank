@@ -14,7 +14,7 @@ public record UpdateStockCommand : IRequest
     public string? Symbol { get; init; }
     public long? TotalShares { get; init; }
     public Money? CurrentValue { get; init; }
-    public string? Description { get; init; }
+    public string? RawDescription { get; init; }
 }
 
 public class UpdateStockCommandHandler : IRequestHandler<UpdateStockCommand>
@@ -64,9 +64,9 @@ public class UpdateStockCommandHandler : IRequestHandler<UpdateStockCommand>
             stock.SetValue(request.CurrentValue);
         }
 
-        if (request.Description is not null)
+        if (request.RawDescription is not null)
         {
-            stock.SetDescription(request.Description, _formatter.Format(request.Description));
+            stock.SetDescription(request.RawDescription, _formatter.Format(request.RawDescription));
         }
 
         await _context.SaveChangesAsync(cancellationToken);
