@@ -6,14 +6,17 @@ using Microsoft.EntityFrameworkCore;
 
 namespace JahnDigital.StudentBank.Application.Stocks.Commands.NewStock;
 
-public record NewStockCommand(string Symbol, string Name, long TotalShares, Money CurrentValue) : IRequest<long>;
+public record NewStockCommand(string Symbol, string Name, Money CurrentValue, String RawDescription = "") : IRequest<long>;
 
 public class NewStockCommandHandler : IRequestHandler<NewStockCommand, long>
 {
     private readonly IAppDbContext _context;
+    private readonly ITextFormatter _formatter;
 
-    public NewStockCommandHandler(IAppDbContext context) {
+    public NewStockCommandHandler(IAppDbContext context, ITextFormatter formatter)
+    {
         _context = context;
+        _formatter = formatter;
     }
 
     public async Task<long> Handle(NewStockCommand request, CancellationToken cancellationToken)
@@ -26,7 +29,7 @@ public class NewStockCommandHandler : IRequestHandler<NewStockCommand, long>
                 $"A stock already exists with symbol '{request.Symbol}'!  Was it deleted?");
         }
 
-        var stock = new Stock(request.Symbol, request.Name, request.CurrentValue);
+        var stock = new Stock(request.Symbol, request.Name, request.CurrentValue, request.RawDescription, _formatter.Format(request.RawDescription));
         _context.Stocks.Add(stock);
         await _context.SaveChangesAsync(cancellationToken);
 

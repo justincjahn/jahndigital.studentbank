@@ -43,7 +43,7 @@ namespace JahnDigital.StudentBank.WebApi.GraphQL.Mutations
             CancellationToken cancellationToken
         )
         {
-            var stockId = await mediatr.Send(new NewStockCommand(input.Symbol, input.Name, input.TotalShares, input.CurrentValue), cancellationToken);
+            var stockId = await mediatr.Send(new NewStockCommand(input.Symbol, input.Name, input.CurrentValue, input.RawDescription ?? ""), cancellationToken);
             return await mediatr.Send(new GetStockQuery(stockId), cancellationToken);
         }
 
