@@ -52,14 +52,14 @@ public class TransactionService : ITransactionService
                 .FirstOrDefaultAsync(cancellationToken: cancellationToken)
             ?? throw new ShareNotFoundException(request.ShareId);
 
-        if ((request?.WithdrawalLimit ?? true) && transactionType == "W")
+        if ((request.WithdrawalLimit ?? true) && transactionType == "W")
         {
             _assessWithdrawalLimit(share, context);
         }
 
-        if ((request?.Amount ?? Money.Zero) < Money.Zero && share.Balance < (request?.Amount ?? Money.Zero) && !(request?.TakeNegative ?? false))
+        if (request.Amount < Money.Zero && share.Balance < -request.Amount && !(request.TakeNegative ?? false))
         {
-            NonsufficientFundsException? exception = new NonsufficientFundsException(share, request?.Amount ?? Money.Zero);
+            NonsufficientFundsException exception = new (share, request.Amount);
             context.Transactions.Add(exception.Transaction);
 
             try
