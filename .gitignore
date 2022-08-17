@@ -256,3 +256,6 @@ Icon
 
 # SQLite3 Files
 *.sqlite3*
+
+# Application Settings
+appsettings*.json

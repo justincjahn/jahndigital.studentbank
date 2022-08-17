@@ -1,6 +1,5 @@
 {
   "AppConfig": {
-    "DbDriver": "mssql",
     "TokenLifetime": 1000
   },
   "AllowedOrigins": [
@@ -16,6 +15,7 @@
     }
   },
   "ConnectionStrings": {
-    "Default": "Server=localhost;Database=test_studentbank;Trusted_Connection=True;"
+    "Default": "Server=localhost,8433;Database=test_studentbank;User Id=sa;Password=Secret123;"
+    "Default_IntegratedAuth": "Server=localhost;Database=test_studentbank;Trusted_Connection=True;"
   }
 }

@@ -5,6 +5,7 @@
     "InviteCodeLength": 6
   },
   "AllowedOrigins": [
+  
   ],
   "Logging": {
     "LogLevel": {
@@ -15,6 +16,6 @@
   },
   "AllowedHosts": "*",
   "ConnectionStrings": {
-    "Default": "Server=localhost;Database=test_studentbank;Trusted_Connection=True;"
+    "Default": ""
   }
 }
