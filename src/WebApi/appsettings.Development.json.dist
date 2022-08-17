@@ -15,7 +15,7 @@
     }
   },
   "ConnectionStrings": {
-    "Default": "Server=localhost,8433;Database=test_studentbank;User Id=sa;Password=Secret123;"
+    "Default": "Server=localhost,8433;Database=test_studentbank;User Id=sa;Password=Secret1234;",
     "Default_IntegratedAuth": "Server=localhost;Database=test_studentbank;Trusted_Connection=True;"
   }
 }
