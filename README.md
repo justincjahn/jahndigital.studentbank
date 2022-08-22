@@ -72,9 +72,10 @@ Optionally, but recommended: Configure a custom domain and SSL, however; the app
 Add the following Configuration entries using the **Configuration** blade of the App Service:
 
 | Name | Comment |
-| ---- | ------- |
+| ---- |---------|
 | AllowedOrigins__`{0,1,2,...}` | Used for CQRS.  One or more URLs allowed to access the site.  E.g. `https://fluffy-bunny-00001.azurestaticapps.net` |
 | AppConfig__Secret | A unique string used to sign JWT requests.  Recommended to generate two GUIDs and concatenate them. |
+| AppConfig__TokenLifetime | The amount of time in minutes JWT tokens are valid for.  The client must refresh the token once it expires.  Default: 15 minutes. |
 | ConnectionStrings__Default | The database connection string.  E.g. using Managed Identity: `Server=my-db.database.windows.net,1433;Database=prod_studentbank;UID=a;Authentication=Active Directory Interactive` |
 
 On the **Configuration > General settings** page, ensure the following is set:

@@ -13,7 +13,7 @@ public class AppConfig
     /// <summary>
     ///     Backing field for <see cref="TokenLifetime" />
     /// </summary>
-    private int _tokenLifetime = 60;
+    private int _tokenLifetime = 15;
 
     /// <summary>
     ///     AppConfig__Secret is used as a unique secret per-environment for JWT tokens
