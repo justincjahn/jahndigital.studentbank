@@ -278,7 +278,7 @@ namespace JahnDigital.StudentBank.WebApi.GraphQL.Mutations
         [UseProjection, Authorize(Policy = Privilege.PRIVILEGE_MANAGE_STUDENTS)]
         public async Task<IQueryable<Student>> UpdateBulkStudentAsync(
             IEnumerable<UpdateStudentRequest> input,
-            [ScopedService] ISender mediatr,
+            [Service] ISender mediatr,
             CancellationToken cancellationToken
         )
         {
@@ -291,6 +291,7 @@ namespace JahnDigital.StudentBank.WebApi.GraphQL.Mutations
             }
 
             var students = await (await mediatr.Send(new GetStudentsQuery(), cancellationToken))
+                .Where(x => ids.Contains(x.Id))
                 .ToListAsync(cancellationToken);
 
             if (students.Count != ids.Count())

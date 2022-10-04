@@ -14,6 +14,13 @@
       "Microsoft.Hosting.Lifetime": "Information"
     }
   },
+  "Kestrel": {
+    "EndPoints": {
+      "HttpsDefaultCert": {
+        "Url": "https://0.0.0.0:5001"
+      }
+    }
+  },
   "ConnectionStrings": {
     "Default": "Server=localhost,8433;Database=test_studentbank;User Id=sa;Password=Secret1234;",
     "Default_IntegratedAuth": "Server=localhost;Database=test_studentbank;Trusted_Connection=True;"
