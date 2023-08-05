@@ -262,7 +262,15 @@ namespace JahnDigital.StudentBank.WebApi.GraphQL.Mutations
                 }
             }
 
-            var command = new UpdateStudentCommand(student.Id, input.Email, input.Password);
+            var command = new UpdateStudentCommand
+            {
+                Id = student.Id,
+                AccountNumber = input.AccountNumber?.PadLeft(10, '0'),
+                FirstName = input.FirstName,
+                LastName = input.LastName,
+                Password = input.Password,
+            };
+
             await mediatr.Send(command, cancellationToken);
 
             return await mediatr.Send(new GetStudentQuery(input.Id), cancellationToken);

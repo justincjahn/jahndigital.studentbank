@@ -10,10 +10,18 @@ public class UpdateStudentCommandValidator : AbstractValidator<UpdateStudentComm
             .NotEmpty()
             .GreaterThan(0);
 
+        RuleFor(x => x.FirstName)
+            .MinimumLength(1)
+            .When(x => !string.IsNullOrWhiteSpace(x.FirstName));
+
+        RuleFor(x => x.LastName)
+            .MinimumLength(1)
+            .When(x => !string.IsNullOrWhiteSpace(x.LastName));
+
         RuleFor(x => x.Email)
             .EmailAddress()
             .When(x => !String.IsNullOrWhiteSpace(x.Email));
-        
+
         RuleFor(x => x.Password)
             .NotEmpty()
             .WithMessage("Password cannot be empty.")
