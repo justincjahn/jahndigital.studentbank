@@ -94,6 +94,11 @@ public class Student : SoftDeletableEntity
     public ICollection<StudentPurchase> Purchases { get; set; } = new HashSet<StudentPurchase>();
 
     /// <summary>
+    ///     Get a list of stocks this student has purchased.
+    /// </summary>
+    public ICollection<StudentStock> Stocks { get; set; } = new HashSet<StudentStock>();
+
+    /// <summary>
     ///     Get or set the date the student last logged in.
     /// </summary>
     public DateTime? DateLastLogin { get; set; }
