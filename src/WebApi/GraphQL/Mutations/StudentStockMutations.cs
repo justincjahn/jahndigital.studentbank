@@ -7,7 +7,7 @@ using HotChocolate.Resolvers;
 using HotChocolate.Types;
 using JahnDigital.StudentBank.Application.Common;
 using JahnDigital.StudentBank.Application.Shares.Queries.GetShare;
-using JahnDigital.StudentBank.Application.Stocks.Queries.GetStudentStocks;
+using JahnDigital.StudentBank.Application.Stocks.Queries.GetStudentStock;
 using JahnDigital.StudentBank.Application.Transactions.DTOs;
 using JahnDigital.StudentBank.Domain.Entities;
 using JahnDigital.StudentBank.Domain.Enums;
@@ -52,7 +52,7 @@ namespace JahnDigital.StudentBank.WebApi.GraphQL.Mutations
                 .AssertAuthorizedAsync($"{Constants.AuthPolicy.DataOwner}<{Privilege.ManageStudents}>");
 
             var studentStockId = await mediatr.Send(input, cancellationToken);
-            return await mediatr.Send(new GetStudentStocksQuery(studentStockId), cancellationToken);
+            return await mediatr.Send(new GetStudentStockQuery(studentStockId), cancellationToken);
         }
     }
 }
