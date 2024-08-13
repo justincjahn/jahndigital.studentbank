@@ -268,6 +268,7 @@ namespace JahnDigital.StudentBank.WebApi.GraphQL.Mutations
                 AccountNumber = input.AccountNumber?.PadLeft(10, '0'),
                 FirstName = input.FirstName,
                 LastName = input.LastName,
+                Email = input.Email,
                 Password = input.Password,
             };
 
