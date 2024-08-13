@@ -16,7 +16,7 @@ public class UpdateInstanceCommandHandler : IRequestHandler<UpdateInstanceComman
         _context = context;
     }
 
-    public async Task<Unit> Handle(UpdateInstanceCommand request, CancellationToken cancellationToken)
+    public async Task Handle(UpdateInstanceCommand request, CancellationToken cancellationToken)
     {
         var instance = await _context.Instances.FindAsync(new object?[] { request.Id }, cancellationToken: cancellationToken)
             ?? throw new NotFoundException(nameof(Instance));
@@ -64,6 +64,5 @@ public class UpdateInstanceCommandHandler : IRequestHandler<UpdateInstanceComman
         }
 
         await _context.SaveChangesAsync(cancellationToken);
-        return Unit.Value;
     }
 }

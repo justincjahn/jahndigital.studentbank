@@ -16,7 +16,7 @@ public class UnlinkShareTypeCommandHandler : IRequestHandler<UnlinkShareTypeComm
         _context = context;
     }
 
-    public async Task<Unit> Handle(UnlinkShareTypeCommand request, CancellationToken cancellationToken)
+    public async Task Handle(UnlinkShareTypeCommand request, CancellationToken cancellationToken)
     {
         bool hasInstance = await _context.Instances.AnyAsync(x => x.Id == request.InstanceId, cancellationToken);
 
@@ -62,7 +62,5 @@ public class UnlinkShareTypeCommandHandler : IRequestHandler<UnlinkShareTypeComm
 
         _context.ShareTypeInstances.Remove(link);
         await _context.SaveChangesAsync(cancellationToken);
-
-        return Unit.Value;
     }
 }

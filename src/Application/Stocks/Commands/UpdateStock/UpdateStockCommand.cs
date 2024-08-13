@@ -28,7 +28,7 @@ public class UpdateStockCommandHandler : IRequestHandler<UpdateStockCommand>
         _formatter = formatter;
     }
 
-    public async Task<Unit> Handle(UpdateStockCommand request, CancellationToken cancellationToken)
+    public async Task Handle(UpdateStockCommand request, CancellationToken cancellationToken)
     {
         var stock = await _context.Stocks.FindAsync(new object?[] { request.StockId }, cancellationToken)
             ?? throw new NotFoundException(nameof(Stock), request.StockId);
@@ -54,7 +54,5 @@ public class UpdateStockCommandHandler : IRequestHandler<UpdateStockCommand>
         }
 
         await _context.SaveChangesAsync(cancellationToken);
-
-        return Unit.Value;
     }
 }

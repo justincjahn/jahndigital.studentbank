@@ -14,7 +14,7 @@ public class RestoreStudentCommandHandler : IRequestHandler<RestoreStudentComman
         _context = context;
     }
 
-    public async Task<Unit> Handle(RestoreStudentCommand request, CancellationToken cancellationToken)
+    public async Task Handle(RestoreStudentCommand request, CancellationToken cancellationToken)
     {
         var student = await _context.Students.FindAsync(new object?[] { request.Id }, cancellationToken)
             ?? throw new StudentNotFoundException(request.Id);
@@ -27,7 +27,5 @@ public class RestoreStudentCommandHandler : IRequestHandler<RestoreStudentComman
         student.DateDeleted = null;
 
         await _context.SaveChangesAsync(cancellationToken);
-
-        return Unit.Value;
     }
 }

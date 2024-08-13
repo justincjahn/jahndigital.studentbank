@@ -16,7 +16,7 @@ public class DeleteShareCommandHandler : IRequestHandler<DeleteShareCommand>
         _context = context;
     }
 
-    public async Task<Unit> Handle(DeleteShareCommand request, CancellationToken cancellationToken)
+    public async Task Handle(DeleteShareCommand request, CancellationToken cancellationToken)
     {
         var share = await _context.Shares.FindAsync(new object?[] { request.ShareId }, cancellationToken: cancellationToken)
             ?? throw new NotFoundException(nameof(Share), request.ShareId);
@@ -29,7 +29,5 @@ public class DeleteShareCommandHandler : IRequestHandler<DeleteShareCommand>
         share.DateDeleted = DateTime.UtcNow;
 
         await _context.SaveChangesAsync(cancellationToken);
-        
-        return Unit.Value;
     }
 }

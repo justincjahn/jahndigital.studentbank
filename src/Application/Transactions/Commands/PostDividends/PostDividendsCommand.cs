@@ -13,9 +13,8 @@ public class PostDividendsCommandHandler : IRequestHandler<PostDividendsRequest>
         _transactionService = transactionService;
     }
 
-    public async Task<Unit> Handle(PostDividendsRequest request, CancellationToken cancellationToken)
+    public async Task Handle(PostDividendsRequest request, CancellationToken cancellationToken)
     {
         await _transactionService.PostDividendsAsync(request, cancellationToken);
-        return Unit.Value;
     }
 }

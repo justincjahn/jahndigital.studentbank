@@ -16,7 +16,7 @@ public class RestoreShareTypeCommandHandler : IRequestHandler<RestoreShareTypeCo
         _context = context;
     }
 
-    public async Task<Unit> Handle(RestoreShareTypeCommand request, CancellationToken cancellationToken)
+    public async Task Handle(RestoreShareTypeCommand request, CancellationToken cancellationToken)
     {
         var shareType = await _context.ShareTypes
             .Where(x => x.Id == request.ShareTypeId && x.DateDeleted != null)
@@ -26,7 +26,5 @@ public class RestoreShareTypeCommandHandler : IRequestHandler<RestoreShareTypeCo
         shareType.DateDeleted = null;
 
         await _context.SaveChangesAsync(cancellationToken);
-
-        return Unit.Value;
     }
 }

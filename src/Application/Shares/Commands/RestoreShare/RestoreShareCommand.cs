@@ -15,7 +15,7 @@ public class RestoreShareCommandHandler : IRequestHandler<RestoreShareCommand>
         _context = context;
     }
 
-    public async Task<Unit> Handle(RestoreShareCommand request, CancellationToken cancellationToken)
+    public async Task Handle(RestoreShareCommand request, CancellationToken cancellationToken)
     {
         var share = await _context.Shares.FindAsync(new object?[] { request.ShareId }, cancellationToken)
             ?? throw new NotFoundException(nameof(Share), request.ShareId);
@@ -23,7 +23,5 @@ public class RestoreShareCommandHandler : IRequestHandler<RestoreShareCommand>
         share.DateDeleted = null;
 
         await _context.SaveChangesAsync(cancellationToken);
-
-        return Unit.Value;;
     }
 }

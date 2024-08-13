@@ -14,8 +14,8 @@
         <PackageReference Include="HotChocolate.Data.EntityFramework" Version="12.12.1" />
         <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="6.0.7" />
         <PackageReference Include="Microsoft.Azure.Services.AppAuthentication" Version="1.6.2" />
-        <PackageReference Include="Quartz.AspNetCore" Version="3.4.0" />
-        <PackageReference Include="Quartz.Extensions.DependencyInjection" Version="3.4.0" />
+        <PackageReference Include="Quartz.AspNetCore" Version="3.13.0" />
+        <PackageReference Include="Quartz.Extensions.DependencyInjection" Version="3.13.0" />
         <PackageReference Include="System.IdentityModel.Tokens.Jwt" Version="6.21.0" />
         <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="6.0.7">
             <PrivateAssets>all</PrivateAssets>

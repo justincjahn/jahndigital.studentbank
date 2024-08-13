@@ -26,6 +26,7 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.IdentityModel.Tokens;
 using Quartz;
+using Quartz.AspNetCore;
 
 namespace JahnDigital.StudentBank.WebApi;
 
@@ -123,7 +124,6 @@ public class Startup
         services.AddQuartz(q =>
         {
             q.SchedulerId = "jahndigital.studentbank.server";
-            q.UseMicrosoftDependencyInjectionJobFactory();
 
             JobKey dailyJobKey = new("DailyJob");
             q.AddJob<DailyJob>(opts => opts.WithIdentity(dailyJobKey));

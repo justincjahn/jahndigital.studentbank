@@ -19,7 +19,7 @@ public class RegisterStudentCommandHandler : IRequestHandler<RegisterStudentComm
         _hasher = hasher;
     }
 
-    public async Task<Unit> Handle(RegisterStudentCommand request, CancellationToken cancellationToken)
+    public async Task Handle(RegisterStudentCommand request, CancellationToken cancellationToken)
     {
         var student = await _context.Students
             .FirstOrDefaultAsync(x => x.Id == request.Id, cancellationToken: cancellationToken)
@@ -51,6 +51,5 @@ public class RegisterStudentCommandHandler : IRequestHandler<RegisterStudentComm
         student.Password = _hasher.HashPassword(request.Password);
 
         await _context.SaveChangesAsync(cancellationToken);
-        return Unit.Value;
     }
 }

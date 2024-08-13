@@ -14,7 +14,7 @@ public class DeleteStudentCommandHandler : IRequestHandler<DeleteStudentCommand>
         _context = context;
     }
 
-    public async Task<Unit> Handle(DeleteStudentCommand request, CancellationToken cancellationToken)
+    public async Task Handle(DeleteStudentCommand request, CancellationToken cancellationToken)
     {
         var student = await _context.Students.FindAsync(new object?[] { request.Id }, cancellationToken)
             ?? throw new StudentNotFoundException(request.Id);
@@ -27,7 +27,5 @@ public class DeleteStudentCommandHandler : IRequestHandler<DeleteStudentCommand>
         student.DateDeleted = DateTime.UtcNow;
 
         await _context.SaveChangesAsync(cancellationToken);
-
-        return Unit.Value;
     }
 }

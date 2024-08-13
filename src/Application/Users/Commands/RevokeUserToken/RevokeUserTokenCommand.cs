@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace JahnDigital.StudentBank.Application.Users.Commands.RevokeUserToken;
 
-public record RevokeUserTokenCommand(string Token, string IpAddress) : IRequest<Unit>;
+public record RevokeUserTokenCommand(string Token, string IpAddress) : IRequest;
 
 public class RevokeUserTokenCommandHandler: IRequestHandler<RevokeUserTokenCommand>
 {
@@ -17,17 +17,16 @@ public class RevokeUserTokenCommandHandler: IRequestHandler<RevokeUserTokenComma
         _context = context;
     }
 
-    public async Task<Unit> Handle(RevokeUserTokenCommand request, CancellationToken cancellationToken)
+    public async Task Handle(RevokeUserTokenCommand request, CancellationToken cancellationToken)
     {
-        var user = await _context.Users.SingleOrDefaultAsync(x => x.RefreshTokens.Any(t => t.Token == request.Token))
+        var user = await _context.Users.SingleOrDefaultAsync(x => x.RefreshTokens.Any(t => t.Token == request.Token), cancellationToken: cancellationToken)
             ?? throw new NotFoundException("Invalid refresh token.");
 
         var refreshToken = user.RefreshTokens.Single(x => x.Token == request.Token);
-        if (!refreshToken.IsActive) return Unit.Value;
+        if (!refreshToken.IsActive) return;
 
         refreshToken.Revoked = DateTime.UtcNow;
         refreshToken.RevokedByIpAddress = request.IpAddress;
         await _context.SaveChangesAsync(cancellationToken);
-        return Unit.Value;
     }
 }

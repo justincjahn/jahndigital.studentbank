@@ -15,7 +15,7 @@ public class DeleteUserCommandHandler : IRequestHandler<DeleteUserCommand>
         _context = context;
     }
 
-    public async Task<Unit> Handle(DeleteUserCommand request, CancellationToken cancellationToken)
+    public async Task Handle(DeleteUserCommand request, CancellationToken cancellationToken)
     {
         var user = await _context.Users.FindAsync(new object?[] { request.Id }, cancellationToken)
             ?? throw new NotFoundException(nameof(User), request.Id);
@@ -28,7 +28,5 @@ public class DeleteUserCommandHandler : IRequestHandler<DeleteUserCommand>
         user.DateDeleted = DateTime.UtcNow;
 
         await _context.SaveChangesAsync(cancellationToken);
-
-        return Unit.Value;
     }
 }

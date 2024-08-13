@@ -20,7 +20,7 @@ public class AdminUpdateStudentCommandHandler : IRequestHandler<AdminUpdateStude
         _hasher = hasher;
     }
 
-    public async Task<Unit> Handle(AdminUpdateStudentCommand request, CancellationToken cancellationToken)
+    public async Task Handle(AdminUpdateStudentCommand request, CancellationToken cancellationToken)
     {
         var student = await _context.Students.FirstOrDefaultAsync(x => x.Id == request.Id, cancellationToken)
             ?? throw new NotFoundException(nameof(Student), request.Id);
@@ -56,7 +56,5 @@ public class AdminUpdateStudentCommandHandler : IRequestHandler<AdminUpdateStude
         }
 
         await _context.SaveChangesAsync(cancellationToken);
-        
-        return Unit.Value;
     }
 }

@@ -16,7 +16,7 @@ public class LinkStockCommandHandler : IRequestHandler<LinkStockCommand>
         _context = context;
     }
 
-    public async Task<Unit> Handle(LinkStockCommand request, CancellationToken cancellationToken)
+    public async Task Handle(LinkStockCommand request, CancellationToken cancellationToken)
     {
         var hasInstance = await _context.Instances.AnyAsync(x => x.Id == request.InstanceId, cancellationToken);
 
@@ -45,7 +45,5 @@ public class LinkStockCommandHandler : IRequestHandler<LinkStockCommand>
 
         _context.StockInstances.Add(link);
         await _context.SaveChangesAsync(cancellationToken);
-
-        return Unit.Value;
     }
 }

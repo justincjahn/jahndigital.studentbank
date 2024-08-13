@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore.Storage;
 
 namespace JahnDigital.StudentBank.Application.ShareTypes.Commands.ResetWithdrawalLimit;
 
-public record ResetWithdrawalLimitCommand(long ShareTypeId) : IRequest<Unit>;
+public record ResetWithdrawalLimitCommand(long ShareTypeId) : IRequest;
 
 public class ResetWithdrawalLimitCommandHandler : IRequestHandler<ResetWithdrawalLimitCommand>
 {
@@ -15,7 +15,7 @@ public class ResetWithdrawalLimitCommandHandler : IRequestHandler<ResetWithdrawa
         _context = context;
     }
 
-    public async Task<Unit> Handle(ResetWithdrawalLimitCommand request, CancellationToken cancellationToken)
+    public async Task Handle(ResetWithdrawalLimitCommand request, CancellationToken cancellationToken)
     {
         var shareType = await _context.ShareTypes
                 .Where(x => x.Id == request.ShareTypeId)
@@ -41,6 +41,5 @@ public class ResetWithdrawalLimitCommandHandler : IRequestHandler<ResetWithdrawa
         shareType.WithdrawalLimitLastReset = DateTime.UtcNow;
         await _context.SaveChangesAsync(cancellationToken);
         await transaction.CommitAsync(cancellationToken);
-        return Unit.Value;
     }
 }

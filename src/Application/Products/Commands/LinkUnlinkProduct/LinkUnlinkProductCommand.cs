@@ -16,7 +16,7 @@ public class LinkUnlinkProductCommandHandler : IRequestHandler<LinkUnlinkProduct
         _context = context;
     }
 
-    public async Task<Unit> Handle(LinkUnlinkProductCommand request, CancellationToken cancellationToken)
+    public async Task Handle(LinkUnlinkProductCommand request, CancellationToken cancellationToken)
     {
         var link = await _context.ProductInstances.FirstOrDefaultAsync(x =>
             x.ProductId == request.ProductId && x.InstanceId == request.InstanceId, cancellationToken);
@@ -33,7 +33,7 @@ public class LinkUnlinkProductCommandHandler : IRequestHandler<LinkUnlinkProduct
 
             _context.ProductInstances.Add(productInstance);
             await _context.SaveChangesAsync(cancellationToken);
-            return Unit.Value;
+            return;
         }
 
         if (link is null)
@@ -43,6 +43,5 @@ public class LinkUnlinkProductCommandHandler : IRequestHandler<LinkUnlinkProduct
 
         _context.ProductInstances.Remove(link);
         await _context.SaveChangesAsync(cancellationToken);
-        return Unit.Value;
     }
 }

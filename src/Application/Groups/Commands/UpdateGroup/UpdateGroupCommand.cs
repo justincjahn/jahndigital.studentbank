@@ -9,7 +9,7 @@ namespace JahnDigital.StudentBank.Application.Groups.Commands.UpdateGroup;
 /**
  * Update and soft-delete/undelete a group.
  */
-public record UpdateGroupCommand(long Id, long? InstanceId, string? Name, bool Deleted = false) : IRequest<Unit>;
+public record UpdateGroupCommand(long Id, long? InstanceId, string? Name, bool Deleted = false) : IRequest;
 
 public class UpdateGroupCommandHandler : IRequestHandler<UpdateGroupCommand>
 {
@@ -19,7 +19,7 @@ public class UpdateGroupCommandHandler : IRequestHandler<UpdateGroupCommand>
         _context = context;
     }
 
-    public async Task<Unit> Handle(UpdateGroupCommand request, CancellationToken cancellationToken)
+    public async Task Handle(UpdateGroupCommand request, CancellationToken cancellationToken)
     {
         var group = await _context.Groups.SingleOrDefaultAsync(x => x.Id == request.Id, cancellationToken)
             ?? throw new NotFoundException(nameof(Group), request.Id);
@@ -80,6 +80,5 @@ public class UpdateGroupCommandHandler : IRequestHandler<UpdateGroupCommand>
         }
 
         await _context.SaveChangesAsync(cancellationToken);
-        return Unit.Value;
     }
 }

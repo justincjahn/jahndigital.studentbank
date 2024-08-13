@@ -16,7 +16,7 @@ public class UpdateShareCommandHandler : IRequestHandler<UpdateShareCommand>
         _context = context;
     }
 
-    public async Task<Unit> Handle(UpdateShareCommand request, CancellationToken cancellationToken)
+    public async Task Handle(UpdateShareCommand request, CancellationToken cancellationToken)
     {
         var share = await _context.Shares.Where(x => x.Id == request.ShareId).FirstOrDefaultAsync(cancellationToken)
             ?? throw new NotFoundException(nameof(Share), request.ShareId);
@@ -34,7 +34,5 @@ public class UpdateShareCommandHandler : IRequestHandler<UpdateShareCommand>
         share.ShareTypeId = request.ShareTypeId;
 
         await _context.SaveChangesAsync(cancellationToken);
-
-        return Unit.Value;
     }
 }

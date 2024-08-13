@@ -27,7 +27,7 @@ public class UpdateShareTypeCommandHandler : IRequestHandler<UpdateShareTypeComm
         _context = context;
     }
 
-    public async Task<Unit> Handle(UpdateShareTypeCommand request, CancellationToken cancellationToken)
+    public async Task Handle(UpdateShareTypeCommand request, CancellationToken cancellationToken)
     {
         var shareType = await _context.ShareTypes.FindAsync(new object?[] { request.ShareTypeId }, cancellationToken)
             ?? throw new NotFoundException(nameof(ShareType), request.ShareTypeId);
@@ -54,7 +54,5 @@ public class UpdateShareTypeCommandHandler : IRequestHandler<UpdateShareTypeComm
         shareType.WithdrawalLimitFee = request.WithdrawalLimitFee ?? shareType.WithdrawalLimitFee;
 
         await _context.SaveChangesAsync(cancellationToken);
-
-        return Unit.Value;
     }
 }

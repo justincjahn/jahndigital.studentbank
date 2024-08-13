@@ -16,7 +16,7 @@ public class LinkShareTypeCommandHandler : IRequestHandler<LinkShareTypeCommand>
         _context = context;
     }
 
-    public async Task<Unit> Handle(LinkShareTypeCommand request, CancellationToken cancellationToken)
+    public async Task Handle(LinkShareTypeCommand request, CancellationToken cancellationToken)
     {
         bool hasInstance = await _context.Instances.AnyAsync(x => x.Id == request.InstanceId, cancellationToken);
 
@@ -45,7 +45,5 @@ public class LinkShareTypeCommandHandler : IRequestHandler<LinkShareTypeCommand>
 
         _context.ShareTypeInstances.Add(link);
         await _context.SaveChangesAsync(cancellationToken);
-
-        return Unit.Value;
     }
 }

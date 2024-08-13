@@ -1,4 +1,4 @@
-﻿using Ganss.XSS;
+﻿using Ganss.Xss;
 using JahnDigital.StudentBank.Application.Common.Interfaces;
 using Markdig;
 

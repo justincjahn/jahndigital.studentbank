@@ -17,7 +17,7 @@ public class DeleteStockCommandHandler : IRequestHandler<DeleteStockCommand>
         _context = context;
     }
 
-    public async Task<Unit> Handle(DeleteStockCommand request, CancellationToken cancellationToken)
+    public async Task Handle(DeleteStockCommand request, CancellationToken cancellationToken)
     {
         var stock = await _context.Stocks.FindAsync(new object?[] { request.StockId }, cancellationToken)
             ?? throw new NotFoundException(nameof(Stock), request.StockId);
@@ -40,7 +40,5 @@ public class DeleteStockCommandHandler : IRequestHandler<DeleteStockCommand>
         stock.DateDeleted = DateTime.UtcNow;
 
         await _context.SaveChangesAsync(cancellationToken);
-
-        return Unit.Value;
     }
 }

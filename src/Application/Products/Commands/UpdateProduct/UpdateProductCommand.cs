@@ -26,7 +26,7 @@ public class UpdateProductCommandHandler : IRequestHandler<UpdateProductCommand>
         _context = context;
     }
 
-    public async Task<Unit> Handle(UpdateProductCommand request, CancellationToken cancellationToken)
+    public async Task Handle(UpdateProductCommand request, CancellationToken cancellationToken)
     {
         var product =
             await _context.Products.FirstOrDefaultAsync(x => x.Id == request.Id, cancellationToken: cancellationToken)
@@ -61,6 +61,5 @@ public class UpdateProductCommandHandler : IRequestHandler<UpdateProductCommand>
         }
 
         await _context.SaveChangesAsync(cancellationToken);
-        return Unit.Value;
     }
 }
