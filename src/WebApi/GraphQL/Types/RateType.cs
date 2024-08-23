@@ -16,7 +16,7 @@ public sealed class RateType : ScalarType
 
     public RateType() : this("Rate") { }
 
-    private RateType(NameString name, BindingBehavior bind = BindingBehavior.Explicit) : base(name, bind)
+    private RateType(string name, BindingBehavior bind = BindingBehavior.Explicit) : base(name, bind)
     {
         Description = "API/Interest Rate represented as a float.  E.g. 0.02 is 0.02%";
     }

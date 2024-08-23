@@ -9,8 +9,8 @@ namespace JahnDigital.StudentBank.WebApi.GraphQL.ObjectTypes
     {
         protected override void Configure(IObjectTypeDescriptor<Instance> descriptor)
         {
-            // Require the user to be a data owner or admin
-            descriptor.Authorize($"{Constants.AuthPolicy.DataOwner}<{Privilege.ManageInstances}>");
+            // descriptor.Authorize($"{Constants.AuthPolicy.DataOwner}<{Privilege.ManageInstances}>");
+            descriptor.Authorize();
 
             // Only administrators can pull in groups this way
             descriptor.Field(f => f.Groups)

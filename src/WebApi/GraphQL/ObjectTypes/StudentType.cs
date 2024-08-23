@@ -9,7 +9,8 @@ namespace JahnDigital.StudentBank.WebApi.GraphQL.ObjectTypes
     {
         protected override void Configure(IObjectTypeDescriptor<Student> descriptor)
         {
-            descriptor.Authorize($"{Constants.AuthPolicy.DataOwner}<{Privilege.ManageStudents}>");
+            // descriptor.Authorize($"{Constants.AuthPolicy.DataOwner}<{Privilege.ManageStudents}>");
+            descriptor.Authorize();
 
             descriptor.Field(f => f.Group)
                 .Authorize($"{Constants.AuthPolicy.DataOwner}<{Privilege.ManageGroups}>");

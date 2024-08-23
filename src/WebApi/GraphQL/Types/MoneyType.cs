@@ -15,7 +15,7 @@ public sealed class MoneyType : ScalarType
 
     public MoneyType() : this("Money") { }
 
-    private MoneyType(NameString name, BindingBehavior bind = BindingBehavior.Explicit) : base(name, bind)
+    private MoneyType(string name, BindingBehavior bind = BindingBehavior.Explicit) : base(name, bind)
     {
         Description =
             "US Currency as a float (preferred) or string without the dollar symbol. E.g 10.33 is $10.33.";

@@ -1,9 +1,8 @@
-using System;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using HotChocolate;
-using HotChocolate.AspNetCore.Authorization;
+using HotChocolate.Authorization;
 using HotChocolate.Data;
 using HotChocolate.Types;
 using JahnDigital.StudentBank.Application.Products.Commands.LinkUnlinkProduct;
@@ -11,7 +10,6 @@ using JahnDigital.StudentBank.Application.Products.Commands.NewProduct;
 using JahnDigital.StudentBank.Application.Products.Commands.UpdateProduct;
 using JahnDigital.StudentBank.Application.Products.Queries.GetProduct;
 using JahnDigital.StudentBank.Domain.Entities;
-using JahnDigital.StudentBank.Infrastructure.Persistence;
 using JahnDigital.StudentBank.WebApi.Models;
 using MediatR;
 using Privilege = JahnDigital.StudentBank.Domain.Enums.Privilege;

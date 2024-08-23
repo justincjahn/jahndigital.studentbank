@@ -119,7 +119,7 @@ public class Startup
                 options.ExecutionTimeout = TimeSpan.FromMinutes(10);
             });
 
-        services.AddHttpResultSerializer<AlwaysOkResultSerializer>();
+        services.AddHttpResponseFormatter<AlwaysOkResultSerializer>();
 
         services.AddQuartz(q =>
         {

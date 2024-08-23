@@ -9,7 +9,8 @@ namespace JahnDigital.StudentBank.WebApi.GraphQL.ObjectTypes
     {
         protected override void Configure(IObjectTypeDescriptor<Stock> descriptor)
         {
-            descriptor.Authorize($"{Constants.AuthPolicy.DataOwner}<{Privilege.ManageStocks}>");
+            // descriptor.Authorize($"{Constants.AuthPolicy.DataOwner}<{Privilege.ManageStocks}>");
+            descriptor.Authorize();
         }
     }
 }

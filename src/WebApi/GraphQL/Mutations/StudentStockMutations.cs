@@ -2,6 +2,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using HotChocolate;
+using HotChocolate.Authorization;
 using HotChocolate.Data;
 using HotChocolate.Resolvers;
 using HotChocolate.Types;
@@ -13,7 +14,6 @@ using JahnDigital.StudentBank.Domain.Entities;
 using JahnDigital.StudentBank.Domain.Enums;
 using JahnDigital.StudentBank.WebApi.Extensions;
 using MediatR;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.EntityFrameworkCore;
 using Privilege = JahnDigital.StudentBank.Domain.Enums.Privilege;
 
@@ -36,8 +36,8 @@ namespace JahnDigital.StudentBank.WebApi.GraphQL.Mutations
         [UseProjection, Authorize]
         public async Task<IQueryable<StudentStock>> NewStockPurchaseAsync(
             PurchaseStockRequest input,
-            [Service] ISender mediatr,
             [SchemaService] IResolverContext resolverContext,
+            [Service] ISender mediatr,
             CancellationToken cancellationToken
         )
         {

@@ -2,6 +2,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using HotChocolate;
+using HotChocolate.Authorization;
 using HotChocolate.Data;
 using HotChocolate.Resolvers;
 using HotChocolate.Types;
@@ -34,7 +35,7 @@ namespace JahnDigital.StudentBank.WebApi.GraphQL.Mutations
         /// <param name="resolverContext"></param>
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        [UseDbContext(typeof(AppDbContext)), HotChocolate.AspNetCore.Authorization.Authorize]
+        [UseDbContext(typeof(AppDbContext)), Authorize]
         public async Task<IQueryable<StudentPurchase>> NewPurchaseAsync(
             PurchaseRequest input,
             [Service] ISender mediatr,

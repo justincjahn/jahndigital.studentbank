@@ -2,7 +2,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using HotChocolate;
-using HotChocolate.AspNetCore.Authorization;
+using HotChocolate.Authorization;
 using HotChocolate.Data;
 using HotChocolate.Resolvers;
 using HotChocolate.Types;
@@ -38,7 +38,7 @@ namespace JahnDigital.StudentBank.WebApi.GraphQL.Queries
         )
         {
             if (resolverContext.GetUserType() != UserType.Student) throw ErrorFactory.NotFound();
-            resolverContext.SetAuthorized();
+            resolverContext.SetAuthorized(); // @note This shouldn't be necessary but the currentStudent.gql is pulling in groups.
             return await mediatr.Send(new GetStudentQuery(resolverContext.GetUserId()), cancellationToken);
         }
 
